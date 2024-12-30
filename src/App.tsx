@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
@@ -37,11 +41,36 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Navbar />
-        <div className="pt-20"> {/* Add padding to account for fixed navbar */}
+        <div className="pt-20">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductDetails />} />
+            <Route
+              path="/cart"
+              element={
+                <PrivateRoute>
+                  <Cart />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </div>
       </BrowserRouter>
