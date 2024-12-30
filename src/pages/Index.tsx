@@ -1,11 +1,25 @@
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import ProductCard from "@/components/ProductCard";
 
 const Index = () => {
+  const { data: featuredProducts } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_featured", true)
+        .limit(3);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen">
-      <Navbar />
-      
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -26,7 +40,7 @@ const Index = () => {
           </p>
           <Link
             to="/products"
-            className="btn-primary"
+            className="inline-block bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-md transition-colors"
           >
             Explore Collection
           </Link>
@@ -41,9 +55,10 @@ const Index = () => {
             <p className="text-gray-600">Curated pieces that define elegance</p>
           </div>
           
-          {/* Product Grid Placeholder */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Product cards will go here */}
+            {featuredProducts?.map((product) => (
+              <ProductCard key={product.id} {...product} />
+            ))}
           </div>
         </div>
       </section>
@@ -56,9 +71,8 @@ const Index = () => {
             <p className="text-gray-600">Experiences shared by our valued customers</p>
           </div>
           
-          {/* Testimonials Grid Placeholder */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Testimonial cards will go here */}
+            {/* Testimonial cards will be implemented later */}
           </div>
         </div>
       </section>
