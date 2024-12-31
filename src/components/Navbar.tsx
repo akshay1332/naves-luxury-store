@@ -1,9 +1,36 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, ShoppingCart, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out.",
+      });
+      return;
+    }
+    toast({
+      title: "Success",
+      description: "Logged out successfully.",
+    });
+    navigate('/login');
+  };
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md">
@@ -27,9 +54,23 @@ const Navbar = () => {
             <Link to="/cart" className="nav-link">
               <ShoppingCart className="h-5 w-5" />
             </Link>
-            <Link to="/profile" className="nav-link">
-              <User className="h-5 w-5" />
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="nav-link">
+                <User className="h-5 w-5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/admin')}>
+                  Admin Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,6 +137,12 @@ const Navbar = () => {
             >
               Profile
             </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full text-left block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary"
+            >
+              Logout
+            </button>
           </div>
         </div>
       )}
