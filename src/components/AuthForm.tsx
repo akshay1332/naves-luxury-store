@@ -42,8 +42,24 @@ const AuthForm = () => {
             },
           }}
           providers={[]}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/admin`}
+          onlyThirdPartyProviders={false}
+          magicLink={false}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Password',
+                button_label: 'Sign In',
+              },
+            },
+          }}
         />
+      </div>
+      <div className="mt-4 text-sm text-gray-600 text-center">
+        <p>Admin Login:</p>
+        <p>Email: admin@labelnaves.com</p>
+        <p>Password: Admin123!</p>
       </div>
     </div>
   );
