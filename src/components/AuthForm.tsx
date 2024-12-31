@@ -4,23 +4,47 @@ import { supabase } from "@/integrations/supabase/client";
 
 const AuthForm = () => {
   return (
-    <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-serif text-center mb-6">Welcome to Label Naves</h2>
-      <Auth
-        supabaseClient={supabase}
-        appearance={{
-          theme: ThemeSupa,
-          variables: {
-            default: {
-              colors: {
-                brand: '#9b87f5',
-                brandAccent: '#7E69AB',
+    <div className="max-w-md w-full mx-auto p-8 bg-white/80 backdrop-blur-sm rounded-lg shadow-xl">
+      <h2 className="text-3xl font-serif text-center mb-8 text-primary">Welcome to Label Naves</h2>
+      <div className="space-y-4">
+        <Auth
+          supabaseClient={supabase}
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#9b87f5',
+                  brandAccent: '#7E69AB',
+                  inputBackground: 'white',
+                },
+                borderWidths: {
+                  buttonBorderWidth: '1px',
+                  inputBorderWidth: '1px',
+                },
+                radii: {
+                  borderRadiusButton: '0.5rem',
+                  inputBorderRadius: '0.5rem',
+                },
               },
             },
-          },
-        }}
-        providers={[]}
-      />
+            style: {
+              button: {
+                padding: '10px 15px',
+                fontSize: '16px',
+              },
+              input: {
+                padding: '10px 15px',
+              },
+              anchor: {
+                color: '#7E69AB',
+              },
+            },
+          }}
+          providers={[]}
+          redirectTo={window.location.origin}
+        />
+      </div>
     </div>
   );
 };
