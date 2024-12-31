@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash } from "lucide-react";
+import { LuxuryLoader } from "@/components/LuxuryLoader";
 
 interface Product {
   id: string;
@@ -24,81 +25,94 @@ interface Product {
 export default function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/login');
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error || !profile?.is_admin) {
+          navigate('/');
+          toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You don't have permission to access this page.",
+          });
+          return;
+        }
+
+        setIsAdmin(true);
+        await fetchProducts();
+        setLoading(false);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        navigate('/');
+      }
+    };
+
     checkAdminStatus();
-    fetchProducts();
-  }, []);
-
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile?.is_admin) {
-      navigate('/');
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-      });
-    } else {
-      setIsAdmin(true);
-    }
-  };
+  }, [navigate, toast]);
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch products.",
       });
-      return;
     }
-
-    setProducts(data || []);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Product deleted successfully.",
+      });
+      fetchProducts();
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete product.",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Product deleted successfully.",
-    });
-    fetchProducts();
   };
 
+  if (loading) {
+    return <LuxuryLoader />;
+  }
+
   if (!isAdmin) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   return (

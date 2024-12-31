@@ -10,35 +10,44 @@ const Login = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile?.is_admin) {
-          navigate('/admin');
-        } else {
-          navigate('/');
+          if (profile?.is_admin) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
         }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile?.is_admin) {
-          navigate('/admin');
-        } else {
-          navigate('/');
+          if (profile?.is_admin) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Error checking profile:', error);
         }
       }
     });
