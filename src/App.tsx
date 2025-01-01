@@ -21,6 +21,7 @@ import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { LuxuryLoader } from "./components/LuxuryLoader";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,14 @@ const App = () => (
                       <Route path="/reviews" element={<AdminReviews />} />
                     </Routes>
                   </AdminRoute>
+                }
+              />
+              <Route
+                path="/checkout"
+                element={
+                  <PrivateRoute>
+                    <Checkout />
+                  </PrivateRoute>
                 }
               />
             </Routes>
