@@ -1,20 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, MapPin, Truck } from "lucide-react";
-
-interface ShippingAddress {
-  fullName: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-}
+import { ShippingAddressForm, type ShippingAddress } from "@/components/checkout/ShippingAddressForm";
+import { ShippingMethod } from "@/components/checkout/ShippingMethod";
+import { PaymentSection } from "@/components/checkout/PaymentSection";
 
 const Checkout = () => {
   const [loading, setLoading] = useState(false);
@@ -62,7 +52,6 @@ const Checkout = () => {
 
       if (orderError) throw orderError;
 
-      // Create order items
       const orderItems = cartItems?.map(item => ({
         order_id: order.id,
         product_id: item.products.id,
@@ -78,7 +67,6 @@ const Checkout = () => {
         if (itemsError) throw itemsError;
       }
 
-      // Clear cart
       await supabase
         .from('cart_items')
         .delete()
@@ -106,95 +94,12 @@ const Checkout = () => {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Checkout</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                Shipping Address
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                placeholder="Full Name"
-                value={shippingAddress.fullName}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-                required
-              />
-              <Input
-                placeholder="Address"
-                value={shippingAddress.address}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  placeholder="City"
-                  value={shippingAddress.city}
-                  onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                  required
-                />
-                <Input
-                  placeholder="State"
-                  value={shippingAddress.state}
-                  onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  placeholder="ZIP Code"
-                  value={shippingAddress.zipCode}
-                  onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })}
-                  required
-                />
-                <Input
-                  placeholder="Country"
-                  value={shippingAddress.country}
-                  onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })}
-                  required
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Truck className="w-5 h-5" />
-                Shipping Method
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Standard Shipping</p>
-                    <p className="text-sm text-gray-500">3-5 business days</p>
-                  </div>
-                  <p className="font-medium">Free</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Payment
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
-                Payment will be handled on the next step
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Processing..." : "Place Order"}
-              </Button>
-            </CardFooter>
-          </Card>
+          <ShippingAddressForm
+            shippingAddress={shippingAddress}
+            setShippingAddress={setShippingAddress}
+          />
+          <ShippingMethod />
+          <PaymentSection loading={loading} />
         </form>
       </div>
     </div>
