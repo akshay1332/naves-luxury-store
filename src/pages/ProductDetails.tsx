@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Star, ShoppingCart } from "lucide-react";
+import ProductImageGallery from "@/components/product/ProductImageGallery";
+import ProductInfo from "@/components/product/ProductInfo";
+import ProductReviews from "@/components/product/ProductReviews";
 
 interface Product {
   id: string;
@@ -126,128 +120,29 @@ export default function ProductDetails() {
   };
 
   if (loading || !product) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Product Images */}
-        <div className="space-y-4">
-          {product.images?.map((image, index) => (
-            <img
-              key={index}
-              src={image || '/placeholder.svg'}
-              alt={`${product.title} - ${index + 1}`}
-              className="w-full rounded-lg"
-            />
-          ))}
-        </div>
-
-        {/* Product Info */}
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">{product.title}</h1>
-          <p className="text-2xl font-semibold">${product.price}</p>
-          <p className="text-gray-600">{product.description}</p>
-
-          {/* Size Selector */}
-          {product.sizes && product.sizes.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Size</label>
-              <Select onValueChange={setSelectedSize}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {product.sizes.map((size) => (
-                    <SelectItem key={size} value={size}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Color Selector */}
-          {product.colors && product.colors.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Color</label>
-              <Select onValueChange={setSelectedColor}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {product.colors.map((color) => (
-                    <SelectItem key={color} value={color}>
-                      {color}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Quantity Selector */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Quantity</label>
-            <Select
-              value={quantity.toString()}
-              onValueChange={(value) => setQuantity(parseInt(value))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[...Array(10)].map((_, i) => (
-                  <SelectItem key={i + 1} value={(i + 1).toString()}>
-                    {i + 1}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button
-            className="w-full"
-            onClick={addToCart}
-            disabled={product.stock_quantity < 1}
-          >
-            <ShoppingCart className="mr-2" />
-            {product.stock_quantity < 1 ? "Out of Stock" : "Add to Cart"}
-          </Button>
-        </div>
+    <div className="container mx-auto py-12 px-4">
+      <div className="grid md:grid-cols-2 gap-12">
+        <ProductImageGallery images={product.images} title={product.title} />
+        <ProductInfo
+          {...product}
+          selectedSize={selectedSize}
+          selectedColor={selectedColor}
+          quantity={quantity}
+          setSelectedSize={setSelectedSize}
+          setSelectedColor={setSelectedColor}
+          setQuantity={setQuantity}
+          onAddToCart={addToCart}
+        />
       </div>
-
-      {/* Reviews Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
-        <div className="space-y-6">
-          {reviews.map((review) => (
-            <div key={review.id} className="border-b pb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="font-medium">
-                  {review.profiles.full_name || "Anonymous"}
-                </span>
-              </div>
-              <p className="text-gray-600">{review.comment}</p>
-              <p className="text-sm text-gray-400 mt-2">
-                {new Date(review.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ProductReviews reviews={reviews} />
     </div>
   );
 }
