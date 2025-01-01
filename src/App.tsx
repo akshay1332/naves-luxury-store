@@ -12,6 +12,10 @@ import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import AdminUsers from "./pages/admin/Users";
+import AdminOrders from "./pages/admin/Orders";
+import AdminMessages from "./pages/admin/Messages";
+import AdminReviews from "./pages/admin/Reviews";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
@@ -36,6 +40,36 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      setIsAdmin(!!profile?.is_admin);
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  if (isAdmin === null) {
+    return <LuxuryLoader />;
+  }
+
+  return isAdmin ? <>{children}</> : <Navigate to="/" />;
 };
 
 const App = () => (
@@ -71,11 +105,17 @@ const App = () => (
                 }
               />
               <Route
-                path="/admin"
+                path="/admin/*"
                 element={
-                  <PrivateRoute>
-                    <Admin />
-                  </PrivateRoute>
+                  <AdminRoute>
+                    <Routes>
+                      <Route path="/" element={<Admin />} />
+                      <Route path="/users" element={<AdminUsers />} />
+                      <Route path="/orders" element={<AdminOrders />} />
+                      <Route path="/messages" element={<AdminMessages />} />
+                      <Route path="/reviews" element={<AdminReviews />} />
+                    </Routes>
+                  </AdminRoute>
                 }
               />
             </Routes>
