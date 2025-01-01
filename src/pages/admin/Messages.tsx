@@ -4,7 +4,16 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
   id: string;
@@ -77,6 +86,24 @@ export default function AdminMessages() {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: { component: Clock, className: "bg-yellow-100 text-yellow-800" },
+      responded: { component: CheckCircle, className: "bg-green-100 text-green-800" },
+      closed: { component: XCircle, className: "bg-gray-100 text-gray-800" }
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const Icon = config.component;
+
+    return (
+      <Badge className={config.className}>
+        <Icon className="w-4 h-4 mr-1" />
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -100,31 +127,26 @@ export default function AdminMessages() {
 
         <div className="grid gap-6">
           {messages.map((message) => (
-            <div key={message.id} className="bg-white rounded-lg shadow p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <Card key={message.id} className="w-full">
+              <CardHeader>
+                <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-medium">{message.subject}</h3>
-                    <p className="text-sm text-gray-500">
+                    <CardTitle>{message.subject}</CardTitle>
+                    <CardDescription>
                       From: {message.name} ({message.email})
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Sent: {new Date(message.created_at).toLocaleString()}
-                    </p>
+                    </CardDescription>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-700">{message.message}</p>
-                  </div>
+                  {getStatusBadge(message.status)}
                 </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Admin Response</h4>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${message.status === 'responded' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {message.status}
-                    </span>
-                  </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">{message.message}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Response
+                  </label>
                   <Textarea
                     value={responses[message.id]}
                     onChange={(e) => setResponses({
@@ -132,19 +154,23 @@ export default function AdminMessages() {
                       [message.id]: e.target.value
                     })}
                     placeholder="Type your response here..."
-                    className="min-h-[150px]"
+                    className="min-h-[100px]"
                   />
-                  <Button
-                    className="w-full"
-                    onClick={() => sendResponse(message.id)}
-                    disabled={!responses[message.id]}
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Response
-                  </Button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  Received: {new Date(message.created_at).toLocaleString()}
+                </span>
+                <Button
+                  onClick={() => sendResponse(message.id)}
+                  disabled={!responses[message.id]}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Response
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </div>
