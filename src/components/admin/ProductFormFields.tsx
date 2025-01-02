@@ -3,6 +3,23 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const PRODUCT_CATEGORIES = [
+  "Dresses",
+  "Tops",
+  "Bottoms",
+  "Outerwear",
+  "Accessories",
+  "Footwear",
+  "Other"
+];
 
 interface ProductFormFieldsProps {
   initialData?: {
@@ -14,6 +31,7 @@ interface ProductFormFieldsProps {
     images: string[];
     stock_quantity: number;
     is_featured: boolean;
+    category: string;
   };
   loading: boolean;
   onImageAdd: (url: string) => void;
@@ -46,6 +64,22 @@ export const ProductFormFields = ({
           defaultValue={initialData?.title}
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Category</label>
+        <Select name="category" defaultValue={initialData?.category}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRODUCT_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">

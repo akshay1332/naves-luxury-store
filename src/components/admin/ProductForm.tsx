@@ -17,6 +17,7 @@ interface ProductFormProps {
     images: string[];
     stock_quantity: number;
     is_featured: boolean;
+    category: string;
   };
   onSuccess?: () => void;
 }
@@ -41,6 +42,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         sizes: (formData.get('sizes') as string).split(',').map(s => s.trim()),
         colors: (formData.get('colors') as string).split(',').map(c => c.trim()),
         is_featured: formData.get('is_featured') === 'on',
+        category: formData.get('category') as string,
         images: imageUrls,
       };
 

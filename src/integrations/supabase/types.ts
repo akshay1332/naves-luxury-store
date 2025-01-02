@@ -104,6 +104,44 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           color: string | null
@@ -192,6 +230,7 @@ export type Database = {
       }
       products: {
         Row: {
+          category: string | null
           colors: string[] | null
           created_at: string
           description: string | null
@@ -205,6 +244,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           colors?: string[] | null
           created_at?: string
           description?: string | null
@@ -218,6 +258,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           colors?: string[] | null
           created_at?: string
           description?: string | null
@@ -243,6 +284,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_admin: boolean | null
+          notification_preferences: Json | null
           phone_number: string | null
           state: string | null
           updated_at: string
@@ -257,6 +299,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_admin?: boolean | null
+          notification_preferences?: Json | null
           phone_number?: string | null
           state?: string | null
           updated_at?: string
@@ -271,6 +314,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          notification_preferences?: Json | null
           phone_number?: string | null
           state?: string | null
           updated_at?: string
@@ -279,6 +323,7 @@ export type Database = {
       }
       reviews: {
         Row: {
+          admin_response: string | null
           comment: string | null
           created_at: string
           id: string
@@ -288,6 +333,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_response?: string | null
           comment?: string | null
           created_at?: string
           id?: string
@@ -297,6 +343,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_response?: string | null
           comment?: string | null
           created_at?: string
           id?: string
