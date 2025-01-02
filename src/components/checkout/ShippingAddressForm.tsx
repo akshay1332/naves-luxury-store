@@ -2,7 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 
-export interface ShippingAddress {
+export type ShippingAddress = {
+  [key: string]: string;
   fullName: string;
   address: string;
   city: string;

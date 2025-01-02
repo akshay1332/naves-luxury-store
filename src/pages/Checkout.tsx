@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,11 +19,32 @@ const Checkout = () => {
     country: "",
   });
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to continue with checkout.",
+        });
+        navigate('/login');
+      }
+    };
+    checkAuth();
+  }, [navigate, toast]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { data: cartItems } = await supabase
         .from('cart_items')
         .select(`
@@ -33,7 +54,7 @@ const Checkout = () => {
             price
           )
         `)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', user.id);
 
       const totalAmount = cartItems?.reduce((sum, item) => {
         return sum + (item.quantity * (item.products?.price || 0));
@@ -42,9 +63,9 @@ const Checkout = () => {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.id,
           total_amount: totalAmount,
-          shipping_address: shippingAddress,
+          shipping_address: shippingAddress as Record<string, string>,
           status: 'pending'
         })
         .select()
@@ -70,7 +91,7 @@ const Checkout = () => {
       await supabase
         .from('cart_items')
         .delete()
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', user.id);
 
       toast({
         title: "Success",
