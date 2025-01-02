@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CartIndicator } from "./cart/CartIndicator";
+import { NotificationBell } from "./notifications/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,12 +38,10 @@ const Navbar = () => {
     <nav className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          {/* Logo */}
           <Link to="/" className="flex items-center">
             <h1 className="text-2xl font-serif font-semibold">Label Naves</h1>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/products" className="nav-link">Products</Link>
@@ -49,11 +49,11 @@ const Navbar = () => {
             <Link to="/contact" className="nav-link">Contact</Link>
           </div>
 
-          {/* Desktop Icons */}
-          <div className="hidden md:flex md:items-center md:space-x-4">
+          <div className="hidden md:flex md:items-center md:space-x-6">
             <Link to="/cart" className="nav-link">
-              <ShoppingCart className="h-5 w-5" />
+              <CartIndicator />
             </Link>
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger className="nav-link">
                 <User className="h-5 w-5" />
@@ -61,6 +61,9 @@ const Navbar = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
                   Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/orders')}>
+                  Orders
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/admin')}>
                   Admin Dashboard
@@ -73,7 +76,6 @@ const Navbar = () => {
             </DropdownMenu>
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="flex md:hidden">
             <button
               type="button"
@@ -91,7 +93,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
           <div className="space-y-1 px-4 pb-3 pt-2">
@@ -136,6 +137,13 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               Profile
+            </Link>
+            <Link
+              to="/orders"
+              className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              Orders
             </Link>
             <button
               onClick={handleLogout}
