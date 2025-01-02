@@ -6,6 +6,7 @@ interface Review {
   rating: number;
   comment: string;
   created_at: string;
+  admin_response: string | null;
   profiles: {
     full_name: string;
   };
@@ -17,7 +18,7 @@ interface ProductReviewsProps {
 
 const ProductReviews = ({ reviews }: ProductReviewsProps) => {
   return (
-    <div className="mt-16">
+    <div className="mt-8">
       <h2 className="text-3xl font-serif font-bold mb-8">Customer Reviews</h2>
       <div className="space-y-8">
         {reviews.map((review) => (
@@ -41,6 +42,13 @@ const ProductReviews = ({ reviews }: ProductReviewsProps) => {
               </span>
             </div>
             <p className="text-gray-600">{review.comment}</p>
+            
+            {review.admin_response && (
+              <div className="mt-4 pl-4 border-l-4 border-primary">
+                <p className="text-sm font-medium text-gray-900 mb-1">Admin Response:</p>
+                <p className="text-gray-600">{review.admin_response}</p>
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -5,6 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import ProductImageGallery from "@/components/product/ProductImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductReviews from "@/components/product/ProductReviews";
+import ReviewForm from "@/components/product/ReviewForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Product {
   id: string;
@@ -22,6 +24,7 @@ interface Review {
   rating: number;
   comment: string;
   created_at: string;
+  admin_response: string | null;
   profiles: {
     full_name: string;
   };
@@ -72,6 +75,7 @@ export default function ProductDetails() {
         rating,
         comment,
         created_at,
+        admin_response,
         profiles (
           full_name
         )
@@ -142,7 +146,23 @@ export default function ProductDetails() {
           onAddToCart={addToCart}
         />
       </div>
-      <ProductReviews reviews={reviews} />
+
+      <div className="mt-16">
+        <Tabs defaultValue="reviews" className="w-full">
+          <TabsList>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="write-review">Write a Review</TabsTrigger>
+          </TabsList>
+          <TabsContent value="reviews">
+            <ProductReviews reviews={reviews} />
+          </TabsContent>
+          <TabsContent value="write-review">
+            <div className="max-w-2xl mx-auto">
+              <ReviewForm productId={id!} onSuccess={fetchReviews} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
