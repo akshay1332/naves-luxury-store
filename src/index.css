@@ -49,7 +49,7 @@
   }
   
   .nav-link::after {
-    @apply content-[''] absolute left-0 -bottom-1 h-[2px] w-0 bg-primary transition-all duration-300;
+    @apply content-[''] absolute left-0 -bottom-1 h-[2px] w-0 bg-luxury-gold transition-all duration-300;
   }
   
   .nav-link:hover::after {
@@ -57,7 +57,7 @@
   }
 
   .product-card {
-    @apply relative overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-lg;
+    @apply relative overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-xl;
   }
 
   .product-card-image {
@@ -69,10 +69,55 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-md bg-luxury-gold px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md border border-primary bg-transparent px-6 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-md border border-luxury-gold bg-transparent px-6 py-3 text-sm font-medium text-luxury-gold transition-colors hover:bg-luxury-gold hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
+
+  .luxury-input {
+    @apply rounded-md border-luxury-gold/20 bg-luxury-pearl/10 px-4 py-2 focus:border-luxury-gold focus:ring-luxury-gold;
+  }
+
+  .luxury-card {
+    @apply rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl;
+  }
+
+  .section-heading {
+    @apply relative mb-8 text-center;
+  }
+
+  .section-heading::after {
+    @apply absolute bottom-0 left-1/2 h-0.5 w-24 -translate-x-1/2 bg-luxury-gold content-[''];
+  }
+
+  .price-inr {
+    @apply font-serif text-lg font-semibold text-luxury-gold;
+  }
+
+  .animate-fade-in {
+    @apply animate-fadeIn;
+  }
+
+  .animate-fade-out {
+    @apply animate-fadeOut;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-luxury-pearl;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-luxury-gold/50;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-luxury-gold;
 }

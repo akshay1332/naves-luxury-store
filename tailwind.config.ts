@@ -30,13 +30,20 @@ export default {
           dark: "#7E69AB",
         },
         secondary: {
-          DEFAULT: "#FFDEE2",
-          light: "#FDE1D3",
-          dark: "#F1F0FB",
+          DEFAULT: "#1A1F2C",
+          light: "#403E43",
+          dark: "#221F26",
         },
         accent: {
-          DEFAULT: "#eee",
-          foreground: "#333",
+          DEFAULT: "#E5DEFF",
+          foreground: "#8B5CF6",
+        },
+        luxury: {
+          gold: "#D4AF37",
+          silver: "#C0C0C0",
+          pearl: "#F5F5F5",
+          cream: "#FFFDD0",
+          champagne: "#F7E7CE",
         },
       },
       fontFamily: {
@@ -59,12 +66,26 @@ export default {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        fadeIn: {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeOut: {
+          from: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "0", transform: "translateY(10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 3s ease-in-out infinite",
         shimmer: "shimmer 2s infinite",
+        fadeIn: "fadeIn 0.5s ease-out",
+        fadeOut: "fadeOut 0.5s ease-out",
+      },
+      backgroundImage: {
+        'luxury-gradient': 'linear-gradient(to right, #D4AF37, #C0C0C0)',
+        'dark-gradient': 'linear-gradient(to right, #1A1F2C, #403E43)',
       },
     },
   },

@@ -1,84 +1,44 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
+import { convertToINR } from "@/utils/currency";
 
 interface ProductCardProps {
   id: string;
   title: string;
   price: number;
   images: string[];
-  description?: string;
+  category?: string;
 }
 
-const ProductCard = ({ id, title, price, images, description }: ProductCardProps) => {
-  const { toast } = useToast();
-
-  const addToCart = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast({
-        title: "Please login",
-        description: "You need to be logged in to add items to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from("cart_items")
-      .insert({
-        user_id: user.id,
-        product_id: id,
-        quantity: 1,
-      });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Success",
-      description: "Item added to cart",
-    });
-  };
-
+const ProductCard = ({ id, title, price, images, category }: ProductCardProps) => {
   return (
-    <div className="group relative">
-      <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
-        <img
-          src={images[0] || "/placeholder.svg"}
-          alt={title}
-          className="h-full w-full object-cover object-center lg:h-full lg:w-full"
-        />
-      </div>
-      <div className="mt-4 flex justify-between">
-        <div>
-          <h3 className="text-sm text-gray-700">
-            <Link to={`/products/${id}`}>
-              <span aria-hidden="true" className="absolute inset-0" />
-              {title}
-            </Link>
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">{description}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
+      <Link to={`/products/${id}`} className="product-card block">
+        <div className="relative overflow-hidden aspect-square">
+          <img
+            src={images?.[0] || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"}
+            alt={title}
+            className="product-card-image"
+          />
+          {category && (
+            <div className="absolute top-4 left-4">
+              <span className="bg-luxury-gold/90 px-3 py-1 text-xs text-white rounded-full">
+                {category}
+              </span>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <p className="text-sm font-medium text-gray-900">${price}</p>
-          <button
-            onClick={addToCart}
-            className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+        <div className="p-4">
+          <h3 className="font-serif text-lg mb-2">{title}</h3>
+          <p className="price-inr">{convertToINR(price)}</p>
         </div>
-      </div>
-    </div>
+      </Link>
+    </motion.div>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, User, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CartIndicator } from "./cart/CartIndicator";
@@ -35,11 +36,21 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md">
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-sm"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <Link to="/" className="flex items-center">
-            <h1 className="text-2xl font-serif font-semibold">Label Naves</h1>
+            <motion.h1 
+              className="text-2xl font-serif font-semibold bg-clip-text text-transparent bg-luxury-gradient"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              Label Naves
+            </motion.h1>
           </Link>
 
           <div className="hidden md:flex md:items-center md:space-x-8">
@@ -58,7 +69,7 @@ const Navbar = () => {
               <DropdownMenuTrigger className="nav-link">
                 <User className="h-5 w-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
                   Profile
                 </DropdownMenuItem>
@@ -76,26 +87,30 @@ const Navbar = () => {
             </DropdownMenu>
           </div>
 
-          <div className="flex md:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <span className="sr-only">Open main menu</span>
-              {isOpen ? (
-                <X className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Menu className="block h-6 w-6" aria-hidden="true" />
-              )}
-            </button>
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="flex md:hidden"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <span className="sr-only">Open main menu</span>
+            {isOpen ? (
+              <X className="block h-6 w-6" aria-hidden="true" />
+            ) : (
+              <Menu className="block h-6 w-6" aria-hidden="true" />
+            )}
+          </motion.button>
         </div>
       </div>
 
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="space-y-1 px-4 pb-3 pt-2">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden"
+          >
+            <div className="space-y-1 px-4 pb-3 pt-2">
             <Link
               to="/"
               className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary"
@@ -151,10 +166,11 @@ const Navbar = () => {
             >
               Logout
             </button>
-          </div>
-        </div>
-      )}
-    </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 
