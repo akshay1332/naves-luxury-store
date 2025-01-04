@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Notification {
   id: string;
@@ -15,6 +16,7 @@ interface Notification {
   message: string;
   read: boolean;
   created_at: string;
+  type: string;
 }
 
 export const NotificationBell = () => {
@@ -23,6 +25,8 @@ export const NotificationBell = () => {
 
   useEffect(() => {
     fetchNotifications();
+    
+    // Subscribe to notifications channel
     const channel = supabase
       .channel('notifications')
       .on('postgres_changes', { 
@@ -65,38 +69,75 @@ export const NotificationBell = () => {
     fetchNotifications();
   };
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'order_update':
+        return '📦';
+      case 'review_response':
+        return '💬';
+      default:
+        return '🔔';
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="relative">
-        <Bell className="h-5 w-5" />
-        {unreadCount > 0 && (
-          <Badge 
-            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center bg-red-500"
-          >
-            {unreadCount}
-          </Badge>
-        )}
+        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <Bell className="h-5 w-5" />
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className="absolute -top-2 -right-2"
+              >
+                <Badge 
+                  className="h-5 w-5 flex items-center justify-center bg-red-500"
+                >
+                  {unreadCount}
+                </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        {notifications.length === 0 ? (
-          <DropdownMenuItem>No notifications</DropdownMenuItem>
-        ) : (
-          notifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className={`p-4 ${!notification.read ? 'bg-gray-50' : ''}`}
-              onClick={() => markAsRead(notification.id)}
-            >
-              <div>
-                <div className="font-medium">{notification.title}</div>
-                <div className="text-sm text-gray-500">{notification.message}</div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {new Date(notification.created_at).toLocaleDateString()}
-                </div>
-              </div>
+        <AnimatePresence>
+          {notifications.length === 0 ? (
+            <DropdownMenuItem>
+              <p className="text-gray-500 text-center w-full py-4">No notifications</p>
             </DropdownMenuItem>
-          ))
-        )}
+          ) : (
+            notifications.map((notification) => (
+              <motion.div
+                key={notification.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DropdownMenuItem
+                  className={`p-4 ${!notification.read ? 'bg-gray-50' : ''}`}
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <div className="flex gap-3">
+                    <span className="text-2xl">
+                      {getNotificationIcon(notification.type)}
+                    </span>
+                    <div>
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-sm text-gray-500">{notification.message}</div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {new Date(notification.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -9,6 +9,8 @@ import ReviewForm from "@/components/product/ReviewForm";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LuxuryLoader } from "@/components/LuxuryLoader";
+import ProductHeader from "@/components/product/ProductHeader";
+import { motion } from "framer-motion";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,23 +46,6 @@ const ProductDetails = () => {
         `)
         .eq("product_id", id)
         .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: userProfile } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
 
       if (error) throw error;
       return data;
@@ -113,34 +98,57 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-7xl mx-auto px-4 py-8"
+    >
       <div className="grid md:grid-cols-2 gap-12">
-        <ProductImageGallery images={product.images} title={product.title} />
-        <ProductInfo
-          {...product}
-          selectedSize={selectedSize}
-          selectedColor={selectedColor}
-          quantity={quantity}
-          setSelectedSize={setSelectedSize}
-          setSelectedColor={setSelectedColor}
-          setQuantity={setQuantity}
-          onAddToCart={handleAddToCart}
-        />
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <ProductImageGallery images={product.images} title={product.title} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="space-y-6"
+        >
+          <ProductHeader
+            title={product.title}
+            price={product.price}
+            category={product.category}
+          />
+          <ProductInfo
+            {...product}
+            selectedSize={selectedSize}
+            selectedColor={selectedColor}
+            quantity={quantity}
+            setSelectedSize={setSelectedSize}
+            setSelectedColor={setSelectedColor}
+            setQuantity={setQuantity}
+            onAddToCart={handleAddToCart}
+          />
+        </motion.div>
       </div>
 
-      <div className="mt-16">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-16"
+      >
         <div className="grid md:grid-cols-2 gap-12">
           <ProductReviews
             reviews={reviews || []}
-            isAdmin={userProfile?.is_admin}
             onReviewsUpdate={refetchReviews}
           />
           <ReviewForm productId={id!} onSuccess={refetchReviews} />
         </div>
-      </div>
+      </motion.div>
 
       <RelatedProducts currentProductId={id!} category={product.category} />
-    </div>
+    </motion.div>
   );
 };
 
