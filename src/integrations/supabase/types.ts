@@ -234,8 +234,10 @@ export type Database = {
           colors: string[] | null
           created_at: string
           description: string | null
+          gender: string | null
           id: string
           images: string[] | null
+          is_best_seller: boolean | null
           is_featured: boolean | null
           price: number
           sizes: string[] | null
@@ -248,8 +250,10 @@ export type Database = {
           colors?: string[] | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
           images?: string[] | null
+          is_best_seller?: boolean | null
           is_featured?: boolean | null
           price: number
           sizes?: string[] | null
@@ -262,8 +266,10 @@ export type Database = {
           colors?: string[] | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
           images?: string[] | null
+          is_best_seller?: boolean | null
           is_featured?: boolean | null
           price?: number
           sizes?: string[] | null

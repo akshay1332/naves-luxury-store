@@ -22,12 +22,16 @@ interface Product {
   price: number;
   stock_quantity: number;
   created_at: string;
+  gender: string;
+  category: string;
+  is_best_seller: boolean;
 }
 
 export default function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -77,6 +81,11 @@ export default function Admin() {
     }
   };
 
+  const handleEdit = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductForm(true);
+  };
+
   if (loading) {
     return <LuxuryLoader />;
   }
@@ -85,8 +94,14 @@ export default function Admin() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <Button onClick={() => setShowProductForm(true)}>
+          <h1 className="text-2xl font-serif font-bold">Product Management</h1>
+          <Button 
+            onClick={() => {
+              setSelectedProduct(null);
+              setShowProductForm(true);
+            }}
+            className="bg-luxury-gold hover:bg-luxury-gold/90"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add New Product
           </Button>
@@ -94,39 +109,58 @@ export default function Admin() {
 
         {showProductForm ? (
           <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-serif">
+                {selectedProduct ? 'Edit Product' : 'Add New Product'}
+              </h2>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowProductForm(false);
+                  setSelectedProduct(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
             <ProductForm
+              initialData={selectedProduct || undefined}
               onSuccess={() => {
                 setShowProductForm(false);
+                setSelectedProduct(null);
                 fetchProducts();
               }}
             />
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white rounded-lg shadow overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Gender</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
-                  <TableHead>Created At</TableHead>
+                  <TableHead>Best Seller</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((product) => (
                   <TableRow key={product.id}>
-                    <TableCell>{product.title}</TableCell>
+                    <TableCell className="font-medium">{product.title}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell className="capitalize">{product.gender}</TableCell>
                     <TableCell>${product.price}</TableCell>
                     <TableCell>{product.stock_quantity}</TableCell>
-                    <TableCell>
-                      {new Date(product.created_at).toLocaleDateString()}
-                    </TableCell>
+                    <TableCell>{product.is_best_seller ? "Yes" : "No"}</TableCell>
                     <TableCell className="space-x-2">
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => navigate(`/admin/products/${product.id}`)}
+                        onClick={() => handleEdit(product)}
+                        className="hover:bg-luxury-gold/10"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>

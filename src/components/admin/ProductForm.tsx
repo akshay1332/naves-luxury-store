@@ -17,7 +17,9 @@ interface ProductFormProps {
     images: string[];
     stock_quantity: number;
     is_featured: boolean;
+    is_best_seller: boolean;
     category: string;
+    gender: string;
   };
   onSuccess?: () => void;
 }
@@ -42,7 +44,9 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         sizes: (formData.get('sizes') as string).split(',').map(s => s.trim()),
         colors: (formData.get('colors') as string).split(',').map(c => c.trim()),
         is_featured: formData.get('is_featured') === 'on',
+        is_best_seller: formData.get('is_best_seller') === 'on',
         category: formData.get('category') as string,
+        gender: formData.get('gender') as string,
         images: imageUrls,
       };
 
@@ -94,7 +98,11 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         onImageRemove={(index) => setImageUrls(prev => prev.filter((_, i) => i !== index))}
         imageUrls={imageUrls}
       />
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button 
+        type="submit" 
+        disabled={loading}
+        className="w-full bg-luxury-gold hover:bg-luxury-gold/90"
+      >
         {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
         {initialData ? 'Update Product' : 'Create Product'}
       </Button>
