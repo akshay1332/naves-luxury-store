@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 const PRODUCT_CATEGORIES = [
   "Dresses",
@@ -23,6 +24,20 @@ const Index = () => {
         .select("*")
         .eq("is_featured", true)
         .limit(3);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: bestSellers } = useQuery({
+    queryKey: ["best-sellers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_best_seller", true)
+        .limit(4);
       
       if (error) throw error;
       return data;
@@ -53,32 +68,78 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img
-            src="/placeholder.svg"
-            alt="Hero Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20" />
+          <div className="relative h-full w-full">
+            <img
+              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"
+              alt="Luxury Fashion"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
         </div>
         
-        <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl md:text-6xl font-serif font-light mb-6">
-            Timeless Elegance
-          </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-            Discover our collection of traditional clothing, where heritage meets contemporary style.
-          </p>
-          <Link
-            to="/products"
-            className="inline-block bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-md transition-colors"
+        <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-serif font-light mb-6"
           >
-            Explore Collection
-          </Link>
+            Zariya
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xl md:text-2xl mb-8 font-light"
+          >
+            For every chapter of your journey
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <Link
+              to="/products"
+              className="inline-block bg-luxury-gold hover:bg-luxury-gold/90 text-white px-8 py-3 rounded-md transition-colors"
+            >
+              Explore Collection
+            </Link>
+          </motion.div>
         </div>
       </section>
 
+      {/* Best Sellers Section */}
+      {bestSellers && bestSellers.length > 0 && (
+        <section className="py-20 px-4 bg-luxury-pearl">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-serif mb-4">Best Sellers</h2>
+              <p className="text-gray-600">Our most loved pieces</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {bestSellers.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
+            
+            <div className="text-center mt-12">
+              <Link
+                to="/products"
+                className="inline-flex items-center text-luxury-gold hover:text-luxury-gold/80 transition-colors"
+              >
+                View All Best Sellers
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Categories Section */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif mb-4">Shop by Category</h2>
@@ -103,24 +164,26 @@ const Index = () => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif mb-4">Featured Collection</h2>
-            <p className="text-gray-600">Curated pieces that define elegance</p>
+      {featuredProducts && featuredProducts.length > 0 && (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-serif mb-4">Featured Collection</h2>
+              <p className="text-gray-600">Curated pieces that define elegance</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts?.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Client Reviews Section */}
       {reviews && reviews.length > 0 && (
-        <section className="bg-gray-50 py-20 px-4">
+        <section className="bg-luxury-pearl py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-serif mb-4">Client Stories</h2>
