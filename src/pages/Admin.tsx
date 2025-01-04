@@ -19,12 +19,16 @@ import ProductForm from "@/components/admin/ProductForm";
 interface Product {
   id: string;
   title: string;
+  description: string;
   price: number;
+  sizes: string[];
+  colors: string[];
+  images: string[];
   stock_quantity: number;
-  created_at: string;
-  gender: string;
-  category: string;
+  is_featured: boolean;
   is_best_seller: boolean;
+  category: string;
+  gender: string;
 }
 
 export default function Admin() {
