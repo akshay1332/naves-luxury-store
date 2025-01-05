@@ -10,7 +10,9 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LuxuryLoader } from "@/components/LuxuryLoader";
 import ProductHeader from "@/components/product/ProductHeader";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,61 +96,94 @@ const ProductDetails = () => {
   }
 
   if (!product) {
-    return <div>Product not found</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <h2 className="text-2xl font-serif mb-4">Product not found</h2>
+        <Link to="/products" className="text-luxury-gold hover:text-luxury-gold/80 flex items-center">
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Back to Products
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-7xl mx-auto px-4 py-8"
-    >
-      <div className="grid md:grid-cols-2 gap-12">
+    <AnimatePresence mode="wait">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-8"
         >
-          <ProductImageGallery images={product.images} title={product.title} />
+          <Link 
+            to="/products"
+            className="inline-flex items-center text-luxury-gold hover:text-luxury-gold/80 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to Products
+          </Link>
         </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-12">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="sticky top-24"
+          >
+            <ProductImageGallery images={product.images} title={product.title} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-8"
+          >
+            <ProductHeader
+              title={product.title}
+              price={product.price}
+              category={product.category}
+            />
+            <ProductInfo
+              {...product}
+              selectedSize={selectedSize}
+              selectedColor={selectedColor}
+              quantity={quantity}
+              setSelectedSize={setSelectedSize}
+              setSelectedColor={setSelectedColor}
+              setQuantity={setQuantity}
+              onAddToCart={handleAddToCart}
+            />
+          </motion.div>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-16 bg-luxury-pearl/30 rounded-xl p-8"
         >
-          <ProductHeader
-            title={product.title}
-            price={product.price}
-            category={product.category}
-          />
-          <ProductInfo
-            {...product}
-            selectedSize={selectedSize}
-            selectedColor={selectedColor}
-            quantity={quantity}
-            setSelectedSize={setSelectedSize}
-            setSelectedColor={setSelectedColor}
-            setQuantity={setQuantity}
-            onAddToCart={handleAddToCart}
-          />
+          <div className="grid md:grid-cols-2 gap-12">
+            <ProductReviews
+              reviews={reviews || []}
+              onReviewsUpdate={refetchReviews}
+            />
+            <ReviewForm productId={id!} onSuccess={refetchReviews} />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-16"
+        >
+          <RelatedProducts currentProductId={id!} category={product.category} />
         </motion.div>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-16"
-      >
-        <div className="grid md:grid-cols-2 gap-12">
-          <ProductReviews
-            reviews={reviews || []}
-            onReviewsUpdate={refetchReviews}
-          />
-          <ReviewForm productId={id!} onSuccess={refetchReviews} />
-        </div>
-      </motion.div>
-
-      <RelatedProducts currentProductId={id!} category={product.category} />
-    </motion.div>
+    </AnimatePresence>
   );
 };
 
