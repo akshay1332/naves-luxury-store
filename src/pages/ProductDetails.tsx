@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LuxuryLoader } from "@/components/LuxuryLoader";
 import ProductHeader from "@/components/product/ProductHeader";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ProductDetails = () => {
@@ -20,6 +20,7 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
+  const [isWishlist, setIsWishlist] = useState(false);
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product", id],
@@ -91,15 +92,18 @@ const ProductDetails = () => {
     }
   };
 
-  if (productLoading || reviewsLoading) {
+  if (productLoading) {
     return <LuxuryLoader />;
   }
 
   if (!product) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-luxury-pearl/20">
         <h2 className="text-2xl font-serif mb-4">Product not found</h2>
-        <Link to="/products" className="text-luxury-gold hover:text-luxury-gold/80 flex items-center">
+        <Link 
+          to="/products" 
+          className="text-luxury-gold hover:text-luxury-gold/80 flex items-center transition-colors"
+        >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Products
         </Link>
@@ -109,12 +113,12 @@ const ProductDetails = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="mb-8"
+          className="mb-8 flex justify-between items-center"
         >
           <Link 
             to="/products"
@@ -123,14 +127,24 @@ const ProductDetails = () => {
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Products
           </Link>
+          <button
+            onClick={() => setIsWishlist(!isWishlist)}
+            className="p-2 rounded-full hover:bg-luxury-pearl/20 transition-colors"
+          >
+            <Heart 
+              className={`w-6 h-6 transition-colors ${
+                isWishlist ? 'fill-luxury-gold text-luxury-gold' : 'text-gray-400'
+              }`}
+            />
+          </button>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-12">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="sticky top-24"
+            className="sticky top-24 h-fit"
           >
             <ProductImageGallery images={product.images} title={product.title} />
           </motion.div>
@@ -139,7 +153,7 @@ const ProductDetails = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="space-y-8"
+            className="space-y-8 bg-white/50 backdrop-blur-sm rounded-xl p-8 h-fit"
           >
             <ProductHeader
               title={product.title}
@@ -163,9 +177,9 @@ const ProductDetails = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-16 bg-luxury-pearl/30 rounded-xl p-8"
+          className="mt-16 bg-gradient-to-br from-luxury-pearl/30 to-luxury-cream/30 rounded-xl p-8 backdrop-blur-sm"
         >
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-12">
             <ProductReviews
               reviews={reviews || []}
               onReviewsUpdate={refetchReviews}
@@ -180,6 +194,7 @@ const ProductDetails = () => {
           transition={{ delay: 0.5 }}
           className="mt-16"
         >
+          <h2 className="text-3xl font-serif mb-8 text-center">You May Also Like</h2>
           <RelatedProducts currentProductId={id!} category={product.category} />
         </motion.div>
       </div>
