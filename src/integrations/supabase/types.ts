@@ -104,6 +104,24 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          subscribed_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          subscribed_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -239,9 +257,14 @@ export type Database = {
           images: string[] | null
           is_best_seller: boolean | null
           is_featured: boolean | null
+          is_new_arrival: boolean | null
+          is_trending: boolean | null
           price: number
+          quick_view_data: Json | null
+          size_guide_info: Json | null
           sizes: string[] | null
           stock_quantity: number | null
+          style_category: string | null
           title: string
           updated_at: string
         }
@@ -255,9 +278,14 @@ export type Database = {
           images?: string[] | null
           is_best_seller?: boolean | null
           is_featured?: boolean | null
+          is_new_arrival?: boolean | null
+          is_trending?: boolean | null
           price: number
+          quick_view_data?: Json | null
+          size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
+          style_category?: string | null
           title: string
           updated_at?: string
         }
@@ -271,9 +299,14 @@ export type Database = {
           images?: string[] | null
           is_best_seller?: boolean | null
           is_featured?: boolean | null
+          is_new_arrival?: boolean | null
+          is_trending?: boolean | null
           price?: number
+          quick_view_data?: Json | null
+          size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
+          style_category?: string | null
           title?: string
           updated_at?: string
         }
@@ -327,6 +360,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recently_viewed: {
+        Row: {
+          id: string
+          product_id: string | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recently_viewed_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           admin_response: string | null
@@ -368,6 +437,68 @@ export type Database = {
           },
           {
             foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      style_guides: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_featured: boolean | null
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
