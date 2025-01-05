@@ -18,6 +18,16 @@ const PRODUCT_CATEGORIES = [
   "Other"
 ];
 
+const STYLE_CATEGORIES = [
+  "Casual",
+  "Formal",
+  "Sports",
+  "Ethnic",
+  "Party",
+  "Beach",
+  "Business"
+];
+
 const GENDER_OPTIONS = ["men", "women", "unisex"];
 
 interface BasicDetailsProps {
@@ -26,6 +36,7 @@ interface BasicDetailsProps {
     description: string;
     category: string;
     gender: string;
+    style_category?: string;
   };
 }
 
@@ -39,10 +50,11 @@ export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
           defaultValue={initialData?.title}
           required
           className="luxury-input"
+          placeholder="Enter product title"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Category</label>
           <Select name="category" defaultValue={initialData?.category}>
@@ -53,6 +65,22 @@ export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
               {PRODUCT_CATEGORIES.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Style</label>
+          <Select name="style_category" defaultValue={initialData?.style_category}>
+            <SelectTrigger className="luxury-input">
+              <SelectValue placeholder="Select style" />
+            </SelectTrigger>
+            <SelectContent>
+              {STYLE_CATEGORIES.map((style) => (
+                <SelectItem key={style} value={style}>
+                  {style}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -83,6 +111,7 @@ export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
           defaultValue={initialData?.description}
           required
           className="luxury-input min-h-[100px]"
+          placeholder="Enter product description"
         />
       </div>
     </div>
