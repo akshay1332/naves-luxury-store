@@ -104,6 +104,62 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          discount_percentage: number
+          id: string
+          max_discount_amount: number | null
+          min_purchase_amount: number | null
+          product_id: string | null
+          times_used: number | null
+          updated_at: string
+          usage_limit: number | null
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          discount_percentage: number
+          id?: string
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          product_id?: string | null
+          times_used?: number | null
+          updated_at?: string
+          usage_limit?: number | null
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          product_id?: string | null
+          times_used?: number | null
+          updated_at?: string
+          usage_limit?: number | null
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -210,7 +266,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          applied_coupon_id: string | null
           created_at: string
+          discount_amount: number | null
           id: string
           invoice_data: Json | null
           invoice_number: string | null
@@ -221,7 +279,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          applied_coupon_id?: string | null
           created_at?: string
+          discount_amount?: number | null
           id?: string
           invoice_data?: Json | null
           invoice_number?: string | null
@@ -232,7 +292,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          applied_coupon_id?: string | null
           created_at?: string
+          discount_amount?: number | null
           id?: string
           invoice_data?: Json | null
           invoice_number?: string | null
@@ -243,6 +305,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_applied_coupon_id_fkey"
+            columns: ["applied_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_user_id_fkey"
             columns: ["user_id"]
@@ -267,6 +336,9 @@ export type Database = {
           is_trending: boolean | null
           price: number
           quick_view_data: Json | null
+          sale_end_date: string | null
+          sale_percentage: number | null
+          sale_start_date: string | null
           size_guide_info: Json | null
           sizes: string[] | null
           stock_quantity: number | null
@@ -288,6 +360,9 @@ export type Database = {
           is_trending?: boolean | null
           price: number
           quick_view_data?: Json | null
+          sale_end_date?: string | null
+          sale_percentage?: number | null
+          sale_start_date?: string | null
           size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
@@ -309,6 +384,9 @@ export type Database = {
           is_trending?: boolean | null
           price?: number
           quick_view_data?: Json | null
+          sale_end_date?: string | null
+          sale_percentage?: number | null
+          sale_start_date?: string | null
           size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
@@ -517,7 +595,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_coupon: {
+        Args: {
+          p_coupon_code: string
+          p_total_amount: number
+          p_product_ids: string[]
+        }
+        Returns: {
+          valid: boolean
+          message: string
+          discount_amount: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

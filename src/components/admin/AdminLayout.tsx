@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   MessageSquare,
   Star,
+  Tag
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: ShoppingCart, label: "Orders", path: "/admin/orders" },
     { icon: MessageSquare, label: "Messages", path: "/admin/messages" },
     { icon: Star, label: "Reviews", path: "/admin/reviews" },
+    { icon: Tag, label: "Coupons", path: "/admin/coupons" },
   ];
 
   if (!isAdmin) {

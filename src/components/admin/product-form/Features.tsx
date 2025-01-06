@@ -1,6 +1,7 @@
-import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { motion } from "framer-motion";
+import { Percent } from "lucide-react";
 
 interface FeaturesProps {
   initialData?: {
@@ -8,36 +9,93 @@ interface FeaturesProps {
     is_best_seller: boolean;
     is_new_arrival?: boolean;
     is_trending?: boolean;
+    sale_percentage?: number;
+    sale_start_date?: string;
+    sale_end_date?: string;
   };
 }
 
 export const Features = ({ initialData }: FeaturesProps) => {
-  const features = [
-    { id: 'is_featured', label: 'Featured Product' },
-    { id: 'is_best_seller', label: 'Best Seller' },
-    { id: 'is_new_arrival', label: 'New Arrival' },
-    { id: 'is_trending', label: 'Trending' },
-  ];
-
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {features.map((feature, index) => (
-        <motion.div
-          key={feature.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="flex items-center space-x-2"
-        >
-          <Switch
-            name={feature.id}
-            id={feature.id}
-            defaultChecked={initialData?.[feature.id as keyof typeof initialData]}
-            className="data-[state=checked]:bg-luxury-gold"
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_featured"
+            name="is_featured"
+            defaultChecked={initialData?.is_featured}
           />
-          <Label htmlFor={feature.id}>{feature.label}</Label>
-        </motion.div>
-      ))}
+          <Label htmlFor="is_featured">Featured Product</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_best_seller"
+            name="is_best_seller"
+            defaultChecked={initialData?.is_best_seller}
+          />
+          <Label htmlFor="is_best_seller">Best Seller</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_new_arrival"
+            name="is_new_arrival"
+            defaultChecked={initialData?.is_new_arrival}
+          />
+          <Label htmlFor="is_new_arrival">New Arrival</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_trending"
+            name="is_trending"
+            defaultChecked={initialData?.is_trending}
+          />
+          <Label htmlFor="is_trending">Trending</Label>
+        </div>
+      </div>
+
+      <div className="border-t pt-4 mt-4">
+        <h4 className="text-sm font-medium mb-4">Sale Settings</h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="sale_percentage">Sale Discount (%)</Label>
+            <div className="relative">
+              <Percent className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="sale_percentage"
+                name="sale_percentage"
+                type="number"
+                min="0"
+                max="100"
+                defaultValue={initialData?.sale_percentage}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sale_start_date">Sale Start Date</Label>
+            <Input
+              id="sale_start_date"
+              name="sale_start_date"
+              type="datetime-local"
+              defaultValue={initialData?.sale_start_date}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sale_end_date">Sale End Date</Label>
+            <Input
+              id="sale_end_date"
+              name="sale_end_date"
+              type="datetime-local"
+              defaultValue={initialData?.sale_end_date}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
