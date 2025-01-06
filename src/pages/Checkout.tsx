@@ -94,6 +94,7 @@ const Checkout = () => {
 
       const total = subtotal - discountAmount;
 
+      // Create the order first
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -109,6 +110,7 @@ const Checkout = () => {
 
       if (orderError) throw orderError;
 
+      // Insert order items
       const orderItems = cartItems?.map(item => ({
         order_id: order.id,
         product_id: item.products.id,
@@ -126,9 +128,15 @@ const Checkout = () => {
 
       // Update coupon usage if one was applied
       if (appliedCouponId) {
-        await supabase.rpc('increment_coupon_usage', { coupon_id: appliedCouponId });
+        const { error: couponError } = await supabase
+          .from('coupons')
+          .update({ times_used: supabase.sql`times_used + 1` })
+          .eq('id', appliedCouponId);
+
+        if (couponError) throw couponError;
       }
 
+      // Clear cart
       await supabase
         .from('cart_items')
         .delete()
