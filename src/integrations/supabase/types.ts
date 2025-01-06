@@ -212,6 +212,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          invoice_data: Json | null
+          invoice_number: string | null
           shipping_address: Json | null
           status: string | null
           total_amount: number
@@ -221,6 +223,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          invoice_data?: Json | null
+          invoice_number?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_amount: number
@@ -230,6 +234,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          invoice_data?: Json | null
+          invoice_number?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_amount?: number

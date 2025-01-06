@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, X } from "lucide-react";
-import ProductFormFields from "./ProductFormFields";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import ProductFormFields from "./ProductFormFields";
+import { ProductFormHeader } from "./product-form/ProductFormHeader";
+import { ProductFormActions } from "./product-form/ProductFormActions";
 
 interface ProductFormProps {
   initialData?: {
@@ -105,6 +105,10 @@ const ProductForm = ({ initialData, onSuccess, onCancel }: ProductFormProps) => 
       exit={{ opacity: 0, y: -20 }}
     >
       <Card className="p-6">
+        <ProductFormHeader 
+          title={initialData ? 'Edit Product' : 'Add New Product'}
+          onCancel={onCancel || (() => navigate('/admin/products'))}
+        />
         <form onSubmit={handleSubmit} className="space-y-6">
           <ProductFormFields
             initialData={initialData}
@@ -113,29 +117,7 @@ const ProductForm = ({ initialData, onSuccess, onCancel }: ProductFormProps) => 
             onImageRemove={(index) => setImageUrls(prev => prev.filter((_, i) => i !== index))}
             imageUrls={imageUrls}
           />
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel || (() => navigate('/admin/products'))}
-              disabled={loading}
-            >
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="bg-luxury-gold hover:bg-luxury-gold/90"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              {initialData ? 'Update Product' : 'Create Product'}
-            </Button>
-          </div>
+          <ProductFormActions loading={loading} isEditing={!!initialData} />
         </form>
       </Card>
     </motion.div>
