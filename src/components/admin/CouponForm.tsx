@@ -33,14 +33,14 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
     try {
       const formData = new FormData(e.currentTarget);
       const couponData = {
-        code: formData.get('code'),
-        discount_percentage: parseInt(formData.get('discount_percentage') as string),
-        valid_from: formData.get('valid_from'),
-        valid_until: formData.get('valid_until'),
-        min_purchase_amount: parseFloat(formData.get('min_purchase_amount') as string),
-        max_discount_amount: parseFloat(formData.get('max_discount_amount') as string),
-        usage_limit: parseInt(formData.get('usage_limit') as string),
-        category: formData.get('category'),
+        code: String(formData.get('code')),
+        discount_percentage: parseInt(String(formData.get('discount_percentage'))),
+        valid_from: String(formData.get('valid_from')),
+        valid_until: String(formData.get('valid_until')),
+        min_purchase_amount: parseFloat(String(formData.get('min_purchase_amount'))),
+        max_discount_amount: parseFloat(String(formData.get('max_discount_amount'))),
+        usage_limit: parseInt(String(formData.get('usage_limit'))),
+        category: formData.get('category') ? String(formData.get('category')) : null,
       };
 
       if (initialData) {

@@ -5,9 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { ShippingAddressForm, type ShippingAddress } from "@/components/checkout/ShippingAddressForm";
 import { ShippingMethod } from "@/components/checkout/ShippingMethod";
 import { PaymentSection } from "@/components/checkout/PaymentSection";
+import { CouponSection } from "@/components/checkout/CouponSection";
 
 const Checkout = () => {
   const [loading, setLoading] = useState(false);
+  const [subtotal, setSubtotal] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
@@ -19,21 +23,53 @@ const Checkout = () => {
     country: "",
   });
 
-  // Check authentication status on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          variant: "destructive",
-          title: "Authentication required",
-          description: "Please log in to continue with checkout.",
-        });
-        navigate('/login');
-      }
-    };
     checkAuth();
-  }, [navigate, toast]);
+    calculateSubtotal();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please log in to continue with checkout.",
+      });
+      navigate('/login');
+    }
+  };
+
+  const calculateSubtotal = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: cartItems } = await supabase
+      .from('cart_items')
+      .select(`
+        quantity,
+        products (
+          id,
+          price,
+          sale_percentage
+        )
+      `)
+      .eq('user_id', user.id);
+
+    const total = cartItems?.reduce((sum, item) => {
+      const price = item.products?.price || 0;
+      const salePercentage = item.products?.sale_percentage || 0;
+      const discountedPrice = price * (1 - salePercentage / 100);
+      return sum + (item.quantity * discountedPrice);
+    }, 0) || 0;
+
+    setSubtotal(total);
+  };
+
+  const handleCouponApplied = (discount: number, couponId: string) => {
+    setDiscountAmount(discount);
+    setAppliedCouponId(couponId);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,17 +92,17 @@ const Checkout = () => {
         `)
         .eq('user_id', user.id);
 
-      const totalAmount = cartItems?.reduce((sum, item) => {
-        return sum + (item.quantity * (item.products?.price || 0));
-      }, 0) || 0;
+      const total = subtotal - discountAmount;
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
-          total_amount: totalAmount,
-          shipping_address: shippingAddress as Record<string, string>,
-          status: 'pending'
+          total_amount: total,
+          shipping_address: shippingAddress,
+          status: 'pending',
+          applied_coupon_id: appliedCouponId,
+          discount_amount: discountAmount
         })
         .select()
         .single();
@@ -86,6 +122,11 @@ const Checkout = () => {
           .insert(orderItems);
 
         if (itemsError) throw itemsError;
+      }
+
+      // Update coupon usage if one was applied
+      if (appliedCouponId) {
+        await supabase.rpc('increment_coupon_usage', { coupon_id: appliedCouponId });
       }
 
       await supabase
@@ -120,7 +161,16 @@ const Checkout = () => {
             setShippingAddress={setShippingAddress}
           />
           <ShippingMethod />
-          <PaymentSection loading={loading} />
+          <CouponSection
+            subtotal={subtotal}
+            onCouponApplied={handleCouponApplied}
+          />
+          <PaymentSection 
+            loading={loading}
+            subtotal={subtotal}
+            discountAmount={discountAmount}
+            total={subtotal - discountAmount}
+          />
         </form>
       </div>
     </div>

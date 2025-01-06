@@ -4,21 +4,35 @@ import { CreditCard } from "lucide-react";
 
 interface PaymentSectionProps {
   loading: boolean;
+  subtotal: number;
+  discountAmount: number;
+  total: number;
 }
 
-export const PaymentSection = ({ loading }: PaymentSectionProps) => {
+export const PaymentSection = ({ loading, subtotal, discountAmount, total }: PaymentSectionProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CreditCard className="w-5 h-5" />
-          Payment
+          Payment Summary
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-500">
-          Payment will be handled on the next step
-        </p>
+      <CardContent className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
+        </div>
+        {discountAmount > 0 && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span>Discount</span>
+            <span>-${discountAmount.toFixed(2)}</span>
+          </div>
+        )}
+        <div className="flex justify-between font-semibold border-t pt-2">
+          <span>Total</span>
+          <span>${total.toFixed(2)}</span>
+        </div>
       </CardContent>
       <CardFooter>
         <Button type="submit" className="w-full" disabled={loading}>
