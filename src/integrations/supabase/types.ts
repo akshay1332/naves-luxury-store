@@ -595,11 +595,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_coupon_usage: {
+        Args: {
+          coupon_id: string
+        }
+        Returns: undefined
+      }
       validate_coupon: {
         Args: {
           p_coupon_code: string
           p_total_amount: number
           p_product_ids: string[]
+        }
+        Returns: {
+          valid: boolean
+          message: string
+          discount_amount: number
+        }[]
+      }
+      validate_product_coupon: {
+        Args: {
+          p_coupon_code: string
+          p_product_id: string
+          p_total_amount: number
         }
         Returns: {
           valid: boolean
