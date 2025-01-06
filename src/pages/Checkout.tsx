@@ -129,9 +129,9 @@ const Checkout = () => {
       // Update coupon usage if one was applied
       if (appliedCouponId) {
         const { error: couponError } = await supabase
-          .from('coupons')
-          .update({ times_used: supabase.sql`times_used + 1` })
-          .eq('id', appliedCouponId);
+          .rpc('increment_coupon_usage', {
+            coupon_id: appliedCouponId
+          });
 
         if (couponError) throw couponError;
       }
