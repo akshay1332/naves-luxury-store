@@ -11,6 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LuxuryLoader } from "@/components/LuxuryLoader";
+import { useQuery } from "@tanstack/react-query";
+import { convertToINR } from "@/utils/currency";
 
 interface Invoice {
   id: string;
@@ -21,32 +24,32 @@ interface Invoice {
 }
 
 export const InvoiceSection = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchInvoices = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('orders')
-      .select('id, invoice_number, created_at, total_amount, invoice_data')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, invoice_number, created_at, total_amount, invoice_data')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch invoices",
-      });
-      return;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch invoices",
+        });
+        return [];
+      }
+
+      return data || [];
     }
-
-    setInvoices(data || []);
-    setLoading(false);
-  };
+  });
 
   const downloadInvoice = async (invoice: Invoice) => {
     // Here you would typically generate a PDF or fetch it from storage
@@ -64,14 +67,18 @@ export const InvoiceSection = () => {
     document.body.removeChild(a);
   };
 
-  if (loading) {
-    return <div>Loading invoices...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <LuxuryLoader />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Invoices</h2>
-      {invoices.length === 0 ? (
+      {!invoices || invoices.length === 0 ? (
         <p className="text-gray-500">No invoices yet</p>
       ) : (
         <Table>
@@ -90,7 +97,7 @@ export const InvoiceSection = () => {
                 <TableCell>
                   {new Date(invoice.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell>${invoice.total_amount}</TableCell>
+                <TableCell>{convertToINR(invoice.total_amount)}</TableCell>
                 <TableCell>
                   <Button
                     variant="outline"
