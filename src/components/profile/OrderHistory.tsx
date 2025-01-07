@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LuxuryLoader } from "@/components/LuxuryLoader";
+import { convertToINR } from "@/utils/currency";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +81,11 @@ export const OrderHistory = () => {
   };
 
   if (loading) {
-    return <div>Loading orders...</div>;
+    return (
+      <div className="flex justify-center items-center py-8">
+        <LuxuryLoader />
+      </div>
+    );
   }
 
   return (
@@ -118,7 +124,7 @@ export const OrderHistory = () => {
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell>${order.total_amount}</TableCell>
+                <TableCell>{convertToINR(order.total_amount)}</TableCell>
                 <TableCell>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
