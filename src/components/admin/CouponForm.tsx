@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Percent, Tag } from "lucide-react";
+import { Percent, Tag, Calendar, DollarSign, ShoppingBag, Hash } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CouponFormProps {
   onSuccess?: () => void;
@@ -72,63 +73,97 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
   };
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="code">Coupon Code</Label>
-            <div className="relative">
-              <Tag className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                id="code"
-                name="code"
-                defaultValue={initialData?.code}
-                className="pl-9"
-                required
-              />
-            </div>
-          </div>
+    <Card className="p-8 bg-white shadow-xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="code" className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-luxury-gold" />
+              Coupon Code
+            </Label>
+            <Input
+              id="code"
+              name="code"
+              defaultValue={initialData?.code}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
+              required
+            />
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="discount_percentage">Discount Percentage</Label>
-            <div className="relative">
-              <Percent className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                id="discount_percentage"
-                name="discount_percentage"
-                type="number"
-                min="0"
-                max="100"
-                defaultValue={initialData?.discount_percentage}
-                className="pl-9"
-                required
-              />
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="discount_percentage" className="flex items-center gap-2">
+              <Percent className="w-4 h-4 text-luxury-gold" />
+              Discount Percentage
+            </Label>
+            <Input
+              id="discount_percentage"
+              name="discount_percentage"
+              type="number"
+              min="0"
+              max="100"
+              defaultValue={initialData?.discount_percentage}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
+              required
+            />
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="valid_from">Valid From</Label>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="valid_from" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-luxury-gold" />
+              Valid From
+            </Label>
             <Input
               id="valid_from"
               name="valid_from"
               type="datetime-local"
               defaultValue={initialData?.valid_from}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
               required
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="valid_until">Valid Until</Label>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="valid_until" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-luxury-gold" />
+              Valid Until
+            </Label>
             <Input
               id="valid_until"
               name="valid_until"
               type="datetime-local"
               defaultValue={initialData?.valid_until}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="min_purchase_amount">Minimum Purchase Amount</Label>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="min_purchase_amount" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-luxury-gold" />
+              Minimum Purchase Amount
+            </Label>
             <Input
               id="min_purchase_amount"
               name="min_purchase_amount"
@@ -136,11 +171,20 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
               min="0"
               step="0.01"
               defaultValue={initialData?.min_purchase_amount}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="max_discount_amount">Maximum Discount Amount</Label>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="max_discount_amount" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-luxury-gold" />
+              Maximum Discount Amount
+            </Label>
             <Input
               id="max_discount_amount"
               name="max_discount_amount"
@@ -148,33 +192,62 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
               min="0"
               step="0.01"
               defaultValue={initialData?.max_discount_amount}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="usage_limit">Usage Limit</Label>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="usage_limit" className="flex items-center gap-2">
+              <Hash className="w-4 h-4 text-luxury-gold" />
+              Usage Limit
+            </Label>
             <Input
               id="usage_limit"
               name="usage_limit"
               type="number"
               min="0"
               defaultValue={initialData?.usage_limit}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Category (Optional)</Label>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="category" className="flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4 text-luxury-gold" />
+              Category (Optional)
+            </Label>
             <Input
               id="category"
               name="category"
               defaultValue={initialData?.category}
+              className="border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
             />
-          </div>
+          </motion.div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Saving..." : initialData ? "Update Coupon" : "Create Coupon"}
-        </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Button
+            type="submit"
+            className="w-full bg-luxury-gold hover:bg-luxury-gold/90 text-white transition-colors"
+            disabled={loading}
+          >
+            {loading ? "Saving..." : initialData ? "Update Coupon" : "Create Coupon"}
+          </Button>
+        </motion.div>
       </form>
     </Card>
   );
