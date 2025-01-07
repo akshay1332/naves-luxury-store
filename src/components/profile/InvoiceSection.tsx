@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -9,11 +8,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LuxuryLoader } from "@/components/LuxuryLoader";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { convertToINR } from "@/utils/currency";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Invoice {
   id: string;
@@ -25,6 +35,7 @@ interface Invoice {
 
 export const InvoiceSection = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
@@ -50,6 +61,28 @@ export const InvoiceSection = () => {
       return data || [];
     }
   });
+
+  const handleDelete = async (invoiceId: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', invoiceId);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete invoice",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Invoice deleted successfully",
+    });
+    queryClient.invalidateQueries({ queryKey: ['invoices'] });
+  };
 
   const downloadInvoice = async (invoice: Invoice) => {
     // Here you would typically generate a PDF or fetch it from storage
@@ -99,14 +132,37 @@ export const InvoiceSection = () => {
                 </TableCell>
                 <TableCell>{convertToINR(invoice.total_amount)}</TableCell>
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => downloadInvoice(invoice)}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadInvoice(invoice)}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this invoice? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(invoice.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
