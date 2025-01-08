@@ -2,14 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tag, ChevronDown } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Tag } from "lucide-react";
+import { CouponInput } from "./coupon/CouponInput";
+import { AvailableCoupons } from "./coupon/AvailableCoupons";
 
 interface CouponSectionProps {
   subtotal: number;
@@ -36,23 +31,22 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
 
   const fetchAvailableCoupons = async () => {
     try {
-      const now = new Date().toISOString();
-      
       let query = supabase
         .from('coupons')
         .select('id, code, discount_percentage')
-        .gte('valid_from', now)
-        .is('valid_until', null)
-        .or('valid_until.gte.now');
+        .gte('valid_from', new Date().toISOString());
 
-      // Add product-specific filter
+      // Handle valid_until condition
+      query = query.or('valid_until.is.null,valid_until.gte.now()');
+
+      // Handle product_id filter
       if (productId) {
         query = query.or(`product_id.eq.${productId},product_id.is.null`);
       } else {
         query = query.is('product_id', null);
       }
 
-      // Add usage limit filter as a separate condition
+      // Handle usage limit
       query = query.or('usage_limit.is.null,times_used.lt.usage_limit');
 
       const { data: coupons, error } = await query;
@@ -61,7 +55,7 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
         console.error('Error fetching coupons:', error);
         throw error;
       }
-      
+
       setAvailableCoupons(coupons || []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
@@ -134,49 +128,18 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Enter coupon code"
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value)}
-          />
-          <Button 
-            onClick={validateCoupon} 
-            disabled={loading || !couponCode}
-          >
-            {loading ? "Validating..." : "Apply"}
-          </Button>
-        </div>
-
-        {availableCoupons.length > 0 && (
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full flex justify-between items-center">
-                Available Coupons
-                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-2">
-              {availableCoupons.map((coupon) => (
-                <div
-                  key={coupon.id}
-                  className="flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50"
-                >
-                  <div>
-                    <p className="font-medium">{coupon.code}</p>
-                    <p className="text-sm text-gray-500">{coupon.discount_percentage}% off</p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    onClick={() => applyCoupon(coupon.code)}
-                  >
-                    Apply
-                  </Button>
-                </div>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
-        )}
+        <CouponInput
+          couponCode={couponCode}
+          onChange={setCouponCode}
+          onApply={validateCoupon}
+          loading={loading}
+        />
+        <AvailableCoupons
+          coupons={availableCoupons}
+          onApply={applyCoupon}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        />
       </CardContent>
     </Card>
   );
