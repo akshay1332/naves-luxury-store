@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Percent, Calendar } from "lucide-react";
+import { Percent, Calendar, Tag } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,15 @@ export const Features = ({ initialData }: FeaturesProps) => {
   const [endDate, setEndDate] = useState<Date | undefined>(
     initialData?.sale_end_date ? new Date(initialData.sale_end_date) : undefined
   );
+  const [salePercentage, setSalePercentage] = useState<number | undefined>(
+    initialData?.sale_percentage
+  );
+
+  const generateCouponCode = (title: string, percentage: number) => {
+    if (!title || !percentage) return '';
+    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    return `${cleanTitle.substring(0, 4)}${percentage}OFF`;
+  };
 
   return (
     <div className="space-y-6">
@@ -70,10 +79,10 @@ export const Features = ({ initialData }: FeaturesProps) => {
       </div>
 
       <div className="border-t pt-6">
-        <h4 className="text-lg font-medium mb-4">Sale Settings</h4>
+        <h4 className="text-lg font-medium mb-4">Sale Settings & Coupon</h4>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="sale_percentage">Sale Discount (%) - Will generate coupon code</Label>
+            <Label htmlFor="sale_percentage">Sale Discount (%)</Label>
             <div className="relative">
               <Percent className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
               <Input
@@ -85,10 +94,28 @@ export const Features = ({ initialData }: FeaturesProps) => {
                 defaultValue={initialData?.sale_percentage}
                 className="pl-9"
                 placeholder="Enter sale percentage"
+                onChange={(e) => setSalePercentage(parseInt(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Generated Coupon Code</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                name="coupon_code"
+                readOnly
+                className="pl-9 bg-gray-50"
+                value={generateCouponCode(
+                  document.querySelector<HTMLInputElement>('input[name="title"]')?.value || '',
+                  salePercentage || 0
+                )}
+                placeholder="Coupon code will be generated automatically"
               />
             </div>
             <p className="text-sm text-gray-500">
-              This will automatically generate a coupon code for the product with this discount
+              This coupon code will be automatically generated and linked to this product
             </p>
           </div>
 

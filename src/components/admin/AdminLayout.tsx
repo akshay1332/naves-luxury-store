@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
-  Package,
   Users,
   ShoppingCart,
   MessageSquare,
@@ -47,7 +46,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-    { icon: Package, label: "Products", path: "/admin/products" },
     { icon: Users, label: "Users", path: "/admin/users" },
     { icon: ShoppingCart, label: "Orders", path: "/admin/orders" },
     { icon: MessageSquare, label: "Messages", path: "/admin/messages" },
