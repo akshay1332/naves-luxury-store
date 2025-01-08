@@ -36,18 +36,18 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
         .select('id, code, discount_percentage')
         .gte('valid_from', new Date().toISOString());
 
-      // Handle valid_until condition
+      // Add valid_until condition
       query = query.or('valid_until.is.null,valid_until.gte.now()');
 
-      // Handle product_id filter
+      // Add product_id filter
       if (productId) {
         query = query.or(`product_id.eq.${productId},product_id.is.null`);
       } else {
         query = query.is('product_id', null);
       }
 
-      // Handle usage limit
-      query = query.or('usage_limit.is.null,times_used.lt.usage_limit');
+      // Add usage limit condition - fixed syntax
+      query = query.or('usage_limit.is.null,and(times_used.lt.usage_limit)');
 
       const { data: coupons, error } = await query;
 
