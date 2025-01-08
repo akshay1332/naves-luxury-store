@@ -36,13 +36,21 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
 
   const fetchAvailableCoupons = async () => {
     try {
-      const { data: coupons, error } = await supabase
+      let query = supabase
         .from('coupons')
         .select('id, code, discount_percentage')
-        .or(`product_id.eq.${productId},product_id.is.null`)
         .gte('valid_from', new Date().toISOString())
         .or('valid_until.is.null,valid_until.gte.now()')
         .or('usage_limit.is.null,times_used.lt.usage_limit');
+
+      // Only add product_id filter if productId is provided
+      if (productId) {
+        query = query.or(`product_id.eq.${productId},product_id.is.null`);
+      } else {
+        query = query.is('product_id', null);
+      }
+
+      const { data: coupons, error } = await query;
 
       if (error) throw error;
       setAvailableCoupons(coupons || []);
