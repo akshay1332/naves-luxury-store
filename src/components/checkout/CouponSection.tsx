@@ -1,20 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tag } from "lucide-react";
+import { Tag, ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface CouponSectionProps {
   subtotal: number;
   onCouponApplied: (discountAmount: number, couponId: string) => void;
+  productId?: string;
 }
 
-export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps) => {
+interface Coupon {
+  id: string;
+  code: string;
+  discount_percentage: number;
+}
+
+export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSectionProps) => {
   const [couponCode, setCouponCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchAvailableCoupons();
+  }, [productId]);
+
+  const fetchAvailableCoupons = async () => {
+    try {
+      const { data: coupons, error } = await supabase
+        .from('coupons')
+        .select('id, code, discount_percentage')
+        .or(`product_id.eq.${productId},product_id.is.null`)
+        .gte('valid_from', new Date().toISOString())
+        .or('valid_until.is.null,valid_until.gte.now()')
+        .or('usage_limit.is.null,times_used.lt.usage_limit');
+
+      if (error) throw error;
+      setAvailableCoupons(coupons || []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  };
 
   const validateCoupon = async () => {
     setLoading(true);
@@ -23,7 +58,7 @@ export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps)
         .rpc('validate_coupon', {
           p_coupon_code: couponCode,
           p_total_amount: subtotal,
-          p_product_ids: []
+          p_product_ids: productId ? [productId] : []
         });
 
       if (error) throw error;
@@ -39,7 +74,6 @@ export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps)
         return;
       }
 
-      // Get coupon ID
       const { data: couponData } = await supabase
         .from('coupons')
         .select('id')
@@ -64,6 +98,11 @@ export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps)
     }
   };
 
+  const applyCoupon = (code: string) => {
+    setCouponCode(code);
+    validateCoupon();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -72,7 +111,7 @@ export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps)
           Apply Coupon
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="flex gap-2">
           <Input
             placeholder="Enter coupon code"
@@ -86,6 +125,36 @@ export const CouponSection = ({ subtotal, onCouponApplied }: CouponSectionProps)
             {loading ? "Validating..." : "Apply"}
           </Button>
         </div>
+
+        {availableCoupons.length > 0 && (
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full flex justify-between items-center">
+                Available Coupons
+                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 space-y-2">
+              {availableCoupons.map((coupon) => (
+                <div
+                  key={coupon.id}
+                  className="flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50"
+                >
+                  <div>
+                    <p className="font-medium">{coupon.code}</p>
+                    <p className="text-sm text-gray-500">{coupon.discount_percentage}% off</p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={() => applyCoupon(coupon.code)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </CardContent>
     </Card>
   );
