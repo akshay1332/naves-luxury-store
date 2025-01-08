@@ -1,7 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Percent } from "lucide-react";
+import { Percent, Calendar } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useState } from "react";
 
 interface FeaturesProps {
   initialData?: {
@@ -16,8 +22,15 @@ interface FeaturesProps {
 }
 
 export const Features = ({ initialData }: FeaturesProps) => {
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    initialData?.sale_start_date ? new Date(initialData.sale_start_date) : undefined
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    initialData?.sale_end_date ? new Date(initialData.sale_end_date) : undefined
+  );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -56,11 +69,11 @@ export const Features = ({ initialData }: FeaturesProps) => {
         </div>
       </div>
 
-      <div className="border-t pt-4 mt-4">
-        <h4 className="text-sm font-medium mb-4">Sale Settings</h4>
-        <div className="grid grid-cols-3 gap-4">
+      <div className="border-t pt-6">
+        <h4 className="text-lg font-medium mb-4">Sale Settings</h4>
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="sale_percentage">Sale Discount (%)</Label>
+            <Label htmlFor="sale_percentage">Sale Discount (%) - Will generate coupon code</Label>
             <div className="relative">
               <Percent className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
               <Input
@@ -71,28 +84,80 @@ export const Features = ({ initialData }: FeaturesProps) => {
                 max="100"
                 defaultValue={initialData?.sale_percentage}
                 className="pl-9"
+                placeholder="Enter sale percentage"
               />
             </div>
+            <p className="text-sm text-gray-500">
+              This will automatically generate a coupon code for the product with this discount
+            </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="sale_start_date">Sale Start Date</Label>
-            <Input
-              id="sale_start_date"
-              name="sale_start_date"
-              type="datetime-local"
-              defaultValue={initialData?.sale_start_date}
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Sale Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(date) => {
+                      setStartDate(date);
+                      const input = document.createElement('input');
+                      input.type = 'hidden';
+                      input.name = 'sale_start_date';
+                      input.value = date ? date.toISOString() : '';
+                      document.querySelector('form')?.appendChild(input);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="sale_end_date">Sale End Date</Label>
-            <Input
-              id="sale_end_date"
-              name="sale_end_date"
-              type="datetime-local"
-              defaultValue={initialData?.sale_end_date}
-            />
+            <div className="space-y-2">
+              <Label>Sale End Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(date) => {
+                      setEndDate(date);
+                      const input = document.createElement('input');
+                      input.type = 'hidden';
+                      input.name = 'sale_end_date';
+                      input.value = date ? date.toISOString() : '';
+                      document.querySelector('form')?.appendChild(input);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
       </div>
