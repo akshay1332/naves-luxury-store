@@ -36,26 +36,40 @@ export const CouponSection = ({ subtotal, onCouponApplied, productId }: CouponSe
 
   const fetchAvailableCoupons = async () => {
     try {
+      const now = new Date().toISOString();
+      
       let query = supabase
         .from('coupons')
         .select('id, code, discount_percentage')
-        .gte('valid_from', new Date().toISOString())
-        .or('valid_until.is.null,valid_until.gte.now()')
-        .or('usage_limit.is.null,times_used.lt.usage_limit');
+        .gte('valid_from', now)
+        .is('valid_until', null)
+        .or('valid_until.gte.now');
 
-      // Only add product_id filter if productId is provided
+      // Add product-specific filter
       if (productId) {
         query = query.or(`product_id.eq.${productId},product_id.is.null`);
       } else {
         query = query.is('product_id', null);
       }
 
+      // Add usage limit filter as a separate condition
+      query = query.or('usage_limit.is.null,times_used.lt.usage_limit');
+
       const { data: coupons, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching coupons:', error);
+        throw error;
+      }
+      
       setAvailableCoupons(coupons || []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch available coupons",
+      });
     }
   };
 
