@@ -28,48 +28,14 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const checkCouponExists = async (code: string, currentId?: string) => {
-    const query = supabase
-      .from('coupons')
-      .select('id')
-      .eq('code', code);
-    
-    if (currentId) {
-      query.neq('id', currentId);
-    }
-
-    const { data, error } = await query.single();
-    
-    if (error && error.code === 'PGRST116') {
-      // No data found, code is unique
-      return false;
-    }
-    
-    return !!data;
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const formData = new FormData(e.currentTarget);
-      const code = String(formData.get('code'));
-
-      // Check if coupon code already exists
-      const exists = await checkCouponExists(code, initialData?.id);
-      if (exists) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "A coupon with this code already exists.",
-        });
-        setLoading(false);
-        return;
-      }
-
       const couponData = {
-        code,
+        code: String(formData.get('code')),
         discount_percentage: parseInt(String(formData.get('discount_percentage'))),
         valid_from: String(formData.get('valid_from')),
         valid_until: String(formData.get('valid_until')),
@@ -79,19 +45,52 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
         category: formData.get('category') ? String(formData.get('category')) : null,
       };
 
+      let error;
+      
       if (initialData) {
-        const { error } = await supabase
+        // Check if we're trying to update to an existing code
+        const { data: existingCoupon } = await supabase
+          .from('coupons')
+          .select('id')
+          .eq('code', couponData.code)
+          .neq('id', initialData.id)
+          .single();
+
+        if (existingCoupon) {
+          throw new Error('A coupon with this code already exists.');
+        }
+
+        const result = await supabase
           .from('coupons')
           .update(couponData)
           .eq('id', initialData.id);
-
-        if (error) throw error;
+          
+        error = result.error;
       } else {
-        const { error } = await supabase
+        // Check if code already exists before inserting
+        const { data: existingCoupon } = await supabase
+          .from('coupons')
+          .select('id')
+          .eq('code', couponData.code)
+          .single();
+
+        if (existingCoupon) {
+          throw new Error('A coupon with this code already exists.');
+        }
+
+        const result = await supabase
           .from('coupons')
           .insert(couponData);
+          
+        error = result.error;
+      }
 
-        if (error) throw error;
+      if (error) {
+        // Handle specific Supabase error codes
+        if (error.code === '23505') {
+          throw new Error('A coupon with this code already exists.');
+        }
+        throw error;
       }
 
       toast({
@@ -105,7 +104,7 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message || 'Failed to save coupon.',
       });
     } finally {
       setLoading(false);
