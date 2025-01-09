@@ -55,6 +55,61 @@ const ProductDetails = () => {
     },
   });
 
+  const handleAddToCart = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to add items to your cart",
+        });
+        return;
+      }
+
+      if (product.stock_quantity < quantity) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Not enough stock available",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('cart_items')
+        .insert({
+          user_id: user.id,
+          product_id: id,
+          quantity,
+          size: selectedSize || null,
+          color: selectedColor || null,
+        });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to add item to cart",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Item added to cart",
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred",
+      });
+    }
+  };
+
   if (productLoading) {
     return <LuxuryLoader />;
   }
