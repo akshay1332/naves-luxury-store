@@ -64,23 +64,32 @@ export default function Admin() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
+      // First, delete any associated coupons
+      const { error: couponError } = await supabase
+        .from('coupons')
+        .delete()
+        .eq('product_id', id);
+
+      if (couponError) throw couponError;
+
+      // Then delete the product
+      const { error: productError } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (productError) throw productError;
 
       toast({
         title: "Success",
-        description: "Product deleted successfully.",
+        description: "Product and associated coupons deleted successfully.",
       });
       fetchProducts();
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete product.",
+        description: error.message || "Failed to delete product.",
       });
     }
   };
