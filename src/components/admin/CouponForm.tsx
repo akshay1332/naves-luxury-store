@@ -28,14 +28,48 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
+  const checkCouponExists = async (code: string, currentId?: string) => {
+    const query = supabase
+      .from('coupons')
+      .select('id')
+      .eq('code', code);
+    
+    if (currentId) {
+      query.neq('id', currentId);
+    }
+
+    const { data, error } = await query.single();
+    
+    if (error && error.code === 'PGRST116') {
+      // No data found, code is unique
+      return false;
+    }
+    
+    return !!data;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const formData = new FormData(e.currentTarget);
+      const code = String(formData.get('code'));
+
+      // Check if coupon code already exists
+      const exists = await checkCouponExists(code, initialData?.id);
+      if (exists) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "A coupon with this code already exists.",
+        });
+        setLoading(false);
+        return;
+      }
+
       const couponData = {
-        code: String(formData.get('code')),
+        code,
         discount_percentage: parseInt(String(formData.get('discount_percentage'))),
         valid_from: String(formData.get('valid_from')),
         valid_until: String(formData.get('valid_until')),
@@ -46,14 +80,18 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
       };
 
       if (initialData) {
-        await supabase
+        const { error } = await supabase
           .from('coupons')
           .update(couponData)
           .eq('id', initialData.id);
+
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from('coupons')
           .insert(couponData);
+
+        if (error) throw error;
       }
 
       toast({
@@ -63,6 +101,7 @@ export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
 
       if (onSuccess) onSuccess();
     } catch (error: any) {
+      console.error('Error saving coupon:', error);
       toast({
         variant: "destructive",
         title: "Error",
