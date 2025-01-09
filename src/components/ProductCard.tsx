@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { convertToINR } from "@/utils/currency";
 import { Percent } from "lucide-react";
+import { useState } from "react";
 
 interface ProductCardProps {
   id: string;
@@ -12,6 +13,7 @@ interface ProductCardProps {
   sale_percentage?: number;
   sale_start_date?: string;
   sale_end_date?: string;
+  video_url?: string;
 }
 
 const ProductCard = ({ 
@@ -22,8 +24,10 @@ const ProductCard = ({
   category,
   sale_percentage,
   sale_start_date,
-  sale_end_date 
+  sale_end_date,
+  video_url 
 }: ProductCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isSaleActive = sale_percentage && sale_start_date && sale_end_date && 
     new Date(sale_start_date) <= new Date() && new Date(sale_end_date) >= new Date();
 
@@ -38,13 +42,29 @@ const ProductCard = ({
       transition={{ duration: 0.5 }}
       whileHover={{ y: -5 }}
     >
-      <Link to={`/products/${id}`} className="block group">
+      <Link 
+        to={`/products/${id}`} 
+        className="block group"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className="relative overflow-hidden rounded-xl bg-gray-100 aspect-square">
-          <motion.img
-            src={images?.[0] || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"}
-            alt={title}
-            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
-          />
+          {video_url && isHovered ? (
+            <video
+              src={video_url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover object-center"
+            />
+          ) : (
+            <motion.img
+              src={images?.[0] || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"}
+              alt={title}
+              className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
+            />
+          )}
           {category && (
             <div className="absolute top-4 left-4">
               <motion.span

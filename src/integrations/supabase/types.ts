@@ -345,6 +345,7 @@ export type Database = {
           style_category: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           category?: string | null
@@ -369,6 +370,7 @@ export type Database = {
           style_category?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           category?: string | null
@@ -393,6 +395,7 @@ export type Database = {
           style_category?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

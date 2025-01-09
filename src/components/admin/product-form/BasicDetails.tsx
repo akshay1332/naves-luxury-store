@@ -37,6 +37,7 @@ interface BasicDetailsProps {
     category: string;
     gender: string;
     style_category?: string;
+    video_url?: string;
   };
 }
 
@@ -102,6 +103,18 @@ export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Video URL</label>
+        <Input
+          name="video_url"
+          defaultValue={initialData?.video_url}
+          className="luxury-input"
+          placeholder="Enter product video URL"
+          type="url"
+        />
+        <p className="text-sm text-gray-500">Add a video URL to show on hover (optional)</p>
       </div>
 
       <div className="space-y-2">
