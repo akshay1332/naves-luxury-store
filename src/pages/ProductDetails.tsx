@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import ProductImageGallery from "@/components/product/ProductImageGallery";
+import ProductMediaGallery from "@/components/product/ProductMediaGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
@@ -54,43 +54,6 @@ const ProductDetails = () => {
       return data;
     },
   });
-
-  const handleAddToCart = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please login to add items to cart",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from("cart_items")
-        .insert({
-          user_id: user.id,
-          product_id: id,
-          quantity,
-          size: selectedSize,
-          color: selectedColor,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Item added to cart",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add item to cart",
-      });
-    }
-  };
 
   if (productLoading) {
     return <LuxuryLoader />;
@@ -146,7 +109,11 @@ const ProductDetails = () => {
             transition={{ delay: 0.2 }}
             className="sticky top-24 h-fit"
           >
-            <ProductImageGallery images={product.images} title={product.title} />
+            <ProductMediaGallery 
+              images={product.images} 
+              title={product.title} 
+              video_url={product.video_url}
+            />
           </motion.div>
 
           <motion.div
