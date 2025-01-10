@@ -18,6 +18,27 @@ const FeaturedSection = () => {
     },
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   if (!featuredProducts || featuredProducts.length === 0) return null;
 
   return (
@@ -27,25 +48,47 @@ const FeaturedSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-serif mb-4">Featured Collection</h2>
-          <p className="text-gray-600">Curated pieces that define elegance</p>
+          <motion.h2 
+            className="text-3xl md:text-4xl font-serif mb-4"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            Featured Collection
+          </motion.h2>
+          <motion.p 
+            className="text-gray-600"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
+            Curated pieces that define elegance
+          </motion.p>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredProducts.map((product, index) => (
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {featuredProducts.map((product) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              variants={itemVariants}
+              whileHover={{ 
+                scale: 1.03,
+                transition: { duration: 0.2 }
+              }}
             >
               <ProductCard {...product} />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
