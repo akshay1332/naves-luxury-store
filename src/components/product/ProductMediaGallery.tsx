@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductMediaGalleryProps {
   images: string[];
@@ -11,6 +12,8 @@ interface ProductMediaGalleryProps {
 const ProductMediaGallery = ({ images, title, video_url }: ProductMediaGalleryProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isMobile = useIsMobile();
 
   const nextMedia = () => {
     if (showVideo) {
@@ -32,9 +35,13 @@ const ProductMediaGallery = ({ images, title, video_url }: ProductMediaGalleryPr
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-square rounded-xl overflow-hidden bg-luxury-pearl/20">
+      <div 
+        className="relative aspect-square rounded-xl overflow-hidden bg-luxury-pearl/20"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <AnimatePresence mode="wait">
-          {showVideo && video_url ? (
+          {(showVideo || (isHovered && video_url && !isMobile)) ? (
             <motion.video
               key="video"
               src={video_url}
@@ -76,7 +83,7 @@ const ProductMediaGallery = ({ images, title, video_url }: ProductMediaGalleryPr
         </button>
       </div>
       
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-2 md:gap-4">
         {images.map((image, index) => (
           <button
             key={index}
@@ -110,7 +117,7 @@ const ProductMediaGallery = ({ images, title, video_url }: ProductMediaGalleryPr
             />
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center">
-                <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-luxury-gold border-b-8 border-b-transparent ml-1" />
+                <Play className="w-6 h-6 text-luxury-gold ml-1" />
               </div>
             </div>
           </button>
