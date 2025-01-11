@@ -1,0 +1,13 @@
+@layer components {
+  [data-radix-popper-content-wrapper] {
+    @apply z-50;
+  }
+
+  .dropdown-content {
+    @apply bg-white border shadow-lg rounded-md overflow-hidden;
+  }
+
+  .dropdown-item {
+    @apply px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer transition-colors;
+  }
+}

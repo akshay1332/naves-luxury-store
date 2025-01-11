@@ -1,0 +1,53 @@
+@layer components {
+  .nav-link {
+    @apply relative text-sm font-medium tracking-wide transition-colors hover:text-primary;
+  }
+  
+  .nav-link::after {
+    @apply content-[''] absolute left-0 -bottom-1 h-[2px] w-0 bg-luxury-gold transition-all duration-300;
+  }
+  
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .product-card {
+    @apply relative overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-xl;
+  }
+
+  .product-card-image {
+    @apply aspect-square w-full object-cover transition-transform duration-500;
+  }
+
+  .product-card:hover .product-card-image {
+    @apply scale-105;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md bg-luxury-gold px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md border border-luxury-gold bg-transparent px-6 py-3 text-sm font-medium text-luxury-gold transition-colors hover:bg-luxury-gold hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  .luxury-input {
+    @apply rounded-md border-luxury-gold/20 bg-luxury-pearl/10 px-4 py-2 focus:border-luxury-gold focus:ring-luxury-gold;
+  }
+
+  .luxury-card {
+    @apply rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl;
+  }
+
+  .section-heading {
+    @apply relative mb-8 text-center;
+  }
+
+  .section-heading::after {
+    @apply absolute bottom-0 left-1/2 h-0.5 w-24 -translate-x-1/2 bg-luxury-gold content-[''];
+  }
+
+  .price-inr {
+    @apply font-serif text-lg font-semibold text-luxury-gold;
+  }
+}
