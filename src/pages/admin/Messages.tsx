@@ -34,6 +34,27 @@ export default function AdminMessages() {
 
   useEffect(() => {
     fetchMessages();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('contact_messages_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contact_messages'
+        },
+        (payload) => {
+          console.log('Real-time update:', payload);
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchMessages = async () => {
@@ -176,4 +197,4 @@ export default function AdminMessages() {
       </div>
     </AdminLayout>
   );
-}
+};

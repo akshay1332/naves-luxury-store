@@ -69,12 +69,9 @@ const Navbar = () => {
               <DropdownMenuTrigger className="nav-link">
                 <User className="h-5 w-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg">
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
                   Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/orders')}>
-                  Orders
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/admin')}>
                   Admin Dashboard
@@ -152,13 +149,6 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               Profile
-            </Link>
-            <Link
-              to="/orders"
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              Orders
             </Link>
             <button
               onClick={handleLogout}

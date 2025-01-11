@@ -28,9 +28,23 @@ export const ContactForm = () => {
           message: formData.get('message') as string,
           name: formData.get('name') as string,
           user_id: user?.id,
-        }]);
+          status: 'pending'
+        }])
+        .select();
 
       if (error) throw error;
+
+      // Create a notification for admin users
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert([{
+          title: 'New Contact Message',
+          message: `New message from ${formData.get('name')}: ${formData.get('subject')}`,
+          type: 'contact_message',
+          user_id: user?.id || '',
+        }]);
+
+      if (notifError) console.error('Error creating notification:', notifError);
 
       toast({
         title: "Message Sent",
