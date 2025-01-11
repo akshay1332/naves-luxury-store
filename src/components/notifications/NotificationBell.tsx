@@ -26,7 +26,6 @@ export const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
     
-    // Subscribe to notifications channel
     const channel = supabase
       .channel('notifications')
       .on('postgres_changes', { 
@@ -75,6 +74,8 @@ export const NotificationBell = () => {
         return '📦';
       case 'review_response':
         return '💬';
+      case 'contact_message':
+        return '✉️';
       default:
         return '🔔';
     }
@@ -103,7 +104,7 @@ export const NotificationBell = () => {
           </AnimatePresence>
         </motion.div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-80 bg-white border shadow-lg">
         <AnimatePresence>
           {notifications.length === 0 ? (
             <DropdownMenuItem>
@@ -118,7 +119,7 @@ export const NotificationBell = () => {
                 exit={{ opacity: 0, y: -10 }}
               >
                 <DropdownMenuItem
-                  className={`p-4 ${!notification.read ? 'bg-gray-50' : ''}`}
+                  className={`p-4 hover:bg-gray-50 ${!notification.read ? 'bg-gray-50' : 'bg-white'}`}
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex gap-3">
