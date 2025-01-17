@@ -10,6 +10,8 @@ const AuthForm = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // Clear any existing tokens from localStorage
+        localStorage.removeItem('supabase.auth.token');
         navigate('/admin');
       }
     });
@@ -56,7 +58,7 @@ const AuthForm = () => {
             },
           }}
           providers={[]}
-          redirectTo={`${window.location.origin}/admin`}
+          redirectTo={window.location.origin}
           onlyThirdPartyProviders={false}
           magicLink={false}
           localization={{
