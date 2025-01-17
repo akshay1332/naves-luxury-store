@@ -39,7 +39,7 @@ const Login = () => {
         // Clear any existing tokens from localStorage
         localStorage.removeItem('supabase.auth.token');
         
-        supabase
+        void supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
@@ -51,7 +51,9 @@ const Login = () => {
               navigate('/');
             }
           })
-          .catch(console.error);
+          .catch((error: Error) => {
+            console.error('Error checking profile:', error);
+          });
       }
     });
 
