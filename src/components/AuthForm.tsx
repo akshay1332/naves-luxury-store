@@ -1,24 +1,8 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 const AuthForm = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Clear any existing tokens from localStorage
-        localStorage.removeItem('supabase.auth.token');
-        navigate('/admin');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
   return (
     <div className="max-w-md w-full mx-auto p-8 bg-white/80 backdrop-blur-sm rounded-lg shadow-xl">
       <h2 className="text-3xl font-serif text-center mb-8 text-primary">Welcome to Label Naves</h2>

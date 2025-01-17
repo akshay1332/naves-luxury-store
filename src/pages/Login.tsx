@@ -32,28 +32,30 @@ const Login = () => {
       }
     };
 
-    checkSession();
+    void checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         // Clear any existing tokens from localStorage
         localStorage.removeItem('supabase.auth.token');
         
-        void supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile?.is_admin) {
-              navigate('/admin');
-            } else {
-              navigate('/');
-            }
-          })
-          .catch((error: Error) => {
-            console.error('Error checking profile:', error);
-          });
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (error) throw error;
+          
+          if (profile?.is_admin) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Error checking profile:', error);
+        }
       }
     });
 
