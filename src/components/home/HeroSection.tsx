@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LampContainer } from "@/components/ui/lamp";
 
 const HeroSection = () => {
   return (
@@ -20,11 +21,12 @@ const HeroSection = () => {
         </div>
       </motion.div>
       
-      <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+      <LampContainer className="pointer-events-none">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
+          className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto"
         >
           <motion.h1 
             className="text-5xl md:text-7xl font-serif font-light mb-6"
@@ -53,7 +55,7 @@ const HeroSection = () => {
             </Link>
           </motion.div>
         </motion.div>
-      </div>
+      </LampContainer>
     </section>
   );
 };
