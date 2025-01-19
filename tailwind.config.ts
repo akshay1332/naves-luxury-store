@@ -18,6 +18,9 @@ export default {
       },
     },
     extend: {
+      maxWidth: {
+        container: "1280px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -74,6 +77,10 @@ export default {
           from: { opacity: "1", transform: "translateY(0)" },
           to: { opacity: "0", transform: "translateY(10px)" },
         },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(calc(-100% - var(--gap)))' }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -82,6 +89,7 @@ export default {
         shimmer: "shimmer 2s infinite",
         fadeIn: "fadeIn 0.5s ease-out",
         fadeOut: "fadeOut 0.5s ease-out",
+        marquee: 'marquee var(--duration) linear infinite',
       },
       backgroundImage: {
         'luxury-gradient': 'linear-gradient(to right, #D4AF37, #C0C0C0)',
