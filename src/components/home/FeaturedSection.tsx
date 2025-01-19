@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ThreeDPhotoCarousel } from "@/components/ui/3d-carousel";
 import { TestimonialsSection } from "@/components/blocks/testimonials-with-marquee";
+import ProductCard from "@/components/ProductCard";
 
 const FeaturedSection = () => {
   const { data: featuredProducts } = useQuery({
@@ -12,7 +12,7 @@ const FeaturedSection = () => {
         .from("products")
         .select("*")
         .eq("is_featured", true)
-        .limit(3);
+        .limit(6);
       
       if (error) throw error;
       return data;
@@ -45,7 +45,7 @@ const FeaturedSection = () => {
   if (!featuredProducts?.length) return null;
 
   return (
-    <section className="py-20 px-4 bg-white">
+    <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,14 +55,14 @@ const FeaturedSection = () => {
           className="text-center mb-12"
         >
           <motion.h2 
-            className="text-3xl md:text-4xl font-serif mb-4 text-secondary"
+            className="text-3xl md:text-4xl font-serif mb-4 text-luxury-gold"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             Featured Collection
           </motion.h2>
           <motion.p 
-            className="text-primary-dark"
+            className="text-gray-600"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -71,8 +71,29 @@ const FeaturedSection = () => {
             Curated pieces that define elegance
           </motion.p>
         </motion.div>
-        
-        <ThreeDPhotoCarousel />
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
+        >
+          {featuredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              title={product.title}
+              price={product.price}
+              images={product.images}
+              category={product.category}
+              sale_percentage={product.sale_percentage}
+              sale_start_date={product.sale_start_date}
+              sale_end_date={product.sale_end_date}
+              video_url={product.video_url}
+            />
+          ))}
+        </motion.div>
 
         {testimonials?.length > 0 && (
           <TestimonialsSection
