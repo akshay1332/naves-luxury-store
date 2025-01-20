@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone } from "lucide-react";
+import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,8 +16,17 @@ import {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -33,6 +42,10 @@ const Navbar = () => {
       title: "Success",
       description: "Logged out successfully.",
     });
+    navigate('/login');
+  };
+
+  const handleLogin = () => {
     navigate('/login');
   };
 
@@ -63,25 +76,38 @@ const Navbar = () => {
 
           <div className="hidden md:flex md:items-center md:space-x-8">
             <NavBar items={navItems} className="!static !translate-x-0" />
-            <Link to="/cart" className="nav-link hover:text-luxury-gold transition-colors">
-              <CartIndicator />
-            </Link>
-            <NotificationBell />
+            {isAuthenticated && (
+              <>
+                <Link to="/cart" className="nav-link hover:text-luxury-gold transition-colors">
+                  <CartIndicator />
+                </Link>
+                <NotificationBell />
+              </>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger className="nav-link hover:text-luxury-gold transition-colors">
                 <User className="h-5 w-5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-sm border border-luxury-gold/20 shadow-xl">
-                <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:text-luxury-gold">
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:text-luxury-gold">
-                  Admin Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="hover:text-luxury-gold">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
+                {isAuthenticated ? (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:text-luxury-gold">
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:text-luxury-gold">
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="hover:text-luxury-gold">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem onClick={handleLogin} className="hover:text-luxury-gold">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -121,26 +147,37 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                to="/cart"
-                className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
-                onClick={() => setIsOpen(false)}
-              >
-                Cart
-              </Link>
-              <Link
-                to="/profile"
-                className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
-                onClick={() => setIsOpen(false)}
-              >
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
-              >
-                Logout
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/cart"
+                    className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Cart
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleLogin}
+                  className="w-full text-left block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </motion.div>
         )}
