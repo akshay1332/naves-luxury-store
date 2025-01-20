@@ -60,22 +60,27 @@ const Navbar = () => {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg shadow-md"
+      className="fixed top-0 z-50 w-full bg-white/90 backdrop-blur-lg shadow-lg border-b border-luxury-gold/10"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center">
-            <motion.h1 
-              className="text-3xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-luxury-gradient hover:scale-105 transition-transform"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              Label Naves
-            </motion.h1>
+            <Link to="/">
+              <motion.h1 
+                className="text-4xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-luxury-gradient hover:scale-105 transition-transform glow-text"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                Label Naves
+              </motion.h1>
+            </Link>
           </div>
 
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <NavBar items={navItems} className="!static !translate-x-0" />
+            <NavBar 
+              items={navItems} 
+              className="!static !translate-x-0 text-lg font-serif tracking-wide" 
+            />
             {isAuthenticated && (
               <>
                 <Link to="/cart" className="nav-link hover:text-luxury-gold transition-colors">
@@ -91,19 +96,19 @@ const Navbar = () => {
               <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-sm border border-luxury-gold/20 shadow-xl">
                 {isAuthenticated ? (
                   <>
-                    <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:text-luxury-gold">
+                    <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:text-luxury-gold font-serif">
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:text-luxury-gold">
+                    <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:text-luxury-gold font-serif">
                       Admin Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="hover:text-luxury-gold">
+                    <DropdownMenuItem onClick={handleLogout} className="hover:text-luxury-gold font-serif">
                       <LogOut className="mr-2 h-4 w-4" />
                       Logout
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <DropdownMenuItem onClick={handleLogin} className="hover:text-luxury-gold">
+                  <DropdownMenuItem onClick={handleLogin} className="hover:text-luxury-gold font-serif">
                     <LogIn className="mr-2 h-4 w-4" />
                     Login
                   </DropdownMenuItem>

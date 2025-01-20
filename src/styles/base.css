@@ -42,3 +42,17 @@
     @apply font-serif;
   }
 }
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  }
+  to {
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+}
