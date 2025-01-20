@@ -47,13 +47,13 @@ const Navbar = () => {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 z-50 w-full"
+      className="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg shadow-md"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center">
             <motion.h1 
-              className="text-2xl font-serif font-semibold bg-clip-text text-transparent bg-luxury-gradient"
+              className="text-3xl font-serif font-bold tracking-tight bg-clip-text text-transparent bg-luxury-gradient hover:scale-105 transition-transform"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
@@ -61,24 +61,24 @@ const Navbar = () => {
             </motion.h1>
           </div>
 
-          <div className="hidden md:flex md:items-center md:space-x-6">
+          <div className="hidden md:flex md:items-center md:space-x-8">
             <NavBar items={navItems} className="!static !translate-x-0" />
-            <Link to="/cart" className="nav-link">
+            <Link to="/cart" className="nav-link hover:text-luxury-gold transition-colors">
               <CartIndicator />
             </Link>
             <NotificationBell />
             <DropdownMenu>
-              <DropdownMenuTrigger className="nav-link">
+              <DropdownMenuTrigger className="nav-link hover:text-luxury-gold transition-colors">
                 <User className="h-5 w-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg">
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-sm border border-luxury-gold/20 shadow-xl">
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:text-luxury-gold">
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/admin')}>
+                <DropdownMenuItem onClick={() => navigate('/admin')} className="hover:text-luxury-gold">
                   Admin Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="hover:text-luxury-gold">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
@@ -88,7 +88,7 @@ const Navbar = () => {
 
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className="flex md:hidden"
+            className="flex md:hidden text-luxury-gold"
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className="sr-only">Open main menu</span>
@@ -107,37 +107,37 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white/80 backdrop-blur-md"
+            className="md:hidden bg-white/95 backdrop-blur-md border-t border-luxury-gold/10"
           >
-            <div className="space-y-1 px-4 pb-3 pt-2">
+            <div className="space-y-2 px-4 pb-4 pt-2">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.url}
-                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-luxury-gold"
+                  className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
                   onClick={() => setIsOpen(false)}
                 >
-                  <item.icon className="inline-block w-5 h-5 mr-2" />
+                  <item.icon className="inline-block w-5 h-5 mr-3" />
                   {item.name}
                 </Link>
               ))}
               <Link
                 to="/cart"
-                className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-luxury-gold"
+                className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
                 onClick={() => setIsOpen(false)}
               >
                 Cart
               </Link>
               <Link
                 to="/profile"
-                className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-luxury-gold"
+                className="block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
                 onClick={() => setIsOpen(false)}
               >
                 Profile
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full text-left block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-luxury-gold"
+                className="w-full text-left block rounded-md px-3 py-2.5 text-base font-serif font-medium text-gray-700 hover:bg-luxury-pearl hover:text-luxury-gold transition-all"
               >
                 Logout
               </button>
