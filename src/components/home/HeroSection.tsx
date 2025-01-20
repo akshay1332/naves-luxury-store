@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LampContainer } from "@/components/ui/lamp";
+import { MarqueeAnimation } from "@/components/ui/marquee-effect";
 
 const HeroSection = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
       <motion.div 
         initial={{ scale: 1.2, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -56,6 +57,23 @@ const HeroSection = () => {
           </motion.div>
         </motion.div>
       </LampContainer>
+
+      <div className="absolute bottom-0 left-0 right-0 z-10">
+        <MarqueeAnimation
+          direction="left"
+          baseVelocity={-2}
+          className="bg-gradient-to-r from-luxury-gold/20 to-luxury-pearl/20 text-luxury-gold py-4 font-serif"
+        >
+          Luxury Fashion • Timeless Elegance • Exclusive Collection
+        </MarqueeAnimation>
+        <MarqueeAnimation
+          direction="right"
+          baseVelocity={-2}
+          className="bg-gradient-to-r from-luxury-pearl/20 to-luxury-gold/20 text-luxury-champagne py-4 font-serif"
+        >
+          Premium Quality • Handcrafted Excellence • Bespoke Design
+        </MarqueeAnimation>
+      </div>
     </section>
   );
 };
