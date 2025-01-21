@@ -3,9 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { TestimonialsSection } from "@/components/blocks/testimonials-with-marquee";
 import ProductCard from "@/components/ProductCard";
+import { useToast } from "@/hooks/use-toast";
 
 const FeaturedSection = () => {
-  const { data: featuredProducts } = useQuery({
+  const { toast } = useToast();
+
+  const { data: featuredProducts, isError: productsError } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -14,12 +17,19 @@ const FeaturedSection = () => {
         .eq("is_featured", true)
         .limit(6);
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load featured products",
+        });
+        throw error;
+      }
       return data;
     },
   });
 
-  const { data: testimonials } = useQuery({
+  const { data: testimonials, isError: testimonialsError } = useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -28,7 +38,14 @@ const FeaturedSection = () => {
         .eq("is_featured", true)
         .limit(6);
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load testimonials",
+        });
+        throw error;
+      }
       return data;
     },
   });
@@ -37,12 +54,12 @@ const FeaturedSection = () => {
     author: {
       name: testimonial.profiles?.full_name || "Anonymous",
       handle: "@customer",
-      avatar: testimonial.profiles?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + testimonial.id
+      avatar: testimonial.profiles?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${testimonial.id}`
     },
     text: testimonial.content
   })) || [];
 
-  if (!featuredProducts?.length) return null;
+  if (!featuredProducts?.length && !testimonialsError) return null;
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50">
@@ -72,30 +89,24 @@ const FeaturedSection = () => {
           </motion.p>
         </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
-        >
-          {featuredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              title={product.title}
-              price={product.price}
-              images={product.images}
-              category={product.category}
-              sale_percentage={product.sale_percentage}
-              sale_start_date={product.sale_start_date}
-              sale_end_date={product.sale_end_date}
-              video_url={product.video_url}
-            />
-          ))}
-        </motion.div>
+        {!productsError && featuredProducts && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
+          >
+            {featuredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                {...product}
+              />
+            ))}
+          </motion.div>
+        )}
 
-        {testimonials?.length > 0 && (
+        {!testimonialsError && testimonials?.length > 0 && (
           <TestimonialsSection
             title="What Our Customers Say"
             description="Join our community of satisfied customers who trust in our quality and service"
