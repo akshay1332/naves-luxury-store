@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 const FeaturedSection = () => {
   const { toast } = useToast();
 
-  const { data: featuredProducts, isError: productsError } = useQuery({
+  const { data: featuredProducts, isError: productsError, isLoading: productsLoading } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -18,6 +18,7 @@ const FeaturedSection = () => {
         .limit(6);
       
       if (error) {
+        console.error("Products fetch error:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -27,9 +28,10 @@ const FeaturedSection = () => {
       }
       return data;
     },
+    retry: 2,
   });
 
-  const { data: testimonials, isError: testimonialsError } = useQuery({
+  const { data: testimonials, isError: testimonialsError, isLoading: testimonialsLoading } = useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,6 +41,7 @@ const FeaturedSection = () => {
         .limit(6);
       
       if (error) {
+        console.error("Testimonials fetch error:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -48,6 +51,7 @@ const FeaturedSection = () => {
       }
       return data;
     },
+    retry: 2,
   });
 
   const formattedTestimonials = testimonials?.map(testimonial => ({
@@ -58,6 +62,14 @@ const FeaturedSection = () => {
     },
     text: testimonial.content
   })) || [];
+
+  if (productsLoading || testimonialsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold"></div>
+      </div>
+    );
+  }
 
   if (!featuredProducts?.length && !testimonialsError) return null;
 
