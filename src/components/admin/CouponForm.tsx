@@ -1,155 +1,333 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { CouponBasicDetails } from "./coupon-form/CouponBasicDetails";
-import { CouponValidityPeriod } from "./coupon-form/CouponValidityPeriod";
-import { CouponLimitations } from "./coupon-form/CouponLimitations";
-import { CouponCategory } from "./coupon-form/CouponCategory";
+
+const couponFormSchema = z.object({
+  code: z.string().min(3, "Code must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  category: z.string().min(1, "Category is required"),
+  discount_percentage: z.number().min(1).max(100),
+  min_purchase_amount: z.number().min(0),
+  max_discount_amount: z.number().min(0),
+  valid_from: z.date(),
+  valid_until: z.date(),
+  is_active: z.boolean(),
+  usage_limit: z.number().min(1),
+});
+
+type CouponFormValues = z.infer<typeof couponFormSchema>;
 
 interface CouponFormProps {
-  onSuccess?: () => void;
-  initialData?: {
-    id: string;
-    code: string;
-    discount_percentage: number;
-    valid_from: string;
-    valid_until: string;
-    min_purchase_amount: number;
-    max_discount_amount: number;
-    usage_limit: number;
-    category?: string;
-  };
+  productId: string;
+  onSuccess: () => void;
 }
 
-export const CouponForm = ({ onSuccess, initialData }: CouponFormProps) => {
+export function CouponForm({ productId, onSuccess }: CouponFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const form = useForm<CouponFormValues>({
+    resolver: zodResolver(couponFormSchema),
+    defaultValues: {
+      code: "",
+      description: "",
+      category: "percentage",
+      discount_percentage: 10,
+      min_purchase_amount: 0,
+      max_discount_amount: 0,
+      valid_from: new Date(),
+      valid_until: new Date(),
+      is_active: true,
+      usage_limit: 100,
+    },
+  });
+
+  async function onSubmit(data: CouponFormValues) {
     setLoading(true);
-
     try {
-      const formData = new FormData(e.currentTarget);
-      const couponData = {
-        code: String(formData.get('code')),
-        discount_percentage: parseInt(String(formData.get('discount_percentage'))),
-        valid_from: String(formData.get('valid_from')),
-        valid_until: String(formData.get('valid_until')),
-        min_purchase_amount: parseFloat(String(formData.get('min_purchase_amount'))),
-        max_discount_amount: parseFloat(String(formData.get('max_discount_amount'))),
-        usage_limit: parseInt(String(formData.get('usage_limit'))),
-        category: formData.get('category') ? String(formData.get('category')) : null,
-      };
+      const { error } = await supabase.from("coupons").insert([
+        {
+          ...data,
+          product_id: productId,
+          valid_from: data.valid_from.toISOString(),
+          valid_until: data.valid_until.toISOString(),
+          times_used: 0,
+        },
+      ]);
 
-      let error;
-      
-      if (initialData) {
-        // Check if we're trying to update to an existing code
-        const { data: existingCoupon } = await supabase
-          .from('coupons')
-          .select('id')
-          .eq('code', couponData.code)
-          .neq('id', initialData.id)
-          .single();
-
-        if (existingCoupon) {
-          throw new Error('A coupon with this code already exists.');
-        }
-
-        const result = await supabase
-          .from('coupons')
-          .update(couponData)
-          .eq('id', initialData.id);
-          
-        error = result.error;
-      } else {
-        // Check if code already exists before inserting
-        const { data: existingCoupon } = await supabase
-          .from('coupons')
-          .select('id')
-          .eq('code', couponData.code)
-          .single();
-
-        if (existingCoupon) {
-          throw new Error('A coupon with this code already exists.');
-        }
-
-        const result = await supabase
-          .from('coupons')
-          .insert(couponData);
-          
-        error = result.error;
-      }
-
-      if (error) {
-        // Handle specific Supabase error codes
-        if (error.code === '23505') {
-          throw new Error('A coupon with this code already exists.');
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Coupon ${initialData ? 'updated' : 'created'} successfully.`,
+        description: "Coupon created successfully",
       });
-
-      if (onSuccess) onSuccess();
-    } catch (error: any) {
-      console.error('Error saving coupon:', error);
+      onSuccess();
+    } catch (error: unknown) {
+      const err = error as { message: string };
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || 'Failed to save coupon.',
+        description: err.message || "Failed to create coupon",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <Card className="p-8 bg-white shadow-xl">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <CouponBasicDetails 
-            defaultCode={initialData?.code}
-            defaultDiscount={initialData?.discount_percentage}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Coupon Code</FormLabel>
+              <FormControl>
+                <Input placeholder="SUMMER2024" {...field} />
+              </FormControl>
+              <FormDescription>
+                Enter a unique code for this coupon
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Get 20% off on summer collection"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="discount_percentage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Discount Percentage</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          
-          <CouponValidityPeriod 
-            defaultValidFrom={initialData?.valid_from}
-            defaultValidUntil={initialData?.valid_until}
-          />
-          
-          <CouponLimitations 
-            defaultMinPurchase={initialData?.min_purchase_amount}
-            defaultMaxDiscount={initialData?.max_discount_amount}
-            defaultUsageLimit={initialData?.usage_limit}
-          />
-          
-          <CouponCategory 
-            defaultCategory={initialData?.category}
+
+          <FormField
+            control={form.control}
+            name="usage_limit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Usage Limit</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="min_purchase_amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Minimum Purchase Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={0}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="max_discount_amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Discount Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={0}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="valid_from"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Valid From</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date()
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="valid_until"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Valid Until</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
           <Button
-            type="submit"
-            className="w-full bg-luxury-gold hover:bg-luxury-gold/90 text-white transition-colors"
-            disabled={loading}
-          >
-            {loading ? "Saving..." : initialData ? "Update Coupon" : "Create Coupon"}
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < field.value || date < new Date()
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Active Status</FormLabel>
+                <FormDescription>
+                  Enable or disable this coupon
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Creating..." : "Create Coupon"}
           </Button>
-        </motion.div>
       </form>
-    </Card>
+    </Form>
   );
-};
+}

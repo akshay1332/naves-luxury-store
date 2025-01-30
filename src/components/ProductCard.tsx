@@ -1,120 +1,117 @@
-import { Link } from "react-router-dom";
+import React from "react";
 import { motion } from "framer-motion";
-import { convertToINR } from "@/utils/currency";
-import { Percent } from "lucide-react";
-import { useState } from "react";
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Heart, ShoppingCart } from "lucide-react";
 
-interface ProductCardProps {
+interface Product {
   id: string;
   title: string;
+  description: string;
   price: number;
   images: string[];
-  category?: string;
-  sale_percentage?: number;
-  sale_start_date?: string;
-  sale_end_date?: string;
-  video_url?: string;
+  category: string;
+  sale_percentage: number;
+  is_new_arrival?: boolean;
+  is_best_seller?: boolean;
+  is_featured?: boolean;
+  is_trending?: boolean;
 }
 
-const ProductCard = ({ 
-  id, 
-  title, 
-  price, 
-  images, 
-  category,
-  sale_percentage,
-  sale_start_date,
-  sale_end_date,
-  video_url 
-}: ProductCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const isSaleActive = sale_percentage && sale_start_date && sale_end_date && 
-    new Date(sale_start_date) <= new Date() && new Date(sale_end_date) >= new Date();
+interface ProductCardProps {
+  product: Product;
+  className?: string;
+}
 
-  const discountedPrice = isSaleActive ? 
-    price - (price * (sale_percentage / 100)) : price;
+export function ProductCard({ product, className }: ProductCardProps) {
+  const discountedPrice = product.sale_percentage
+    ? product.price - (product.price * product.sale_percentage) / 100
+    : product.price;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
       whileHover={{ y: -5 }}
+      className={cn(
+        "group relative overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg",
+        className
+      )}
     >
-      <Link 
-        to={`/products/${id}`} 
-        className="block group"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="relative overflow-hidden rounded-xl bg-gray-100 aspect-square">
-          {video_url && isHovered ? (
-            <video
-              src={video_url}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover object-center"
-            />
-          ) : (
-            <motion.img
-              src={images?.[0] || "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"}
-              alt={title}
-              className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
+      <Link to={`/products/${product.id}`} className="block">
+        <div className="relative aspect-[3/4] overflow-hidden">
+          <img
+            src={product.images[0]}
+            alt={product.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          {product.images[1] && (
+            <img
+              src={product.images[1]}
+              alt={product.title}
+              className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
           )}
-          {category && (
-            <div className="absolute top-4 left-4">
-              <motion.span
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-luxury-gold/90 px-3 py-1 text-xs text-white rounded-full shadow-lg"
-              >
-                {category}
-              </motion.span>
-            </div>
-          )}
-          {isSaleActive && (
-            <div className="absolute top-4 right-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-red-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
-              >
-                <Percent className="w-3 h-3" />
-                <span className="text-xs font-bold">{sale_percentage}% OFF</span>
-              </motion.div>
-            </div>
-          )}
+          <div className="absolute left-2 top-2 flex flex-col gap-1">
+            {product.sale_percentage > 0 && (
+              <Badge className="bg-red-500">
+                {product.sale_percentage}% OFF
+              </Badge>
+            )}
+            {product.is_new_arrival && (
+              <Badge className="bg-blue-500">New Arrival</Badge>
+            )}
+            {product.is_best_seller && (
+              <Badge className="bg-yellow-500">Best Seller</Badge>
+            )}
+            {product.is_trending && (
+              <Badge className="bg-purple-500">Trending</Badge>
+            )}
+          </div>
+          <div className="absolute right-2 top-2 flex flex-col gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 rounded-full"
+            >
+              <Heart className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-8 w-8 rounded-full"
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div className="p-4">
-          <motion.h3
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="font-serif text-lg mb-2 group-hover:text-primary transition-colors"
-          >
-            {title}
-          </motion.h3>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2"
-          >
-            <span className={`text-lg font-semibold ${isSaleActive ? 'text-red-500' : 'text-gray-900'}`}>
-              {convertToINR(discountedPrice)}
+          <h3 className="mb-1 text-sm font-medium text-gray-700 line-clamp-1">
+            {product.title}
+          </h3>
+          <p className="mb-2 text-xs text-gray-500 line-clamp-1">
+            {product.category}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold text-primary">
+              ₹{discountedPrice.toLocaleString('en-IN')}
             </span>
-            {isSaleActive && (
+            {product.sale_percentage > 0 && (
               <span className="text-sm text-gray-500 line-through">
-                {convertToINR(price)}
+                ₹{product.price.toLocaleString('en-IN')}
               </span>
             )}
-          </motion.div>
+          </div>
         </div>
       </Link>
+      <div className="absolute bottom-0 left-0 right-0 flex translate-y-full items-center justify-center gap-2 bg-black bg-opacity-75 p-4 text-white transition-transform duration-300 group-hover:translate-y-0">
+        <Button variant="secondary" size="sm" className="flex-1">
+          Quick View
+        </Button>
+        <Button size="sm" className="flex-1">
+          Add to Cart
+        </Button>
+      </div>
     </motion.div>
   );
-};
-
-export default ProductCard;
+}

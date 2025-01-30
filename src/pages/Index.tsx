@@ -1,29 +1,24 @@
-import HeroSection from "@/components/home/HeroSection";
-import NewArrivalsSection from "@/components/home/NewArrivalsSection";
-import TrendingSection from "@/components/home/TrendingSection";
-import CategoriesSection from "@/components/home/CategoriesSection";
-import FeaturedSection from "@/components/home/FeaturedSection";
-import StyleGuideSection from "@/components/home/StyleGuideSection";
-import SizeGuideSection from "@/components/home/SizeGuideSection";
-import NewsletterSection from "@/components/home/NewsletterSection";
-import RecentlyViewedSection from "@/components/home/RecentlyViewedSection";
-import ReviewsSection from "@/components/home/ReviewsSection";
+import React from "react";
+import { HeroSection } from "@/components/home/HeroSection";
+import { FeaturedSection } from "@/components/home/FeaturedSection";
+import { NewArrivalsSection } from "@/components/home/NewArrivalsSection";
+import { TrendingSection } from "@/components/home/TrendingSection";
+import { BestSellersSection } from "@/components/home/BestSellersSection";
+import { RecentlyViewedSection } from "@/components/home/RecentlyViewedSection";
+import { ReviewsSection } from "@/components/home/ReviewsSection";
 
-const Index = () => {
+export function HomePage() {
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen">
       <HeroSection />
+      <FeaturedSection />
       <NewArrivalsSection />
       <TrendingSection />
-      <CategoriesSection />
-      <FeaturedSection />
-      <StyleGuideSection />
-      <SizeGuideSection />
-      <NewsletterSection />
-      <RecentlyViewedSection />
+      <BestSellersSection />
       <ReviewsSection />
-    </div>
+      <RecentlyViewedSection />
+    </main>
   );
-};
+}
 
-export default Index;
+export default HomePage;

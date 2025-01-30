@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import ProductCard from "@/components/ProductCard";
+import { ProductCard } from "@/components/ProductCard";
 import { motion } from "framer-motion";
 
 interface RelatedProductsProps {
@@ -42,7 +42,7 @@ const RelatedProducts = ({ currentProductId, category }: RelatedProductsProps) =
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <ProductCard {...product} />
+            <ProductCard product={product} />
           </motion.div>
         ))}
       </div>

@@ -1,24 +1,27 @@
+import React from "react";
+import { ProductCard } from "@/components/ProductCard";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { TestimonialsSection } from "@/components/blocks/testimonials-with-marquee";
-import ProductCard from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 
-const FeaturedSection = () => {
+export function FeaturedSection() {
   const { toast } = useToast();
 
-  const { data: featuredProducts, isError: productsError, isLoading: productsLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
         .select("*")
         .eq("is_featured", true)
-        .limit(6);
-      
+        .limit(8);
+
       if (error) {
-        console.error("Products fetch error:", error);
+        console.error("Error fetching featured products:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -26,9 +29,9 @@ const FeaturedSection = () => {
         });
         throw error;
       }
+
       return data;
     },
-    retry: 2,
   });
 
   const { data: testimonials, isError: testimonialsError, isLoading: testimonialsLoading } = useQuery({
@@ -63,60 +66,63 @@ const FeaturedSection = () => {
     text: testimonial.content
   })) || [];
 
-  if (productsLoading || testimonialsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-gold"></div>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
-  if (!featuredProducts?.length && !testimonialsError) return null;
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">Failed to load featured products</p>
+      </div>
+    );
+  }
+
+  if (!products?.length) {
+    return null;
+  }
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-16 px-4 md:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Collection</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Discover our handpicked selection of premium pieces that define modern luxury
+          </p>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={container}
+          initial="hidden"
+          whileInView="show"
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          <motion.h2 
-            className="text-3xl md:text-4xl font-serif mb-4 text-luxury-gold"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            Featured Collection
-          </motion.h2>
-          <motion.p 
-            className="text-gray-600"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
-            Curated pieces that define elegance
-          </motion.p>
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </motion.div>
 
-        {!productsError && featuredProducts && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
-          >
-            {featuredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-              />
-            ))}
-          </motion.div>
-        )}
+        <div className="text-center mt-12">
+          <Button variant="outline" size="lg">
+            View All Featured
+          </Button>
+        </div>
 
         {!testimonialsError && testimonials?.length > 0 && (
           <TestimonialsSection
@@ -129,6 +135,4 @@ const FeaturedSection = () => {
       </div>
     </section>
   );
-};
-
-export default FeaturedSection;
+}

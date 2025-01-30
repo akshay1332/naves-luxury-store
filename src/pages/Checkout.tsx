@@ -2,25 +2,68 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ShippingAddressForm, type ShippingAddress } from "@/components/checkout/ShippingAddressForm";
-import { ShippingMethod } from "@/components/checkout/ShippingMethod";
-import { PaymentSection } from "@/components/checkout/PaymentSection";
-import { CouponSection } from "@/components/checkout/CouponSection";
+import { motion } from "framer-motion";
+import { ShoppingBag, CreditCard, Truck, Upload, Link as LinkIcon, AlertCircle, Loader2 } from "lucide-react";
+import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/hooks/use-auth";
+
+interface CheckoutFormData {
+  shippingAddress: {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  paymentMethod: "card" | "upi" | "cod";
+  wantCustomDesign: boolean;
+  customDesignType: "upload" | "link" | null;
+  customDesignFile?: File | null;
+  customDesignLink?: string;
+  specialInstructions?: string;
+}
 
 const Checkout = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [subtotal, setSubtotal] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [formData, setFormData] = useState<CheckoutFormData>({
+    shippingAddress: {
     fullName: "",
+      email: "",
+      phone: "",
     address: "",
     city: "",
     state: "",
     zipCode: "",
-    country: "",
+    },
+    paymentMethod: "cod",
+    wantCustomDesign: false,
+    customDesignType: null,
+    customDesignFile: null,
+    customDesignLink: "",
+    specialInstructions: "",
   });
 
   useEffect(() => {
@@ -66,65 +109,115 @@ const Checkout = () => {
     setSubtotal(total);
   };
 
-  const handleCouponApplied = (discount: number, couponId: string) => {
-    setDiscountAmount(discount);
-    setAppliedCouponId(couponId);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please upload an image under 2MB",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload an image file",
+      });
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      customDesignFile: file,
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const uploadCustomDesign = async (file: File): Promise<string> => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("custom-designs")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+          onUploadProgress: (progress) => {
+            setUploadProgress((progress.loaded / progress.total) * 100);
+          },
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: publicURL } = supabase.storage
+        .from("custom-designs")
+        .getPublicUrl(fileName);
+
+      return publicURL.publicUrl;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
+      let customDesignUrl = formData.customDesignLink || "";
 
-      const { data: cartItems } = await supabase
-        .from('cart_items')
-        .select(`
-          quantity,
-          products (
-            id,
-            price
-          )
-        `)
-        .eq('user_id', user.id);
+      // If there's a file to upload
+      if (formData.wantCustomDesign && formData.customDesignType === "upload" && formData.customDesignFile) {
+        customDesignUrl = await uploadCustomDesign(formData.customDesignFile);
+      }
 
       const total = subtotal - discountAmount;
 
-      // Create the order first
+      // Generate invoice number (you might want to adjust this format)
+      const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      // Create the order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          user_id: user.id,
-          total_amount: total,
-          shipping_address: shippingAddress,
+          user_id: user?.id,
           status: 'pending',
-          applied_coupon_id: appliedCouponId,
-          discount_amount: discountAmount
+          total_amount: total,
+          shipping_address: {
+            ...formData.shippingAddress,
+            country: 'US' // Add default country or make it configurable
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          invoice_number: invoiceNumber,
+          invoice_data: {
+            items: [],
+            payment_method: formData.paymentMethod,
+            custom_design: formData.wantCustomDesign
+              ? {
+                  type: formData.customDesignType,
+                  url: customDesignUrl,
+                  instructions: formData.specialInstructions
+                }
+              : null
+          },
+          discount_amount: discountAmount,
+          updated_by: user?.id,
+          tracking_number: null // Will be added when shipping is processed
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
-
-      // Insert order items
-      const orderItems = cartItems?.map(item => ({
-        order_id: order.id,
-        product_id: item.products.id,
-        quantity: item.quantity,
-        price_at_time: item.products.price
-      }));
-
-      if (orderItems) {
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
-
-        if (itemsError) throw itemsError;
-      }
 
       // Update coupon usage if one was applied
       if (appliedCouponId) {
@@ -140,7 +233,7 @@ const Checkout = () => {
       await supabase
         .from('cart_items')
         .delete()
-        .eq('user_id', user.id);
+        .eq('user_id', user?.id);
 
       toast({
         title: "Success",
@@ -148,38 +241,100 @@ const Checkout = () => {
       });
 
       navigate('/profile');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred while placing your order";
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <ShippingAddressForm
-            shippingAddress={shippingAddress}
-            setShippingAddress={setShippingAddress}
-          />
-          <ShippingMethod />
-          <CouponSection
-            subtotal={subtotal}
-            onCouponApplied={handleCouponApplied}
-          />
-          <PaymentSection 
-            loading={loading}
-            subtotal={subtotal}
-            discountAmount={discountAmount}
-            total={subtotal - discountAmount}
-          />
-        </form>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8"
+        >
+          <h1 className="text-3xl font-bold">Checkout</h1>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Checkout Form */}
+            <div className="lg:col-span-2 space-y-6">
+              <CheckoutForm
+                formData={formData}
+                setFormData={setFormData}
+                handleFileChange={handleFileChange}
+                uploadProgress={uploadProgress}
+              />
+            </div>
+
+            {/* Order Summary */}
+            <div>
+              <Card className="p-6 sticky top-4">
+                <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Shipping</span>
+                    {subtotal > 499 ? (
+                      <div className="flex items-center gap-1 text-green-600">
+                        <Truck className="h-4 w-4" />
+                        <span>Free</span>
+                      </div>
+                    ) : (
+                      <span>₹49</span>
+                    )}
+                  </div>
+                  {subtotal <= 499 && (
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      Free shipping on orders above ₹499
+                    </p>
+                  )}
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between items-center font-bold text-lg">
+                      <span>Total</span>
+                      <span className="text-cyan-600">
+                        ₹{(subtotal - discountAmount + (subtotal > 499 ? 0 : 49)).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      'Place Order'
+                    )}
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

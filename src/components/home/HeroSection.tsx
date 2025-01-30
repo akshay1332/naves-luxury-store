@@ -1,81 +1,85 @@
-import { Link } from "react-router-dom";
+import React from "react";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { LampContainer } from "@/components/ui/lamp";
+import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { MarqueeAnimation } from "@/components/ui/marquee-effect";
 
-const HeroSection = () => {
+
+export function HeroSection() {
   return (
-    <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
-      <motion.div 
-        initial={{ scale: 1.2, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute inset-0 z-0"
-      >
-        <div className="relative h-full w-full">
-          <img
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"
-            alt="Luxury Fashion"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
-        </div>
-      </motion.div>
-      
-      <LampContainer className="pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto"
+    <>
+      <LampContainer>
+        <VerticalCutReveal
+          splitBy="characters"
+          staggerDuration={0.025}
+          staggerFrom="first"
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 21,
+          }}
+          containerClassName="mt-8 text-white py-4 text-center text-4xl font-medium tracking-tight md:text-7xl"
         >
-          <motion.h1 
-            className="text-5xl md:text-7xl font-serif font-light mb-6"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            Zariya
-          </motion.h1>
-          <motion.p 
-            className="text-xl md:text-2xl mb-8 font-light"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1 }}
-          >
-            For every chapter of your journey
-          </motion.p>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link
-              to="/products"
-              className="inline-block bg-luxury-gold hover:bg-luxury-gold/90 text-white px-8 py-3 rounded-md transition-all duration-300 transform hover:shadow-2xl"
-            >
-              Explore Collection
-            </Link>
-          </motion.div>
+          Elevate Your Style
+        </VerticalCutReveal>
+        <VerticalCutReveal
+          splitBy="characters"
+          staggerDuration={0.025}
+          staggerFrom="last"
+          reverse={true}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 21,
+            delay: 0.5,
+          }}
+          containerClassName="mt-8 text-white py-4 text-center text-4xl font-medium tracking-tight md:text-7xl"
+        >
+          With Luxury
+        </VerticalCutReveal>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-4 text-slate-300 text-lg md:text-xl text-center max-w-2xl"
+        >
+          Discover our curated collection of premium clothing that defines modern elegance
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mt-8"
+        >
+          <Link to="/products">
+            <Button size="lg" className="bg-cyan-500 text-white hover:bg-cyan-600">
+              Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </motion.div>
       </LampContainer>
-
-      <div className="absolute bottom-0 left-0 right-0 z-10">
+      <div className="mt-12">
         <MarqueeAnimation
           direction="left"
-          baseVelocity={-2}
-          className="bg-gradient-to-r from-luxury-gold/20 to-luxury-pearl/20 text-luxury-gold py-4 font-serif"
+          baseVelocity={-3}
+          className="bg-cyan-500/10 text-cyan-500 py-2"
         >
-          Luxury Fashion • Timeless Elegance • Exclusive Collection
+          Free Shipping on Orders Over 499 • Premium Quality • Exclusive Designs
         </MarqueeAnimation>
         <MarqueeAnimation
           direction="right"
-          baseVelocity={-2}
-          className="bg-gradient-to-r from-luxury-pearl/20 to-luxury-gold/20 text-luxury-champagne py-4 font-serif"
+          baseVelocity={-3}
+          className="bg-cyan-500/10 text-cyan-500 py-2"
         >
-          Premium Quality • Handcrafted Excellence • Bespoke Design
+          New Collections Every Season • Limited Edition Pieces • Worldwide Delivery
         </MarqueeAnimation>
       </div>
-    </section>
+      
+    </>
   );
-};
+}
 
 export default HeroSection;

@@ -1,80 +1,357 @@
 import { motion } from "framer-motion";
+import { Printer, Palette, Users, Sparkles, Zap, Target, Clock, Shield } from "lucide-react";
+import { Timeline } from "@/components/ui/Timeline";
+import { AnimatedTestimonials } from "@/components/ui/AnimatedTestimonials";
 
 const About = () => {
+  const timelineData = [
+    {
+      title: "2024",
+      content: (
+        <div>
+          <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base font-normal mb-8">
+            Revolutionizing the printing industry with cutting-edge digital solutions and expanding our custom design services to serve a global clientele.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden rounded-lg shadow-lg"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop"
+                alt="Modern Printing"
+                className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
+              />
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden rounded-lg shadow-lg"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1635405074683-96d6521e8a33?q=80&w=1969&auto=format&fit=crop"
+                alt="Digital Printing"
+                className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
+              />
+            </motion.div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "2023",
+      content: (
+        <div>
+          <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base font-normal mb-8">
+            Established our state-of-the-art printing facility with advanced machinery and expanded our expert design team to provide comprehensive printing solutions.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden rounded-lg shadow-lg"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1598301257982-0cf014dabbcd?q=80&w=2070&auto=format&fit=crop"
+                alt="Our Team"
+                className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
+              />
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden rounded-lg shadow-lg"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1574614671393-d92c9e359dba?q=80&w=2070&auto=format&fit=crop"
+                alt="Our Facility"
+                className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
+              />
+            </motion.div>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const testimonials = [
+    {
+      quote: "Custom Print transformed our brand identity with their exceptional printing quality and attention to detail. Their team went above and beyond our expectations.",
+      name: "Rajesh Kumar",
+      designation: "CEO at TechStart India",
+      src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      quote: "Their innovative approach to custom designs and professional execution made our company merchandise stand out. Highly recommended for quality printing.",
+      name: "Priya Sharma",
+      designation: "Marketing Director at CreativeHub",
+      src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      quote: "The team's expertise in handling bulk orders while maintaining consistent quality is impressive. Their customer service is exceptional.",
+      name: "Amit Patel",
+      designation: "Event Manager at EventPro",
+      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2070&auto=format&fit=crop"
+    }
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
+  const stats = [
+    { number: "5000+", label: "Happy Clients", icon: Users },
+    { number: "15K+", label: "Projects Completed", icon: Target },
+    { number: "24/7", label: "Customer Support", icon: Clock },
+    { number: "100%", label: "Quality Assured", icon: Shield },
+  ];
+
+  const services = [
+    {
+      title: "Custom T-Shirt Printing",
+      description: "High-quality custom t-shirt printing with vibrant colors and durable designs.",
+      image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=2127&auto=format&fit=crop"
+    },
+    {
+      title: "Business Cards & Stationery",
+      description: "Professional business cards and stationery that make a lasting impression.",
+      image: "https://images.unsplash.com/photo-1634084462412-b54873c0a56d?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      title: "Large Format Printing",
+      description: "Stunning banners, posters, and signage that capture attention.",
+      image: "https://images.unsplash.com/photo-1561997968-aa846c2bf255?q=80&w=2070&auto=format&fit=crop"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070"
-          alt="Traditional Fashion"
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Hero Section with enhanced animation */}
+      <section className="relative h-[80vh] overflow-hidden">
+        <motion.div
+          initial={{ scale: 1.2, filter: "brightness(0.8)" }}
+          animate={{ scale: 1, filter: "brightness(1)" }}
+          transition={{ duration: 2 }}
+          className="absolute inset-0"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1588412079929-790b9f593d8e?q=80&w=2070&auto=format&fit=crop"
+            alt="Custom Printing"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80"></div>
+        </motion.div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl text-white font-serif"
+            transition={{ duration: 1, delay: 0.5 }}
+            className="text-center px-4"
           >
-            Our Story
-          </motion.h1>
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 1 }}
+              className="w-24 h-24 bg-white/10 backdrop-blur-lg rounded-full mx-auto mb-8 flex items-center justify-center"
+            >
+              <Zap className="w-12 h-12 text-yellow-400" />
+            </motion.div>
+            <h1 className="text-5xl md:text-7xl text-white font-bold mb-6 font-serif tracking-tight">
+              Custom Print
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto px-4 font-light leading-relaxed">
+              Transforming Ideas into Stunning Reality with Premium Quality Printing Solutions
+            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5 }}
+              className="mt-12"
+            >
+              <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold rounded-full text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 transform hover:-translate-y-1">
+                Explore Our Services
+              </button>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Content Sections */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
         <motion.div 
+                key={index}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="grid md:grid-cols-2 gap-12 items-center"
-        >
-          <div>
-            <h2 className="text-3xl font-serif mb-6 text-luxury-gold">Heritage & Tradition</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              Label Naves was founded with a vision to preserve and celebrate the rich heritage of traditional fashion while embracing modern sensibilities. Our journey began with a deep appreciation for artisanal craftsmanship and timeless designs.
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              Each piece in our collection tells a story of cultural richness, artistic excellence, and sustainable fashion practices that honor both tradition and innovation.
-            </p>
+                transition={{ delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-2xl flex items-center justify-center">
+                  <stat.icon className="w-8 h-8 text-yellow-400" />
+                </div>
+                <h3 className="text-4xl font-bold text-white mb-2">{stat.number}</h3>
+                <p className="text-gray-400">{stat.label}</p>
+              </motion.div>
+            ))}
           </div>
-          <div className="relative h-[400px] overflow-hidden rounded-lg shadow-xl">
-            <motion.img
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070"
-              alt="Artisanal Craftsmanship"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Values Section */}
-      <section className="bg-gradient-to-r from-secondary-dark to-secondary py-16 md:py-24">
+      {/* Features Section with enhanced cards */}
+      <section className="py-32 bg-gradient-to-b from-gray-800 to-gray-900">
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-4 gap-8"
+          >
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group text-center p-8 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700/50"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <Printer className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-blue-400 transition-colors">Modern Technology</h3>
+              <p className="text-gray-300 leading-relaxed">State-of-the-art printing equipment delivering exceptional results with precision and efficiency</p>
+            </motion.div>
+
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group text-center p-8 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700/50"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <Palette className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-purple-400 transition-colors">Custom Designs</h3>
+              <p className="text-gray-300 leading-relaxed">Unique designs crafted to match your vision</p>
+            </motion.div>
+
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group text-center p-8 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700/50"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <Users className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-green-400 transition-colors">Expert Team</h3>
+              <p className="text-gray-300 leading-relaxed">Skilled professionals at your service</p>
+            </motion.div>
+
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group text-center p-8 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700/50"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <Sparkles className="w-10 h-10 text-white" />
+          </div>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-pink-400 transition-colors">Premium Quality</h3>
+              <p className="text-gray-300 leading-relaxed">Uncompromising quality in every print</p>
+            </motion.div>
+        </motion.div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-24 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="grid md:grid-cols-3 gap-8"
+            className="text-center mb-16"
           >
-            <div className="text-center p-8 bg-white/5 backdrop-blur-sm rounded-lg">
-              <h3 className="text-2xl font-serif mb-4 text-luxury-gold">Craftsmanship</h3>
-              <p className="text-gray-300">Dedicated to preserving traditional techniques while embracing modern innovation.</p>
-            </div>
-            <div className="text-center p-8 bg-white/5 backdrop-blur-sm rounded-lg">
-              <h3 className="text-2xl font-serif mb-4 text-luxury-gold">Sustainability</h3>
-              <p className="text-gray-300">Committed to ethical practices and environmental responsibility in fashion.</p>
-            </div>
-            <div className="text-center p-8 bg-white/5 backdrop-blur-sm rounded-lg">
-              <h3 className="text-2xl font-serif mb-4 text-luxury-gold">Heritage</h3>
-              <p className="text-gray-300">Celebrating cultural richness through timeless designs and authentic expression.</p>
-            </div>
+            <h2 className="text-4xl font-bold text-white mb-4">Our Services</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Discover our comprehensive range of printing solutions tailored to meet your needs</p>
           </motion.div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.2 }}
+                whileHover={{ y: -10 }}
+                className="group relative overflow-hidden rounded-2xl"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/0 z-10"></div>
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="w-full h-[400px] object-cover transform group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
+                  <h3 className="text-2xl font-bold text-white mb-2">{service.title}</h3>
+                  <p className="text-gray-300 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    {service.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* Timeline Section with enhanced styling */}
+      <section className="bg-gray-900">
+        <Timeline data={timelineData} />
+      </section>
+
+      {/* Testimonials Section with enhanced styling */}
+      <section className="bg-gray-900/80 backdrop-blur-lg">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
+        </div>
+      </section>
+
+      {/* Enhanced CTA Section */}
+      <section className="py-32 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926')] opacity-20 mix-blend-overlay"></div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl mx-auto text-center px-4 relative z-10"
+        >
+          <h2 className="text-5xl md:text-6xl text-white font-bold mb-8 leading-tight">
+            Ready to Transform Your Ideas?
+          </h2>
+          <p className="text-2xl text-gray-100 mb-12 font-light">
+            Let's create something extraordinary together
+          </p>
+          <motion.button 
+            whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-white text-blue-600 px-12 py-5 rounded-full font-bold text-xl hover:bg-gray-100 transition-colors shadow-xl hover:shadow-2xl"
+          >
+            Start Your Project
+          </motion.button>
+        </motion.div>
       </section>
     </div>
   );
