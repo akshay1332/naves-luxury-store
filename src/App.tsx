@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { ThemeProvider } from './hooks/useTheme';
+import { HelmetProvider } from 'react-helmet-async';
 import { ThemeToggle } from './components/ui/ThemeToggle';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -28,75 +29,77 @@ import Checkout from './pages/Checkout';
 import { queryClient } from './lib/react-query';
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      {({ theme }) => (
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="flex flex-col min-h-screen">
-              <div className="fixed top-4 right-4 z-50">
-                <ThemeToggle />
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        {({ theme }) => (
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <div className="flex flex-col min-h-screen">
+                <div className="fixed top-4 right-4 z-50">
+                  <ThemeToggle />
+                </div>
+                <Navbar />
+                <main className="flex-grow pt-20">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/products/:id" element={<ProductDetails />} />
+                    <Route
+                      path="/cart"
+                      element={
+                        <PrivateRoute>
+                          <Cart />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <PrivateRoute>
+                          <Profile />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/*"
+                      element={
+                        <AdminRoute>
+                          <Routes>
+                            <Route path="/" element={<Admin />} />
+                            <Route path="/analytics" element={<AdminAnalytics />} />
+                            <Route path="/users" element={<AdminUsers />} />
+                            <Route path="/orders" element={<AdminOrders />} />
+                            <Route path="/messages" element={<AdminMessages />} />
+                            <Route path="/reviews" element={<AdminReviews />} />
+                            <Route path="/coupons" element={<AdminCoupons />} />
+                          </Routes>
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <PrivateRoute>
+                          <Checkout />
+                        </PrivateRoute>
+                      }
+                    />
+                  </Routes>
+                </main>
+                <Footer />
               </div>
-              <Navbar />
-              <main className="flex-grow pt-20">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/products/:id" element={<ProductDetails />} />
-                  <Route
-                    path="/cart"
-                    element={
-                      <PrivateRoute>
-                        <Cart />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <PrivateRoute>
-                        <Profile />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/*"
-                    element={
-                      <AdminRoute>
-                        <Routes>
-                          <Route path="/" element={<Admin />} />
-                          <Route path="/analytics" element={<AdminAnalytics />} />
-                          <Route path="/users" element={<AdminUsers />} />
-                          <Route path="/orders" element={<AdminOrders />} />
-                          <Route path="/messages" element={<AdminMessages />} />
-                          <Route path="/reviews" element={<AdminReviews />} />
-                          <Route path="/coupons" element={<AdminCoupons />} />
-                        </Routes>
-                      </AdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/checkout"
-                    element={
-                      <PrivateRoute>
-                        <Checkout />
-                      </PrivateRoute>
-                    }
-                  />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      )}
-    </ThemeProvider>
-  </QueryClientProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        )}
+      </ThemeProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

@@ -22,6 +22,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/use-toast";
+import { SEO } from "@/components/SEO";
 
 interface QuickViewData {
   material?: string;
@@ -351,328 +352,352 @@ const Products = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen bg-gray-50"
-    >
-      {/* Announcement Banner */}
-      <div className="bg-primary/90 text-white py-3 px-4 text-center">
-        <p className="text-sm font-medium">
-          Free Shipping Sitewide on Every Order, Don't Miss Out!!
-        </p>
-      </div>
-
-      <div className="max-w-[2000px] mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <motion.h1
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="text-4xl font-bold text-gray-900 mb-4"
-          >
-            {selectedCategory === 'All' ? 'All Products' : selectedCategory}
-          </motion.h1>
-          <motion.p
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-gray-600"
-          >
-            Discover our collection of premium quality custom prints
-          </motion.p>
+    <>
+      <SEO 
+        title={`${selectedCategory === 'All' ? 'All Products' : selectedCategory} - Custom Print | Premium Custom Clothing`}
+        description={`Shop our ${selectedCategory.toLowerCase()} collection of premium custom printed clothing. High-quality ${selectedCategory === 'All' ? 'hoodies, t-shirts, and apparel' : selectedCategory.toLowerCase()} with custom designs. Fast delivery and bulk order options available.`}
+        keywords={[
+          `custom ${selectedCategory.toLowerCase()}`,
+          `printed ${selectedCategory.toLowerCase()}`,
+          'custom clothing india',
+          'custom print shop',
+          'premium clothing printing',
+          'bulk custom orders',
+          'personalized apparel',
+          'custom design printing',
+          'quality print service',
+          'custom merchandise',
+          'clothing customization',
+          'print on demand india',
+          'custom fashion wear',
+          'branded apparel printing',
+          'custom clothing store',
+          'best printing service'
+        ]}
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gray-50"
+      >
+        {/* Announcement Banner */}
+        <div className="bg-primary/90 text-white py-3 px-4 text-center">
+          <p className="text-sm font-medium">
+            Free Shipping Sitewide on Every Order, Don't Miss Out!!
+          </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Desktop Filters */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="hidden lg:block w-80 bg-white p-6 rounded-lg shadow-sm h-fit sticky top-4"
-          >
-            <FilterSection />
-          </motion.div>
-
-          {/* Mobile Filters */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                className="lg:hidden mb-4 w-full flex items-center justify-center gap-2"
-              >
-                <SlidersHorizontal size={20} />
-                Filters
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-full sm:w-[540px] bg-white">
-              <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
-              </SheetHeader>
-              <div className="mt-8">
-                <FilterSection />
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          <div className="flex-1">
-            {/* Filters Section */}
-            <motion.div
+        <div className="max-w-[2000px] mx-auto px-4 py-8">
+          {/* Header Section */}
+          <div className="mb-8">
+            <motion.h1
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="text-4xl font-bold text-gray-900 mb-4"
+            >
+              {selectedCategory === 'All' ? 'All Products' : selectedCategory}
+            </motion.h1>
+            <motion.p
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 rounded-lg shadow-sm"
+              transition={{ delay: 0.2 }}
+              className="text-gray-600"
             >
-              <div className="flex items-center gap-4">
-          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                  <SelectTrigger className="w-[200px] bg-white">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-                  <SelectContent className="bg-white">
-              {PRODUCT_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              Discover our collection of premium quality custom prints
+            </motion.p>
+          </div>
 
-                <Select value={selectedSort} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-[200px] bg-white">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    {SORT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-              <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                <button
-                  onClick={() => handleViewChange('grid')}
-                  className={`p-2 rounded-md transition-all ${
-                    selectedView === 'grid'
-                      ? 'bg-white shadow-sm text-primary'
-                      : 'text-gray-500 hover:text-primary'
-                  }`}
-                >
-                  <LayoutGrid size={20} />
-                </button>
-                <button
-                  onClick={() => handleViewChange('compact')}
-                  className={`p-2 rounded-md transition-all ${
-                    selectedView === 'compact'
-                      ? 'bg-white shadow-sm text-primary'
-                      : 'text-gray-500 hover:text-primary'
-                  }`}
-                >
-                  <Grid size={20} />
-                </button>
-                <button
-                  onClick={() => handleViewChange('list')}
-                  className={`p-2 rounded-md transition-all ${
-                    selectedView === 'list'
-                      ? 'bg-white shadow-sm text-primary'
-                      : 'text-gray-500 hover:text-primary'
-                  }`}
-                >
-                  <List size={20} />
-                </button>
-              </div>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Desktop Filters */}
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="hidden lg:block w-80 bg-white p-6 rounded-lg shadow-sm h-fit sticky top-4"
+            >
+              <FilterSection />
             </motion.div>
 
-            {/* Active Filters */}
-            {(selectedSizes.length > 0 || selectedColors.length > 0 || selectedStyles.length > 0) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap gap-2 mb-6"
-              >
-                {selectedSizes.map(size => (
-                  <Button
-                    key={size}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleSizeToggle(size)}
-                    className="rounded-full"
-                  >
-                    {size}
-                    <X size={14} className="ml-2" />
-                  </Button>
-                ))}
-                {selectedColors.map(color => (
-                  <Button
-                    key={color}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleColorToggle(color)}
-                    className="rounded-full"
-                  >
-                    {color}
-                    <X size={14} className="ml-2" />
-                  </Button>
-                ))}
-                {selectedStyles.map(style => (
-                  <Button
-                    key={style}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleStyleToggle(style)}
-                    className="rounded-full"
-                  >
-                    {style}
-                    <X size={14} className="ml-2" />
-                  </Button>
-                ))}
-              </motion.div>
-            )}
+            {/* Mobile Filters */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="lg:hidden mb-4 w-full flex items-center justify-center gap-2"
+                >
+                  <SlidersHorizontal size={20} />
+                  Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-full sm:w-[540px] bg-white">
+                <SheetHeader>
+                  <SheetTitle>Filters</SheetTitle>
+                </SheetHeader>
+                <div className="mt-8">
+                  <FilterSection />
+                </div>
+              </SheetContent>
+            </Sheet>
 
-            {/* Products Grid */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className={`grid gap-6 ${
-                selectedView === 'grid'
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                  : selectedView === 'compact'
-                  ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-                  : 'grid-cols-1'
-              }`}
-            >
-              {products?.map((product, index) => (
+            <div className="flex-1">
+              {/* Filters Section */}
+              <motion.div
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 rounded-lg shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                    <SelectTrigger className="w-[200px] bg-white">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {PRODUCT_CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={selectedSort} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-[200px] bg-white">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {SORT_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                  <button
+                    onClick={() => handleViewChange('grid')}
+                    className={`p-2 rounded-md transition-all ${
+                      selectedView === 'grid'
+                        ? 'bg-white shadow-sm text-primary'
+                        : 'text-gray-500 hover:text-primary'
+                    }`}
+                  >
+                    <LayoutGrid size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleViewChange('compact')}
+                    className={`p-2 rounded-md transition-all ${
+                      selectedView === 'compact'
+                        ? 'bg-white shadow-sm text-primary'
+                        : 'text-gray-500 hover:text-primary'
+                    }`}
+                  >
+                    <Grid size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleViewChange('list')}
+                    className={`p-2 rounded-md transition-all ${
+                      selectedView === 'list'
+                        ? 'bg-white shadow-sm text-primary'
+                        : 'text-gray-500 hover:text-primary'
+                    }`}
+                  >
+                    <List size={20} />
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Active Filters */}
+              {(selectedSizes.length > 0 || selectedColors.length > 0 || selectedStyles.length > 0) && (
                 <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{
-                    y: -8,
-                    transition: { duration: 0.3 },
-                  }}
-                  onClick={() => handleProductClick(product.id)}
-                  onHoverStart={() => {
-                    if (product.images && product.images.length > 1) {
+                  className="flex flex-wrap gap-2 mb-6"
+                >
+                  {selectedSizes.map(size => (
+                    <Button
+                      key={size}
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleSizeToggle(size)}
+                      className="rounded-full"
+                    >
+                      {size}
+                      <X size={14} className="ml-2" />
+                    </Button>
+                  ))}
+                  {selectedColors.map(color => (
+                    <Button
+                      key={color}
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleColorToggle(color)}
+                      className="rounded-full"
+                    >
+                      {color}
+                      <X size={14} className="ml-2" />
+                    </Button>
+                  ))}
+                  {selectedStyles.map(style => (
+                    <Button
+                      key={style}
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleStyleToggle(style)}
+                      className="rounded-full"
+                    >
+                      {style}
+                      <X size={14} className="ml-2" />
+                    </Button>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* Products Grid */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className={`grid gap-6 ${
+                  selectedView === 'grid'
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                    : selectedView === 'compact'
+                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+                    : 'grid-cols-1'
+                }`}
+              >
+                {products?.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{
+                      y: -8,
+                      transition: { duration: 0.3 },
+                    }}
+                    onClick={() => handleProductClick(product.id)}
+                    onHoverStart={() => {
+                      if (product.images && product.images.length > 1) {
+                        setHoveredImageIndex(prev => ({
+                          ...prev,
+                          [product.id]: 1
+                        }));
+                      }
+                    }}
+                    onHoverEnd={() => {
                       setHoveredImageIndex(prev => ({
                         ...prev,
-                        [product.id]: 1
+                        [product.id]: 0
                       }));
-                    }
-                  }}
-                  onHoverEnd={() => {
-                    setHoveredImageIndex(prev => ({
-                      ...prev,
-                      [product.id]: 0
-                    }));
-                  }}
-                  className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${
-                    selectedView === 'list' ? 'flex gap-6' : ''
-                  }`}
-                >
-                  <div className={`relative ${selectedView === 'list' ? 'w-1/3' : 'w-full'}`}>
-                    <AnimatePresence mode="wait">
-                      <motion.img
-                        key={hoveredImageIndex[product.id] || 0}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        src={product.images?.[hoveredImageIndex[product.id] || 0] || '/placeholder-product.jpg'}
-                        alt={product.title}
-                        className="w-full h-[300px] object-cover"
-                      />
-                    </AnimatePresence>
-                    {product.is_new_arrival && (
-                      <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        NEW
-                      </div>
-                    )}
-                    {product.sale_percentage && product.sale_percentage > 0 && (
-                      <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        SAVE {product.sale_percentage}%
-                      </div>
-                    )}
-                  </div>
-                  <div className={`p-4 ${selectedView === 'list' ? 'w-2/3' : ''}`}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
-                    <p className="text-gray-600 mb-3">{product.description}</p>
-                    {/* Colors */}
-                    {product.colors && product.colors.length > 0 && (
-                      <div className="flex gap-1 mb-3">
-                        {product.colors.map(color => (
-                          <div
-                            key={color}
-                            className="w-4 h-4 rounded-full border border-gray-200"
-                            style={{ backgroundColor: COLORS.find(c => c.name === color)?.value }}
-                            title={color}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {/* Sizes */}
-                    {product.sizes && product.sizes.length > 0 && (
-                      <div className="flex gap-1 mb-3">
-                        {product.sizes.map(size => (
-                          <div
-                            key={size}
-                            className="text-xs bg-gray-100 px-2 py-1 rounded"
-                          >
-                            {size}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-red-500">₹{product.price.toLocaleString('en-IN')}</span>
-                        {product.sale_percentage && product.sale_percentage > 0 && (
-                          <>
-                            <span className="text-sm text-gray-500 line-through">
-                              ₹{Math.round(product.price / (1 - product.sale_percentage / 100)).toLocaleString('en-IN')}
-                            </span>
-                            <span className="text-red-500 text-sm font-semibold">
-                              ({product.sale_percentage}% OFF)
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={(e) => handleAddToCart(e, product.id)}
-                        className="relative bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-                      >
-                        Add to Cart
-                        {cartCounts[product.id] && cartCounts[product.id] > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">
-                            {cartCounts[product.id]}
-                          </span>
-                        )}
-                      </motion.button>
+                    }}
+                    className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${
+                      selectedView === 'list' ? 'flex gap-6' : ''
+                    }`}
+                  >
+                    <div className={`relative ${selectedView === 'list' ? 'w-1/3' : 'w-full'}`}>
+                      <AnimatePresence mode="wait">
+                        <motion.img
+                          key={hoveredImageIndex[product.id] || 0}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          src={product.images?.[hoveredImageIndex[product.id] || 0] || '/placeholder-product.jpg'}
+                          alt={product.title}
+                          className="w-full h-[300px] object-cover"
+                        />
+                      </AnimatePresence>
+                      {product.is_new_arrival && (
+                        <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          NEW
+                        </div>
+                      )}
+                      {product.sale_percentage && product.sale_percentage > 0 && (
+                        <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          SAVE {product.sale_percentage}%
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Empty State */}
-            {products?.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">No Products Found</h3>
-                <p className="text-gray-600">Try adjusting your filters to find what you're looking for.</p>
+                    <div className={`p-4 ${selectedView === 'list' ? 'w-2/3' : ''}`}>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
+                      <p className="text-gray-600 mb-3">{product.description}</p>
+                      {/* Colors */}
+                      {product.colors && product.colors.length > 0 && (
+                        <div className="flex gap-1 mb-3">
+                          {product.colors.map(color => (
+                            <div
+                              key={color}
+                              className="w-4 h-4 rounded-full border border-gray-200"
+                              style={{ backgroundColor: COLORS.find(c => c.name === color)?.value }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {/* Sizes */}
+                      {product.sizes && product.sizes.length > 0 && (
+                        <div className="flex gap-1 mb-3">
+                          {product.sizes.map(size => (
+                            <div
+                              key={size}
+                              className="text-xs bg-gray-100 px-2 py-1 rounded"
+                            >
+                              {size}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl font-bold text-red-500">₹{product.price.toLocaleString('en-IN')}</span>
+                          {product.sale_percentage && product.sale_percentage > 0 && (
+                            <>
+                              <span className="text-sm text-gray-500 line-through">
+                                ₹{Math.round(product.price / (1 - product.sale_percentage / 100)).toLocaleString('en-IN')}
+                              </span>
+                              <span className="text-red-500 text-sm font-semibold">
+                                ({product.sale_percentage}% OFF)
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => handleAddToCart(e, product.id)}
+                          className="relative bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+                        >
+                          Add to Cart
+                          {cartCounts[product.id] && cartCounts[product.id] > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">
+                              {cartCounts[product.id]}
+                            </span>
+                          )}
+                        </motion.button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </motion.div>
-            )}
+
+              {/* Empty State */}
+              {products?.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16"
+                >
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">No Products Found</h3>
+                  <p className="text-gray-600">Try adjusting your filters to find what you're looking for.</p>
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

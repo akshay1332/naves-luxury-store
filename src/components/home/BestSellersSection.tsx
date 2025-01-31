@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function BestSellersSection() {
   const { data: products, isLoading, error } = useQuery({
@@ -23,6 +24,16 @@ export function BestSellersSection() {
       return data;
     },
   });
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
 
   if (isLoading) {
     return (
@@ -54,11 +65,21 @@ export function BestSellersSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+        >
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              className="h-full"
+            />
           ))}
-        </div>
+        </motion.div>
 
         <div className="text-center mt-12">
           <Button variant="outline" size="lg">

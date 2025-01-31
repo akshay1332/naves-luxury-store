@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /products
+Allow: /about
+Allow: /contact
+Disallow: /admin
+Disallow: /cart
+Disallow: /profile
+Disallow: /checkout
+Disallow: /login
+
+Sitemap: https://customprint.com/sitemap.xml
+
+# Crawl-delay: 10 

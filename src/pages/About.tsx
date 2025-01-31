@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Printer, Palette, Users, Sparkles, Zap, Target, Clock, Shield } from "lucide-react";
 import { Timeline } from "@/components/ui/Timeline";
 import { AnimatedTestimonials } from "@/components/ui/AnimatedTestimonials";
+import { SEO } from "@/components/SEO";
 
 const About = () => {
   const timelineData = [
@@ -143,62 +144,85 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Hero Section with enhanced animation */}
-      <section className="relative h-[80vh] overflow-hidden">
-        <motion.div
-          initial={{ scale: 1.2, filter: "brightness(0.8)" }}
-          animate={{ scale: 1, filter: "brightness(1)" }}
-          transition={{ duration: 2 }}
-          className="absolute inset-0"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1588412079929-790b9f593d8e?q=80&w=2070&auto=format&fit=crop"
-            alt="Custom Printing"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80"></div>
-        </motion.div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="text-center px-4"
+    <>
+      <SEO 
+        title="About Custom Print - Leading Custom Clothing Printing Service in India"
+        description="Custom Print is India's premier custom clothing printing service. With state-of-the-art printing technology, premium materials, and expert craftsmanship, we deliver high-quality custom printed apparel. Learn about our journey, values, and commitment to excellence."
+        keywords={[
+          'custom print company',
+          'clothing printing service india',
+          'about custom print',
+          'custom apparel printing',
+          'premium printing service',
+          'custom clothing manufacturer',
+          'printing technology india',
+          'custom print history',
+          'clothing customization experts',
+          'professional printing service',
+          'custom print values',
+          'quality printing guarantee',
+          'custom clothing company',
+          'printing expertise india',
+          'trusted printing service',
+          'custom print mission'
+        ]}
+      />
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        {/* Hero Section with enhanced animation */}
+        <section className="relative h-[80vh] overflow-hidden">
+          <motion.div
+            initial={{ scale: 1.2, filter: "brightness(0.8)" }}
+            animate={{ scale: 1, filter: "brightness(1)" }}
+            transition={{ duration: 2 }}
+            className="absolute inset-0"
           >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 1 }}
-              className="w-24 h-24 bg-white/10 backdrop-blur-lg rounded-full mx-auto mb-8 flex items-center justify-center"
-            >
-              <Zap className="w-12 h-12 text-yellow-400" />
-            </motion.div>
-            <h1 className="text-5xl md:text-7xl text-white font-bold mb-6 font-serif tracking-tight">
-              Custom Print
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto px-4 font-light leading-relaxed">
-              Transforming Ideas into Stunning Reality with Premium Quality Printing Solutions
-            </p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5 }}
-              className="mt-12"
-            >
-              <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold rounded-full text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 transform hover:-translate-y-1">
-                Explore Our Services
-              </button>
-            </motion.div>
+            <img
+              src="https://images.unsplash.com/photo-1588412079929-790b9f593d8e?q=80&w=2070&auto=format&fit=crop"
+              alt="Custom Printing"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80"></div>
           </motion.div>
-        </div>
-      </section>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="text-center px-4"
+            >
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 1 }}
+                className="w-24 h-24 bg-white/10 backdrop-blur-lg rounded-full mx-auto mb-8 flex items-center justify-center"
+              >
+                <Zap className="w-12 h-12 text-yellow-400" />
+              </motion.div>
+              <h1 className="text-5xl md:text-7xl text-white font-bold mb-6 font-serif tracking-tight">
+                Custom Print
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto px-4 font-light leading-relaxed">
+                Transforming Ideas into Stunning Reality with Premium Quality Printing Solutions
+              </p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5 }}
+                className="mt-12"
+              >
+                <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold rounded-full text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 transform hover:-translate-y-1">
+                  Explore Our Services
+                </button>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-900 to-gray-800">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
+        {/* Stats Section */}
+        <section className="py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
         <motion.div 
                 key={index}
           initial={{ opacity: 0, y: 20 }}
@@ -354,6 +378,7 @@ const About = () => {
         </motion.div>
       </section>
     </div>
+    </>
   );
 };
 

@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { theme as themeConfig } from '../styles/theme';
+import logo from '../assets/kmc_20241113_003532.png'
 
 interface ThemeProps {
   $currentTheme: 'light' | 'dark';
@@ -34,31 +35,47 @@ const StyledNav = styled(motion.nav)<ThemeProps>`
     : themeConfig.light.shadows.default};
 `;
 
-const BrandText = styled(motion.h1)<ThemeProps>`
-  font-size: 2.25rem;
-  font-family: 'Playfair Display', serif;
-  font-weight: bold;
-  letter-spacing: -0.025em;
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.gradients.primary
-    : themeConfig.light.gradients.primary};
-  -webkit-background-clip: text;
+const LogoContainer = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 191, 165, 0.05);
+  }
+`;
+
+const LogoImage = styled(motion.img)`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+`;
+
+const BrandText = styled(motion.div)`
+  font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #00BFA5 0%, #00E5FF 100%);
   background-clip: text;
+  -webkit-background-clip: text;
   color: transparent;
-  transition: all 0.3s ease-in-out;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+  letter-spacing: 1px;
   position: relative;
-  display: inline-block;
+  padding: 0.25rem 0;
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -4px;
+    bottom: 0;
     left: 0;
     width: 100%;
     height: 2px;
-    background: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.gradients.primary
-      : themeConfig.light.gradients.primary};
+    background: linear-gradient(135deg, #00BFA5 0%, #00E5FF 100%);
     transform: scaleX(0);
     transform-origin: right;
     transition: transform 0.4s ease-out;
@@ -172,20 +189,21 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast({
+        title: "Success",
+        description: "Logged out successfully.",
+      });
+      navigate('/login');
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to log out.",
+        description: "Failed to log out. Please try again.",
       });
-      return;
     }
-    toast({
-      title: "Success",
-      description: "Logged out successfully.",
-    });
-    navigate('/login');
   };
 
   const handleLogin = () => {
@@ -210,13 +228,43 @@ const Navbar = () => {
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center">
             <Link to="/">
-              <BrandText
-                $currentTheme={currentTheme}
+              <LogoContainer
                 whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Custom Prints
-              </BrandText>
+                <LogoImage
+                  src={logo}
+                  alt="Custom Print Logo"
+                  initial={{ rotate: -180, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  whileHover={{ 
+                    rotate: 15,
+                    boxShadow: "0 0 15px rgba(0, 191, 165, 0.5)"
+                  }}
+                />
+                <BrandText
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ 
+                    delay: 0.3, 
+                    duration: 0.5,
+                    type: "spring",
+                    stiffness: 100 
+                  }}
+                  whileHover={{
+                    scale: 1.05,
+                    textShadow: "0 0 12px rgba(0, 191, 165, 0.4)",
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 10
+                    }
+                  }}
+                >
+                  Custom Print
+                </BrandText>
+              </LogoContainer>
             </Link>
           </div>
 
