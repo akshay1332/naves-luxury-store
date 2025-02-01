@@ -12,7 +12,7 @@ interface PaymentSectionProps {
   subtotal: number;
   discountAmount: number;
   total: number;
-  onPaymentMethodChange: (method: "cod" | "online") => void;
+  onPaymentMethodChange: (method: "cod" | "card" | "upi") => void;
   onPaymentComplete: (paymentId: string, orderId: string) => void;
   userEmail: string;
   userName: string;
@@ -28,17 +28,17 @@ export const PaymentSection = ({
   userEmail,
   userName
 }: PaymentSectionProps) => {
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "card" | "upi">("cod");
   const [processingPayment, setProcessingPayment] = useState(false);
   const { toast } = useToast();
 
-  const handlePaymentMethodChange = (value: "cod" | "online") => {
+  const handlePaymentMethodChange = (value: "cod" | "card" | "upi") => {
     setPaymentMethod(value);
     onPaymentMethodChange(value);
   };
 
   const handlePayment = async () => {
-    if (paymentMethod === "online") {
+    if (paymentMethod === "card" || paymentMethod === "upi") {
       setProcessingPayment(true);
       try {
         // Load Razorpay SDK
@@ -49,6 +49,10 @@ export const PaymentSection = ({
 
         // Create Razorpay order
         const { id: razorpayOrderId } = await createRazorpayOrder(total * 100, "ORDER123");
+
+        if (!razorpayOrderId) {
+          throw new Error("Failed to create Razorpay order");
+        }
 
         // Configure Razorpay options
         const options = {
@@ -61,6 +65,7 @@ export const PaymentSection = ({
           prefill: {
             name: userName,
             email: userEmail,
+            method: paymentMethod === "upi" ? "upi" : "card"
           },
           handler: function (response: any) {
             if (response.razorpay_payment_id) {
@@ -86,6 +91,7 @@ export const PaymentSection = ({
         // Initialize payment
         await initializeRazorpayPayment(options);
       } catch (error: any) {
+        console.error("Payment error:", error);
         toast({
           variant: "destructive",
           title: "Payment Failed",
@@ -114,8 +120,12 @@ export const PaymentSection = ({
           className="space-y-2"
         >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="online" id="online" />
-            <Label htmlFor="online">Pay Online (Razorpay)</Label>
+            <RadioGroupItem value="card" id="card" />
+            <Label htmlFor="card">Credit/Debit Card</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="upi" id="upi" />
+            <Label htmlFor="upi">UPI Payment</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="cod" id="cod" />
@@ -155,7 +165,7 @@ export const PaymentSection = ({
           ) : loading ? (
             "Processing..."
           ) : (
-            `Place Order${paymentMethod === 'online' ? ' & Pay Now' : ''}`
+            `Place Order${paymentMethod !== 'cod' ? ' & Pay Now' : ''}`
           )}
         </Button>
       </CardFooter>
