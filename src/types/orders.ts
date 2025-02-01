@@ -1,6 +1,33 @@
 import { Database } from "@/integrations/supabase/types";
 
-export type Order = Database["public"]["Tables"]["orders"]["Row"] & {
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+export interface Order {
+  id: string;
+  user_id: string;
+  status: OrderStatus;
+  total_amount: number;
+  shipping_address: {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  billing_address?: {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
   invoice_data: {
     items: Array<{
       products: {
@@ -15,44 +42,23 @@ export type Order = Database["public"]["Tables"]["orders"]["Row"] & {
     }>;
     payment_method: string;
     custom_design?: {
-      type: "upload" | "link";
+      type: 'upload' | 'link';
       url: string;
       instructions?: string;
     };
   };
-  shipping_address: {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
+  payment_status: PaymentStatus;
+  payment_method?: string;
+  payment_id?: string;
   tracking_info?: {
     number?: string;
     url?: string;
     carrier?: string;
   };
-  timestamps?: {
-    processed_at?: string;
-    shipped_at?: string;
-    delivered_at?: string;
-    cancelled_at?: string;
-  };
-};
-
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
-
-export interface OrderAnalytics {
-  order_date: string;
-  total_orders: number;
-  total_revenue: number;
-  cod_orders: number;
-  pending_payments: number;
-  completed_payments: number;
-  average_order_value: number;
-  custom_design_orders: number;
-} 
+  created_at: string;
+  updated_at: string;
+  invoice_number?: string;
+  notes?: string;
+  discount_amount?: number;
+  applied_coupon_id?: string;
+}
