@@ -7,7 +7,7 @@ interface SidebarContextProps {
   setIsOpen: (value: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
-  state?: string;
+  state: "open" | "closed";
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -22,7 +22,6 @@ export function useSidebar() {
 
 interface SidebarProviderProps {
   children: React.ReactNode;
-  defaultOpen?: boolean;
   open?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   animate?: boolean;
@@ -30,12 +29,11 @@ interface SidebarProviderProps {
 
 export function SidebarProvider({ 
   children, 
-  defaultOpen = true,
   open: openProp,
   setOpen: setOpenProp,
   animate = true
 }: SidebarProviderProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState(true);
   const [isMobile] = useState(window.innerWidth < 768);
 
   const open = openProp !== undefined ? openProp : isOpen;
@@ -91,11 +89,12 @@ export function SidebarItem({ children, className, asChild, ...props }: {
   children: React.ReactNode; 
   className?: string;
   asChild?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer",
         className
       )}
       {...props}

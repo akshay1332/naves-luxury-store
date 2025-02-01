@@ -65,7 +65,7 @@ export function AdminSidebar() {
   ];
 
   return (
-    <SidebarProvider defaultOpen={open}>
+    <SidebarProvider open={open} setOpen={setOpen}>
       <Sidebar>
         <SidebarContent className="flex flex-col justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -88,7 +88,7 @@ export function AdminSidebar() {
                 <span>Settings</span>
               </Link>
             </SidebarItem>
-            <SidebarItem onClick={handleLogout} className="cursor-pointer">
+            <SidebarItem onClick={handleLogout}>
               <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
               <span>Logout</span>
             </SidebarItem>
