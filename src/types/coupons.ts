@@ -5,6 +5,7 @@ export interface DatabaseCoupon {
   category?: string;
   discount_type: "percentage" | "fixed";
   discount_value: number;
+  discount_percentage: number;
   min_purchase_amount: number;
   max_discount_amount: number;
   valid_from: string;

@@ -14,7 +14,7 @@ export interface Product {
   is_new_arrival?: boolean;
   style_category?: string;
   is_trending?: boolean;
-  quick_view_data?: {
+  quick_view_data: {
     material: string;
     fit: string;
     care_instructions: string[];
@@ -28,4 +28,11 @@ export interface Product {
   key_highlights?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+  coupons?: Array<{
+    id: string;
+    code: string;
+    discount_percentage: number;
+    valid_until: string;
+    is_active: boolean;
+  }>;
 }
