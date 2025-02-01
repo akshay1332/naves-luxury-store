@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { loadRazorpayScript, createRazorpayOrder, initializeRazorpayPayment } from "@/lib/razorpay";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,16 +41,19 @@ export const PaymentSection = ({
     if (paymentMethod === "online") {
       setProcessingPayment(true);
       try {
+        // Load Razorpay SDK
         const isLoaded = await loadRazorpayScript();
         if (!isLoaded) {
           throw new Error("Failed to load Razorpay SDK");
         }
 
-        const { id: razorpayOrderId } = await createRazorpayOrder(total, "ORDER123");
+        // Create Razorpay order
+        const { id: razorpayOrderId } = await createRazorpayOrder(total * 100, "ORDER123");
 
+        // Configure Razorpay options
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-          amount: total * 100,
+          amount: total * 100, // Amount in paise
           currency: "INR",
           name: "Your Store Name",
           description: "Purchase Payment",
@@ -60,20 +63,39 @@ export const PaymentSection = ({
             email: userEmail,
           },
           handler: function (response: any) {
-            onPaymentComplete(response.razorpay_payment_id, response.razorpay_order_id);
+            if (response.razorpay_payment_id) {
+              onPaymentComplete(response.razorpay_payment_id, response.razorpay_order_id);
+              toast({
+                title: "Payment Successful",
+                description: "Your payment has been processed successfully.",
+              });
+            }
           },
+          modal: {
+            ondismiss: function() {
+              setProcessingPayment(false);
+              toast({
+                variant: "destructive",
+                title: "Payment Cancelled",
+                description: "You cancelled the payment process.",
+              });
+            }
+          }
         };
 
+        // Initialize payment
         await initializeRazorpayPayment(options);
-      } catch (error) {
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Payment Failed",
           description: error.message || "Something went wrong with the payment",
         });
-      } finally {
         setProcessingPayment(false);
       }
+    } else {
+      // Handle COD
+      onPaymentComplete("cod_payment", "cod_order");
     }
   };
 
@@ -125,7 +147,16 @@ export const PaymentSection = ({
           disabled={loading || processingPayment}
           onClick={handlePayment}
         >
-          {processingPayment ? "Processing Payment..." : loading ? "Processing..." : "Place Order"}
+          {processingPayment ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing Payment...
+            </div>
+          ) : loading ? (
+            "Processing..."
+          ) : (
+            `Place Order${paymentMethod === 'online' ? ' & Pay Now' : ''}`
+          )}
         </Button>
       </CardFooter>
     </Card>
