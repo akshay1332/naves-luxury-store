@@ -7,6 +7,7 @@ interface SidebarContextProps {
   setIsOpen: (value: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
+  state?: string;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -22,16 +23,34 @@ export function useSidebar() {
 interface SidebarProviderProps {
   children: React.ReactNode;
   defaultOpen?: boolean;
+  open?: boolean;
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  animate?: boolean;
 }
 
-export function SidebarProvider({ children, defaultOpen = true }: SidebarProviderProps) {
+export function SidebarProvider({ 
+  children, 
+  defaultOpen = true,
+  open: openProp,
+  setOpen: setOpenProp,
+  animate = true
+}: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isMobile] = useState(window.innerWidth < 768);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const open = openProp !== undefined ? openProp : isOpen;
+  const setOpen = setOpenProp || setIsOpen;
+
+  const toggleSidebar = () => setOpen(!open);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen, isMobile, toggleSidebar }}>
+    <SidebarContext.Provider value={{ 
+      isOpen: open, 
+      setIsOpen: setOpen, 
+      isMobile, 
+      toggleSidebar,
+      state: open ? "open" : "closed"
+    }}>
       {children}
     </SidebarContext.Provider>
   );
