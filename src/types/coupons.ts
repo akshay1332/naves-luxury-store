@@ -3,7 +3,8 @@ export interface DatabaseCoupon {
   code: string;
   description?: string;
   category?: string;
-  discount_percentage: number;
+  discount_type: "percentage" | "fixed";
+  discount_value: number;
   min_purchase_amount: number;
   max_discount_amount: number;
   valid_from: string;
@@ -20,7 +21,8 @@ export interface CouponFormData {
   code: string;
   description?: string;
   category?: string;
-  discount_percentage: number;
+  discount_type: "percentage" | "fixed";
+  discount_value: number;
   min_purchase_amount: number;
   max_discount_amount: number;
   valid_from: string;
