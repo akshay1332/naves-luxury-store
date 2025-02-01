@@ -135,8 +135,6 @@ export type Database = {
           usage_limit: number
           valid_from: string
           valid_until: string
-          discount_type: 'percentage' | 'fixed';
-          discount_value: number;
         }
         Insert: {
           category?: string | null
@@ -154,8 +152,6 @@ export type Database = {
           usage_limit?: number
           valid_from: string
           valid_until: string
-          discount_type: 'percentage' | 'fixed';
-          discount_value: number;
         }
         Update: {
           category?: string | null
@@ -173,8 +169,6 @@ export type Database = {
           usage_limit?: number
           valid_from?: string
           valid_until?: string
-          discount_type?: 'percentage' | 'fixed';
-          discount_value?: number;
         }
         Relationships: [
           {
@@ -872,7 +866,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           postal_code_pattern?: string | null
-          state?: string
+          state?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -885,7 +879,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           postal_code_pattern?: string | null
-          state?: string
+          state?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1086,7 +1080,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -1098,10 +1092,10 @@ export type Tables<
         PublicSchema["Views"])
     ? (PublicSchema["Tables"] &
         PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R
-    }
-    ? R
-    : never
+        Row: infer R
+      }
+      ? R
+      : never
     : never
 
 export type TablesInsert<
@@ -1173,128 +1167,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-export interface DatabaseCoupon {
-  id: string;
-  code: string;
-  description: string | null;
-  category: string | null;
-  discount_type: 'percentage' | 'fixed';
-  discount_value: number;
-  min_purchase_amount: number;
-  max_discount_amount: number;
-  valid_from: string;
-  valid_until: string;
-  is_active: boolean;
-  usage_limit: number;
-  times_used: number;
-  product_id: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
-export interface Order {
-  id: string;
-  user_id: string;
-  status: OrderStatus;
-  total_amount: number;
-  shipping_address: {
-    full_name: string;
-    address_line1: string;
-    address_line2?: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    phone: string;
-  };
-  billing_address?: {
-    full_name: string;
-    address_line1: string;
-    address_line2?: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    phone: string;
-  };
-  invoice_data: {
-    items: {
-      product: {
-        id: string;
-        title: string;
-        price: number;
-        images?: string[];
-      };
-      quantity: number;
-      size?: string;
-      color?: string;
-    }[];
-    payment_method: string;
-    custom_design?: {
-      type: 'link' | 'upload';
-      url: string;
-      instructions?: string;
-    };
-  };
-  created_at: string;
-  updated_at: string;
-  invoice_number: string | null;
-  applied_coupon_id: string | null;
-  discount_amount: number | null;
-  payment_status: string | null;
-  payment_method: string | null;
-  payment_id: string | null;
-  tracking_number: string | null;
-  notes: string | null;
-}
-
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-
-export interface ProfileData {
-  id: string;
-  email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean | null;
-  phone_number: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  notification_preferences: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Product {
-  id: string;
-  title: string;
-  description: string | null;
-  price: number;
-  category: string | null;
-  images: string[] | null;
-  sizes: string[] | null;
-  colors: string[] | null;
-  stock_quantity: number | null;
-  is_featured: boolean | null;
-  is_best_seller: boolean | null;
-  is_new_arrival: boolean | null;
-  is_trending: boolean | null;
-  gender: string | null;
-  style_category: string | null;
-  quick_view_data: {
-    material: string;
-    fit: string;
-    care_instructions: string[];
-    features: string[];
-  } | null;
-  size_guide_info: Record<string, unknown> | null;
-  sale_percentage: number | null;
-  sale_start_date: string | null;
-  sale_end_date: string | null;
-  video_url: string | null;
-  key_highlights: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-}
