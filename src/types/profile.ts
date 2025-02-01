@@ -9,7 +9,7 @@ export interface ProfileData {
   city: string | null;
   state: string | null;
   country: string | null;
-  notification_preferences: Record<string, unknown>;
+  notification_preferences: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
 }
