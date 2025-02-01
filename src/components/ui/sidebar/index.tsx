@@ -48,7 +48,7 @@ export function Sidebar({ children, className }: SidebarProps) {
   return (
     <motion.div
       initial={{ width: "0px" }}
-      animate={{ width: isOpen ? "240px" : "0px" }}
+      animate={{ width: isOpen ? "240px" : "60px" }}
       transition={{ duration: 0.3 }}
       className={cn(
         "h-screen bg-background border-r flex-shrink-0 overflow-hidden",
