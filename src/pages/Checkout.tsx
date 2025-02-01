@@ -7,18 +7,6 @@ import { ShoppingBag, CreditCard, Truck, Upload, Link as LinkIcon, AlertCircle, 
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 
 interface CheckoutFormData {
@@ -50,13 +38,13 @@ const Checkout = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [formData, setFormData] = useState<CheckoutFormData>({
     shippingAddress: {
-    fullName: "",
+      fullName: "",
       email: "",
       phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
     },
     paymentMethod: "cod",
     wantCustomDesign: false,
@@ -93,18 +81,22 @@ const Checkout = () => {
         quantity,
         products (
           id,
+          title,
           price,
-          sale_percentage
+          sale_percentage,
+          images
         )
       `)
       .eq('user_id', user.id);
 
-    const total = cartItems?.reduce((sum, item) => {
+    if (!cartItems) return;
+
+    const total = cartItems.reduce((sum, item) => {
       const price = item.products?.price || 0;
       const salePercentage = item.products?.sale_percentage || 0;
       const discountedPrice = price * (1 - salePercentage / 100);
       return sum + (item.quantity * discountedPrice);
-    }, 0) || 0;
+    }, 0);
 
     setSubtotal(total);
   };
@@ -113,7 +105,6 @@ const Checkout = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (2MB limit)
     if (file.size > 2 * 1024 * 1024) {
       toast({
         variant: "destructive",
@@ -123,7 +114,6 @@ const Checkout = () => {
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith("image/")) {
       toast({
         variant: "destructive",
@@ -149,14 +139,10 @@ const Checkout = () => {
         .upload(fileName, file, {
           cacheControl: "3600",
           upsert: false,
-          onUploadProgress: (progress) => {
-            setUploadProgress((progress.loaded / progress.total) * 100);
-          },
         });
 
       if (error) throw error;
 
-      // Get public URL
       const { data: publicURL } = supabase.storage
         .from("custom-designs")
         .getPublicUrl(fileName);
@@ -175,44 +161,67 @@ const Checkout = () => {
     try {
       let customDesignUrl = formData.customDesignLink || "";
 
-      // If there's a file to upload
       if (formData.wantCustomDesign && formData.customDesignType === "upload" && formData.customDesignFile) {
         customDesignUrl = await uploadCustomDesign(formData.customDesignFile);
       }
 
       const total = subtotal - discountAmount;
 
-      // Generate invoice number (you might want to adjust this format)
-      const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      // Get cart items for order
+      const { data: cartItems } = await supabase
+        .from('cart_items')
+        .select(`
+          quantity,
+          size,
+          color,
+          products (
+            id,
+            title,
+            price,
+            images
+          )
+        `)
+        .eq('user_id', user?.id);
 
-      // Create the order
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error("Cart is empty");
+      }
+
+      // Format cart items for invoice_data
+      const orderItems = cartItems.map(item => ({
+        products: {
+          id: item.products?.id,
+          title: item.products?.title,
+          price: item.products?.price,
+          images: item.products?.images
+        },
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color
+      }));
+
+      // Create the order with properly structured invoice_data
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id,
           status: 'pending',
           total_amount: total,
-          shipping_address: {
-            ...formData.shippingAddress,
-            country: 'US' // Add default country or make it configurable
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          invoice_number: invoiceNumber,
+          shipping_address: formData.shippingAddress,
           invoice_data: {
-            items: [],
+            items: orderItems,
             payment_method: formData.paymentMethod,
-            custom_design: formData.wantCustomDesign
-              ? {
-                  type: formData.customDesignType,
-                  url: customDesignUrl,
-                  instructions: formData.specialInstructions
-                }
-              : null
+            ...(formData.wantCustomDesign && {
+              custom_design: {
+                type: formData.customDesignType,
+                url: customDesignUrl,
+                instructions: formData.specialInstructions
+              }
+            })
           },
           discount_amount: discountAmount,
-          updated_by: user?.id,
-          tracking_number: null // Will be added when shipping is processed
+          applied_coupon_id: appliedCouponId,
+          payment_status: 'pending'
         })
         .select()
         .single();
@@ -221,12 +230,9 @@ const Checkout = () => {
 
       // Update coupon usage if one was applied
       if (appliedCouponId) {
-        const { error: couponError } = await supabase
-          .rpc('increment_coupon_usage', {
-            coupon_id: appliedCouponId
-          });
-
-        if (couponError) throw couponError;
+        await supabase.rpc('increment_coupon_usage', {
+          coupon_id: appliedCouponId
+        });
       }
 
       // Clear cart

@@ -490,8 +490,11 @@ export type Database = {
           gateway_response: Json | null
           id: string
           order_id: string | null
+          payment_gateway: string | null
           payment_id: string
           payment_method: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
           status: string
           updated_at: string | null
         }
@@ -502,8 +505,11 @@ export type Database = {
           gateway_response?: Json | null
           id?: string
           order_id?: string | null
+          payment_gateway?: string | null
           payment_id: string
           payment_method: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           status: string
           updated_at?: string | null
         }
@@ -514,8 +520,11 @@ export type Database = {
           gateway_response?: Json | null
           id?: string
           order_id?: string | null
+          payment_gateway?: string | null
           payment_id?: string
           payment_method?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           status?: string
           updated_at?: string | null
         }
