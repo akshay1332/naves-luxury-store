@@ -1,62 +1,27 @@
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
 
 export interface Order {
   id: string;
   user_id: string;
   status: OrderStatus;
   total_amount: number;
-  shipping_address: {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  billing_address?: {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  invoice_data: {
-    items: Array<{
-      products: {
-        id: string;
-        title: string;
-        price: number;
-        images?: string[];
-      };
-      quantity: number;
-      size?: string;
-      color?: string;
-    }>;
-    payment_method: string;
-    custom_design?: {
-      type: 'upload' | 'link';
-      url: string;
-      instructions?: string;
-    };
-  };
-  payment_status: PaymentStatus;
-  payment_method?: string;
-  payment_id?: string;
-  tracking_info?: {
-    number?: string;
-    url?: string;
-    carrier?: string;
-  };
+  shipping_address: Record<string, unknown>;
+  billing_address?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   invoice_number?: string;
-  notes?: string;
-  discount_amount?: number;
+  invoice_data?: Record<string, unknown>;
   applied_coupon_id?: string;
+  discount_amount?: number;
+  payment_status?: string;
+  payment_method?: string;
+  payment_id?: string;
+  notes?: string;
+  tracking_number?: string;
+  order_status_history?: Array<{
+    id: string;
+    status: OrderStatus;
+    created_at: string;
+    notes?: string;
+  }>;
 }

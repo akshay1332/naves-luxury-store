@@ -1,109 +1,87 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import React, { createContext, useContext, useState } from "react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface SidebarContextProps {
   isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
+  setIsOpen: (value: boolean) => void;
+  isMobile: boolean;
+  toggleSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
-export const useSidebar = () => {
+export function useSidebar() {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
+    throw new Error("useSidebar must be used within a SidebarProvider");
   }
   return context;
-};
+}
 
 interface SidebarProviderProps {
   children: React.ReactNode;
   defaultOpen?: boolean;
 }
 
-export const SidebarProvider = ({ children, defaultOpen = true }: SidebarProviderProps) => {
+export function SidebarProvider({ children, defaultOpen = true }: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isMobile] = useState(window.innerWidth < 768);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen }}>
+    <SidebarContext.Provider value={{ isOpen, setIsOpen, isMobile, toggleSidebar }}>
       {children}
     </SidebarContext.Provider>
   );
-};
-
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
 }
 
-export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
-  ({ className, children, ...props }, ref) => {
-    const { isOpen } = useSidebar();
+interface SidebarProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-    return (
-      <motion.div
-        ref={ref}
-        className={cn(
-          'fixed left-0 top-0 z-40 h-screen w-64 -translate-x-full transform bg-white transition-transform duration-300 ease-in-out dark:bg-gray-800',
-          isOpen && 'translate-x-0',
-          className
-        )}
-        initial={false}
-        animate={{ x: isOpen ? 0 : '-100%' }}
-        transition={{ duration: 0.3 }}
-        {...props}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-);
+export function Sidebar({ children, className }: SidebarProps) {
+  const { isOpen } = useSidebar();
 
-Sidebar.displayName = 'Sidebar';
-
-export const SidebarContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex h-full w-full flex-col', className)} {...props} />
-  )
-);
-
-SidebarContent.displayName = 'SidebarContent';
-
-export const SidebarHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex h-14 items-center border-b px-4', className)}
-      {...props}
-    />
-  )
-);
-
-SidebarHeader.displayName = 'SidebarHeader';
-
-export const SidebarFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex h-14 items-center border-t px-4', className)}
-      {...props}
-    />
-  )
-);
-
-SidebarFooter.displayName = 'SidebarFooter';
-
-export const SidebarItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
+  return (
+    <motion.div
+      initial={{ width: "0px" }}
+      animate={{ width: isOpen ? "240px" : "0px" }}
+      transition={{ duration: 0.3 }}
       className={cn(
-        'flex items-center gap-2 rounded-lg px-3 py-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900',
+        "h-screen bg-background border-r flex-shrink-0 overflow-hidden",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function SidebarContent({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("p-4 h-full flex flex-col", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function SidebarItem({ children, className, asChild, ...props }: { 
+  children: React.ReactNode; 
+  className?: string;
+  asChild?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
         className
       )}
       {...props}
-    />
-  )
-);
-
-SidebarItem.displayName = 'SidebarItem';
+    >
+      {children}
+    </div>
+  );
+}

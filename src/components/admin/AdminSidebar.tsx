@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sidebar, SidebarContent, SidebarItem } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarItem, SidebarProvider } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
   Users,
