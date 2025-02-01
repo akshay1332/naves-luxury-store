@@ -26,12 +26,14 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DatabaseCoupon } from "@/integrations/supabase/types";
 
 const couponFormSchema = z.object({
   code: z.string().min(3, "Code must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   category: z.string().min(1, "Category is required"),
-  discount_percentage: z.number().min(1).max(100),
+  discount_type: z.enum(["percentage", "fixed"]),
+  discount_value: z.number().min(1),
   min_purchase_amount: z.number().min(0),
   max_discount_amount: z.number().min(0),
   valid_from: z.date(),
@@ -57,7 +59,8 @@ export function CouponForm({ productId, onSuccess }: CouponFormProps) {
       code: "",
       description: "",
       category: "percentage",
-      discount_percentage: 10,
+      discount_type: "percentage",
+      discount_value: 10,
       min_purchase_amount: 0,
       max_discount_amount: 0,
       valid_from: new Date(),
@@ -70,15 +73,15 @@ export function CouponForm({ productId, onSuccess }: CouponFormProps) {
   async function onSubmit(data: CouponFormValues) {
     setLoading(true);
     try {
-      const { error } = await supabase.from("coupons").insert([
-        {
-          ...data,
-          product_id: productId,
-          valid_from: data.valid_from.toISOString(),
-          valid_until: data.valid_until.toISOString(),
-          times_used: 0,
-        },
-      ]);
+      const couponData: Partial<DatabaseCoupon> = {
+        ...data,
+        product_id: productId,
+        valid_from: data.valid_from.toISOString(),
+        valid_until: data.valid_until.toISOString(),
+        times_used: 0,
+      };
+
+      const { error } = await supabase.from("coupons").insert([couponData]);
 
       if (error) throw error;
 
