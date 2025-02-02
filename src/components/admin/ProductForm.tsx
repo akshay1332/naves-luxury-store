@@ -16,15 +16,17 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+
+const PRODUCT_CATEGORIES = [
+  "Hoodies",
+  "T-Shirts",
+  "Sweatshirts",
+  "Oversized",
+  "Limited Edition",
+  "New Arrivals"
+];
 
 const GENDERS = ["men", "women", "unisex"] as const;
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
@@ -52,58 +54,13 @@ const STYLE_CATEGORIES = [
 ];
 
 interface ProductFormProps {
-  initialData?: Product;
+  initialData?: any;
   onSuccess: () => void;
-}
-
-interface Product {
-  id?: string;
-    title: string;
-    description: string;
-    price: number;
-  category: string;
-  gender: string;
-    stock_quantity: number;
-    is_featured: boolean;
-    is_best_seller: boolean;
-  is_new_arrival: boolean;
-  is_trending: boolean;
-  video_url: string;
-  style_category: string;
-  sale_percentage: number;
-  sale_start_date: string | null;
-  sale_end_date: string | null;
-  quick_view_data: {
-    material: string;
-    fit: string;
-    care_instructions: string[];
-    features: string[];
-  };
-  key_highlights: {
-    fit_type: string;
-    fabric: string;
-    neck: string;
-    sleeve: string;
-    pattern: string;
-    length: string;
-  };
-  sizes: string[];
-  colors: string[];
-  images: string[];
-}
-
-interface SupabaseError {
-  message: string;
-}
-
-interface StorageError {
-  message: string;
 }
 
 const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [selectedColors, setSelectedColors] = useState<string[]>(initialData?.colors || []);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(initialData?.sizes || []);
   const [careInstructions, setCareInstructions] = useState<string[]>(
@@ -112,187 +69,40 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const [features, setFeatures] = useState<string[]>(
     initialData?.quick_view_data?.features || []
   );
-  const MAX_IMAGES = 10; // Maximum number of images allowed
-
-  const [formData, setFormData] = useState<Product>(
-    initialData || {
-      title: "",
-      description: "",
-      price: 0,
-      category: "",
-      gender: "",
-      stock_quantity: 0,
-      is_featured: false,
-      is_best_seller: false,
-      is_new_arrival: false,
-      is_trending: false,
-      video_url: "",
-      style_category: "",
-      sale_percentage: 0,
-      sale_start_date: null,
-      sale_end_date: null,
-      quick_view_data: {
-        material: "",
-        fit: "",
-        care_instructions: [],
-        features: [],
-      },
-      key_highlights: {
-        fit_type: "",
-        fabric: "",
-        neck: "",
-        sleeve: "",
-        pattern: "",
-        length: "",
-      },
-      sizes: [],
-      colors: [],
-      images: [],
-    }
-  );
-
+  const MAX_IMAGES = 10;
   const [imageLink, setImageLink] = useState("");
 
-  const handleAddImageLink = () => {
-    if (!imageLink) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter an image URL",
-      });
-      return;
-    }
-
-    if (formData.images.length >= MAX_IMAGES) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Maximum ${MAX_IMAGES} images allowed`,
-      });
-      return;
-    }
-
-    setLoading(true);
-    // Create a new Image object to verify the URL
-    const img = new Image();
-    img.onload = () => {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageLink]
-      }));
-      setImageLink("");
-      setLoading(false);
-      toast({
-        title: "Success",
-        description: "Image link added successfully",
-      });
-    };
-    img.onerror = () => {
-      setLoading(false);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Invalid image URL or image not accessible",
-      });
-    };
-    img.src = imageLink;
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      // Format the data properly before submission
-      const productData = {
-        ...formData,
-        price: Number(formData.price),
-        stock_quantity: Number(formData.stock_quantity),
-        sale_percentage: Number(formData.sale_percentage),
-        colors: selectedColors,
-        sizes: selectedSizes,
-        images: formData.images.filter(img => img && img.trim() !== ''), // Filter out empty image URLs
-        quick_view_data: {
-          ...formData.quick_view_data,
-          care_instructions: careInstructions.filter(instruction => instruction.trim() !== ''),
-          features: features.filter(feature => feature.trim() !== '')
-        },
-        // Ensure dates are in ISO format or null
-        sale_start_date: formData.sale_start_date ? new Date(formData.sale_start_date).toISOString() : null,
-        sale_end_date: formData.sale_end_date ? new Date(formData.sale_end_date).toISOString() : null,
-        // Ensure required fields are not empty
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        category: formData.category.trim(),
-        gender: formData.gender.trim(),
-        style_category: formData.style_category.trim()
-      };
-
-      // Validate required fields
-      if (!productData.title || !productData.category || !productData.gender) {
-        throw new Error('Please fill in all required fields');
-      }
-
-      if (initialData?.id) {
-        // Update existing product
-        const { data, error } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', initialData.id)
-          .select();
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Product updated successfully",
-        });
-      } else {
-        // Create new product
-        const { data, error } = await supabase
-          .from('products')
-          .insert([{
-            ...productData,
-            created_at: new Date().toISOString(),
-          }])
-          .select();
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Product created successfully",
-        });
-      }
-
-      onSuccess();
-    } catch (error: unknown) {
-      console.error('Error saving product:', error);
-      
-      // Better error handling
-      let errorMessage = "Failed to save product";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = String((error as { message: string }).message);
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [formData, setFormData] = useState({
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    price: initialData?.price || 0,
+    category: initialData?.category || "",
+    gender: initialData?.gender || "",
+    stock_quantity: initialData?.stock_quantity || 0,
+    is_featured: initialData?.is_featured || false,
+    is_best_seller: initialData?.is_best_seller || false,
+    is_new_arrival: initialData?.is_new_arrival || false,
+    is_trending: initialData?.is_trending || false,
+    video_url: initialData?.video_url || "",
+    style_category: initialData?.style_category || "",
+    quick_view_data: {
+      material: initialData?.quick_view_data?.material || "",
+      fit: initialData?.quick_view_data?.fit || "",
+      care_instructions: careInstructions,
+      features: features,
+    },
+    key_highlights: {
+      fit_type: initialData?.key_highlights?.fit_type || "",
+      fabric: initialData?.key_highlights?.fabric || "",
+      neck: initialData?.key_highlights?.neck || "",
+      sleeve: initialData?.key_highlights?.sleeve || "",
+      pattern: initialData?.key_highlights?.pattern || "",
+      length: initialData?.key_highlights?.length || "",
+    },
+    sizes: selectedSizes,
+    colors: selectedColors,
+    images: initialData?.images || [],
+  });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -320,7 +130,6 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
 
         if (uploadError) throw uploadError;
 
-        // Get the public URL
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(filePath);
@@ -329,7 +138,6 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
-      
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...uploadedUrls]
@@ -339,7 +147,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         title: "Success",
         description: "Images uploaded successfully",
       });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error uploading images:', error);
       toast({
         variant: "destructive",
@@ -351,10 +159,124 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     }
   };
 
+  const handleAddImageLink = () => {
+    if (!imageLink) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter an image URL",
+      });
+      return;
+    }
+
+    if (formData.images.length >= MAX_IMAGES) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Maximum ${MAX_IMAGES} images allowed`,
+      });
+      return;
+    }
+
+    // Create a new Image object to verify the URL
+    const img = new Image();
+    img.onload = () => {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageLink]
+      }));
+      setImageLink("");
+      toast({
+        title: "Success",
+        description: "Image link added successfully",
+      });
+    };
+    img.onerror = () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Invalid image URL or image not accessible",
+      });
+    };
+    img.src = imageLink;
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const productData = {
+        ...formData,
+        price: Number(formData.price),
+        stock_quantity: Number(formData.stock_quantity),
+        colors: selectedColors,
+        sizes: selectedSizes,
+        images: formData.images.filter(img => img && img.trim() !== ''),
+        quick_view_data: {
+          ...formData.quick_view_data,
+          care_instructions: careInstructions.filter(instruction => instruction.trim() !== ''),
+          features: features.filter(feature => feature.trim() !== '')
+        },
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        category: formData.category.trim(),
+        gender: formData.gender.trim(),
+        style_category: formData.style_category.trim()
+      };
+
+      if (!productData.title || !productData.category || !productData.gender) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      if (initialData?.id) {
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', initialData.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Product updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert([productData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Product created successfully",
+        });
+      }
+
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error saving product:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to save product",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Function to get image URL with cache busting
   const getImageUrl = (url: string) => {
     if (!url) return '';
-    // Add cache busting parameter for Supabase storage URLs
     if (url.includes('storage.googleapis.com') || url.includes('supabase')) {
       return `${url}?t=${new Date().getTime()}`;
     }
@@ -447,6 +369,8 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
                 </Button>
               </div>
             </div>
+            
+            {/* Image Preview Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {formData.images.map((image, index) => (
                 <div key={index} className="relative group aspect-square">
@@ -456,8 +380,8 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
                     className="w-full h-full object-cover rounded-md"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder-image.jpg'; // Add a placeholder image
                       console.error('Error loading image:', image);
+                      target.src = 'https://placehold.co/400x400?text=Image+Not+Found';
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200" />
@@ -471,6 +395,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
                 </div>
               ))}
             </div>
+
             <Input
               placeholder="Video URL (optional)"
               value={formData.video_url}
@@ -503,70 +428,9 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Sale Percentage (%)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.sale_percentage}
-                  onChange={(e) => setFormData(prev => ({ ...prev, sale_percentage: Number(e.target.value) }))}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Sale Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.sale_start_date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.sale_start_date ? format(new Date(formData.sale_start_date), "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.sale_start_date ? new Date(formData.sale_start_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, sale_start_date: date?.toISOString() || null }))}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label>Sale End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.sale_end_date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.sale_end_date ? format(new Date(formData.sale_end_date), "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.sale_end_date ? new Date(formData.sale_end_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, sale_end_date: date?.toISOString() || null }))}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
           </div>
 
+          {/* Rest of the form */}
           {/* Variants */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Variants</h2>
