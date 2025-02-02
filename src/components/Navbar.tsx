@@ -1,332 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn, Bell, Layers } from "lucide-react";
+import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import styled from 'styled-components';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/useTheme";
 import { CartIndicator } from "./cart/CartIndicator";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { NavBar } from "@/components/ui/tubelight-navbar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { theme as themeConfig } from '../styles/theme';
-import logo from '../assets/logo.png'
-
-interface ThemeProps {
-  $currentTheme: 'light' | 'dark';
-}
-
-const StyledNav = styled(motion.nav)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark' 
-    ? '#111111'
-    : '#FFFFFF'};
-  border-bottom: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.15)'
-    : 'rgba(0, 0, 0, 0.15)'};
-  padding: 0.5rem 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 768px) {
-    padding: 0.25rem 0;
-  }
-`;
-
-const LogoContainer = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  transition: all 0.4s ease;
-  background: linear-gradient(135deg, rgba(0, 191, 165, 0.05) 0%, rgba(0, 229, 255, 0.05) 100%);
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(0, 191, 165, 0.1) 0%, rgba(0, 229, 255, 0.1) 100%);
-    transform: translateY(-2px);
-  }
-`;
-
-const LogoImage = styled(motion.img)`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 191, 165, 0.2);
-  transition: all 0.4s ease;
-
-  &:hover {
-    box-shadow: 0 8px 30px rgba(0, 191, 165, 0.4);
-  }
-`;
-
-const BrandText = styled(motion.div)`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 2.5rem;
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#000000'};
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  text-shadow: ${props => props.$currentTheme === 'dark' 
-    ? '0 2px 4px rgba(0, 0, 0, 0.3)'
-    : '0 2px 4px rgba(0, 0, 0, 0.1)'};
-
-  span {
-    color: #FF3366;
-    font-weight: 800;
-  }
-
-  @media (max-width: 1024px) {
-    font-size: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1.75rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-  }
-`;
-
-const NavLinksContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-
-  @media (max-width: 1024px) {
-    gap: 1.5rem;
-  }
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const NavLink = styled(Link)<ThemeProps>`
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#111111'};
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 1.5px;
-  padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
-  white-space: nowrap;
-  position: relative;
-
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) scaleX(0);
-    width: 80%;
-    height: 2px;
-    background: #FF3366;
-    transition: transform 0.3s ease;
-  }
-
-  &:hover {
-    color: #FF3366;
-    transform: translateY(-1px);
-
-    &:after {
-      transform: translateX(-50%) scaleX(1);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.75rem;
-  }
-`;
-
-const YearText = styled.div<ThemeProps>`
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#111111'};
-  letter-spacing: 2px;
-  text-shadow: ${props => props.$currentTheme === 'dark' 
-    ? '0 2px 4px rgba(0, 0, 0, 0.3)'
-    : '0 2px 4px rgba(0, 0, 0, 0.1)'};
-
-  @media (max-width: 1024px) {
-    font-size: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1.75rem;
-  }
-
-  @media (max-width: 480px) {
-    display: none;
-  }
-`;
-
-const MobileMenu = styled(motion.div)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark' ? '#1A1A1A' : '#FFFFFF'};
-  border-top: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)'};
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-`;
-
-const MobileNavLink = styled(Link)<ThemeProps>`
-  display: flex;
-  align-items: center;
-  padding: 0.875rem 1.25rem;
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#111111'};
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 1.5px;
-  font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
-  border-bottom: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.08)'
-    : 'rgba(0, 0, 0, 0.08)'};
-
-  &:hover {
-    color: #FF3366;
-    background: ${props => props.$currentTheme === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.03)'};
-  }
-
-  svg {
-    margin-right: 1rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: #FF3366;
-  }
-
-  &.notification-link, &.cart-link {
-    background: ${props => props.$currentTheme === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.03)'};
-    font-weight: 700;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.85rem;
-    padding: 0.75rem 1rem;
-  }
-`;
-
-const MobileActionsContainer = styled.div`
-  display: none;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    display: flex;
-  }
-`;
-
-const IconButton = styled(motion.button)<ThemeProps>`
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#111111'};
-  transition: all 0.3s ease;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-
-  &:hover {
-    color: #FF3366;
-    background: ${props => props.$currentTheme === 'dark'
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.05)'};
-  }
-
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-`;
-
-const StyledDropdownContent = styled(DropdownMenuContent)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark'
-    ? '#111111'
-    : '#FFFFFF'};
-  border: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.15)'
-    : 'rgba(0, 0, 0, 0.15)'};
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  margin-top: 0.5rem;
-`;
-
-const StyledDropdownItem = styled(DropdownMenuItem)<ThemeProps>`
-  color: ${props => props.$currentTheme === 'dark' ? '#FFFFFF' : '#111111'};
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-  svg {
-    color: #FF3366;
-  }
-
-  &:hover {
-    color: #FF3366;
-    background: ${props => props.$currentTheme === 'dark'
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.05)'};
-  }
-`;
-
-const ActionIcons = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-left: 2rem;
-
-  @media (max-width: 1024px) {
-    margin-left: 1rem;
-    gap: 1rem;
-  }
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const IconWrapper = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${props => props.$currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.05)'};
-  }
-`;
+import logo from '../assets/logo.png';
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -365,177 +53,437 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { name: 'Home', url: '/', icon: Home },
-    { name: 'Products', url: '/products', icon: ShoppingBag },
-    { name: 'About', url: '/about', icon: Info },
-    { name: 'Contact', url: '/contact', icon: Phone }
-  ];
+  const logoVariants = {
+    initial: { scale: 1 },
+    hover: { 
+      scale: 1.1,
+      rotate: [0, -5, 5, -5, 0],
+      transition: {
+        duration: 0.3,
+        rotate: {
+          repeat: 0,
+          duration: 0.5
+        }
+      }
+    }
+  };
+
+  const menuVariants = {
+    closed: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.1,
+        staggerDirection: -1
+      }
+    },
+    open: {
+      opacity: 1,
+      height: "auto",
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    closed: {
+      x: -16,
+      opacity: 0
+    },
+    open: {
+      x: 0,
+      opacity: 1
+    }
+  };
+
+  const hamburgerVariants = {
+    closed: {
+      rotate: 0,
+      scale: 1,
+      transition: {
+        duration: 0.3
+      }
+    },
+    open: {
+      rotate: 45,
+      scale: 1.1,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
+  const Path = (props: any) => (
+    <motion.path
+      fill="transparent"
+      strokeWidth="2"
+      stroke={currentTheme === 'dark' ? "white" : "black"}
+      strokeLinecap="round"
+      {...props}
+    />
+  );
+
+  const handleNavigation = (path: string) => {
+    setIsOpen(false);
+    navigate(path);
+    // Scroll to top after navigation
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Modern hamburger icon with better animation
+  const MenuIcon = () => (
+    <motion.div
+      className="relative w-6 h-6"
+      animate={isOpen ? "open" : "closed"}
+      variants={hamburgerVariants}
+    >
+      <motion.span
+        className={cn(
+          "absolute top-1/2 left-0 w-6 h-0.5 -translate-y-1/2",
+          currentTheme === 'dark' ? "bg-white" : "bg-black"
+        )}
+        variants={{
+          closed: { rotate: 0, y: "-50%" },
+          open: { rotate: 90, y: "-50%" }
+        }}
+      />
+      <motion.span
+        className={cn(
+          "absolute top-1/2 left-0 w-6 h-0.5 -translate-y-2.5",
+          currentTheme === 'dark' ? "bg-white" : "bg-black"
+        )}
+        variants={{
+          closed: { rotate: 0 },
+          open: { rotate: 45 }
+        }}
+      />
+      <motion.span
+        className={cn(
+          "absolute top-1/2 left-0 w-6 h-0.5 translate-y-1.5",
+          currentTheme === 'dark' ? "bg-white" : "bg-black"
+        )}
+        variants={{
+          closed: { rotate: 0 },
+          open: { rotate: -45 }
+        }}
+      />
+    </motion.div>
+  );
 
   return (
-    <StyledNav $currentTheme={currentTheme}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <nav className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      "border-b shadow-sm py-1",
+      currentTheme === 'dark' 
+        ? "bg-gray-900 border-gray-800" 
+        : "bg-white border-gray-200"
+    )}>
+      <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link to="/">
-              <BrandText $currentTheme={currentTheme}>
-                CUSTOM<span>PRINT</span>
-              </BrandText>
+            <Link to="/" className="flex items-center">
+              <motion.div
+                className="flex items-center gap-0.5 cursor-pointer p-0.5 rounded-2xl"
+                initial="initial"
+                whileHover="hover"
+                animate="initial"
+              >
+                <motion.img
+                  src={logo}
+                  alt="Brand Logo"
+                  className="w-10 h-10 md:w-9 md:h-9 object-contain rounded-xl filter drop-shadow-lg"
+                  variants={logoVariants}
+                  draggable={false}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                />
+                <motion.div
+                  className={cn(
+                    "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
+                    currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                  )}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  CUSTOM<span className="text-rose-500">PRINT</span>
+                </motion.div>
+              </motion.div>
             </Link>
           </div>
 
-          <NavLinksContainer>
-            <NavLink to="/" $currentTheme={currentTheme}>HOME</NavLink>
-            <NavLink to="/products" $currentTheme={currentTheme}>PRODUCTS</NavLink>
-            <NavLink to="/about" $currentTheme={currentTheme}>ABOUT US</NavLink>
-            <NavLink to="/contact" $currentTheme={currentTheme}>CONTACT US</NavLink>
-          </NavLinksContainer>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link 
+              to="/" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
+                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              )}
+            >
+              HOME
+            </Link>
+            <Link 
+              to="/products" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
+                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              )}
+            >
+              PRODUCTS
+            </Link>
+            <Link 
+              to="/about" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
+                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              )}
+            >
+              ABOUT
+            </Link>
+            <Link 
+              to="/contact" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
+                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              )}
+            >
+              CONTACT
+            </Link>
+          </div>
 
-          <div className="flex items-center space-x-4">
-            <YearText $currentTheme={currentTheme}>2024</YearText>
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-2">
+            {/* Year Text - Hidden on Mobile */}
+            <div className={cn(
+              "hidden lg:block font-montserrat text-xl font-black tracking-wide",
+              currentTheme === 'dark' ? "text-white" : "text-gray-900"
+            )}>
+              2024
+            </div>
 
-            <div className="hidden md:flex items-center">
+            {/* Auth and Cart Actions */}
+            <div className="hidden md:flex items-center gap-2">
               {isAuthenticated && (
-                <ActionIcons>
-                  <IconWrapper $currentTheme={currentTheme}>
-                    <NavLink to="/cart" $currentTheme={currentTheme}>
-                      <CartIndicator />
-                    </NavLink>
-                  </IconWrapper>
-                  <IconWrapper $currentTheme={currentTheme}>
+                <div className="flex items-center gap-2">
+                  <Link 
+                    to="/cart"
+                    className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
+                  >
+                    <CartIndicator />
+                  </Link>
+                  <div className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300">
                     <NotificationBell />
-                  </IconWrapper>
-                </ActionIcons>
+                  </div>
+                </div>
               )}
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <IconButton $currentTheme={currentTheme}>
-                    <User className="h-5 w-5" />
-                  </IconButton>
+                  <button className={cn(
+                    "p-1.5 rounded-full transition-colors duration-300",
+                    "hover:bg-gray-100 dark:hover:bg-gray-800",
+                    currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                  )}>
+                    <User className="h-4 w-4" />
+                  </button>
                 </DropdownMenuTrigger>
-                <StyledDropdownContent $currentTheme={currentTheme} align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-48">
                   {isAuthenticated ? (
                     <>
-                      <StyledDropdownItem $currentTheme={currentTheme} onClick={() => navigate('/profile')}>
-                        <User className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem onClick={() => navigate('/profile')}>
+                        <User className="mr-2 h-4 w-4 text-rose-500" />
                         Profile
-                      </StyledDropdownItem>
-                      <StyledDropdownItem $currentTheme={currentTheme} onClick={() => navigate('/admin')}>
-                        <ShoppingBag className="mr-2 h-4 w-4" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <ShoppingBag className="mr-2 h-4 w-4 text-rose-500" />
                         Admin Dashboard
-                      </StyledDropdownItem>
-                      <StyledDropdownItem $currentTheme={currentTheme} onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4 text-rose-500" />
                         Logout
-                      </StyledDropdownItem>
+                      </DropdownMenuItem>
                     </>
                   ) : (
-                    <StyledDropdownItem $currentTheme={currentTheme} onClick={handleLogin}>
-                      <LogIn className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem onClick={handleLogin}>
+                      <LogIn className="mr-2 h-4 w-4 text-rose-500" />
                       Login
-                    </StyledDropdownItem>
+                    </DropdownMenuItem>
                   )}
-                </StyledDropdownContent>
+                </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
-            <MobileActionsContainer>
-              <IconButton
-                $currentTheme={currentTheme}
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2"
-              >
-                {isOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </IconButton>
-            </MobileActionsContainer>
+            {/* Modern Hamburger Button */}
+            <motion.button
+              onClick={() => setIsOpen(!isOpen)}
+              className={cn(
+                "md:hidden p-1.5 rounded-lg transition-colors duration-300 relative",
+                "hover:bg-gray-100 dark:hover:bg-gray-800",
+                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              )}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <MenuIcon />
+            </motion.button>
           </div>
         </div>
 
-        <AnimatePresence>
+        {/* Mobile Menu with Enhanced Animations */}
+        <AnimatePresence mode="wait">
           {isOpen && (
-            <MobileMenu
-              $currentTheme={currentTheme}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+            <motion.div
+              variants={{
+                closed: {
+                  opacity: 0,
+                  height: 0,
+                  transition: {
+                    duration: 0.3,
+                    staggerChildren: 0.05,
+                    staggerDirection: -1,
+                    ease: "easeInOut"
+                  }
+                },
+                open: {
+                  opacity: 1,
+                  height: "auto",
+                  transition: {
+                    duration: 0.3,
+                    staggerChildren: 0.05,
+                    delayChildren: 0.1,
+                    ease: "easeInOut"
+                  }
+                }
+              }}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className={cn(
+                "md:hidden overflow-hidden absolute top-full left-0 right-0 max-h-[calc(100vh-4rem)]",
+                "backdrop-blur-lg bg-white/90 dark:bg-gray-900/90",
+                "border-b border-gray-200 dark:border-gray-800",
+                "shadow-lg overflow-y-auto"
+              )}
             >
-              <div className="py-2">
+              <div className="py-1 space-y-0.5">
                 {isAuthenticated && (
                   <>
-                    <MobileNavLink to="/cart" $currentTheme={currentTheme} className="cart-link">
-                      <ShoppingBag className="h-5 w-5" />
-                      CART
-                      <div className="ml-auto">
-                        <CartIndicator />
+                    <motion.div variants={itemVariants}>
+                      <div
+                        onClick={() => handleNavigation('/cart')}
+                        className={cn(
+                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
+                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        )}
+                      >
+                        <ShoppingBag className="h-5 w-5 mr-3 text-rose-500" />
+                        CART
+                        <div className="ml-auto">
+                          <CartIndicator />
+                        </div>
                       </div>
-                    </MobileNavLink>
-                    <MobileNavLink to="#" $currentTheme={currentTheme} className="notification-link">
-                      <Bell className="h-5 w-5" />
-                      NOTIFICATIONS
-                      <div className="ml-auto">
-                        <NotificationBell />
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                      <div
+                        className={cn(
+                          "flex items-center px-4 py-3 text-sm font-semibold",
+                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        )}
+                      >
+                        <Bell className="h-5 w-5 mr-3 text-rose-500" />
+                        NOTIFICATIONS
+                        <div className="ml-auto">
+                          <NotificationBell />
+                        </div>
                       </div>
-                    </MobileNavLink>
+                    </motion.div>
                   </>
                 )}
 
-                <MobileNavLink to="/" $currentTheme={currentTheme}>
-                  <Home className="h-5 w-5" />
-                  HOME
-                </MobileNavLink>
-                <MobileNavLink to="/products" $currentTheme={currentTheme}>
-                  <ShoppingBag className="h-5 w-5" />
-                  PRODUCTS
-                </MobileNavLink>
-                <MobileNavLink to="/about" $currentTheme={currentTheme}>
-                  <Info className="h-5 w-5" />
-                  ABOUT US
-                </MobileNavLink>
-                <MobileNavLink to="/contact" $currentTheme={currentTheme}>
-                  <Phone className="h-5 w-5" />
-                  CONTACT US
-                </MobileNavLink>
+                {[
+                  { path: '/', icon: Home, label: 'HOME' },
+                  { path: '/products', icon: ShoppingBag, label: 'PRODUCTS' },
+                  { path: '/about', icon: Info, label: 'ABOUT' },
+                  { path: '/contact', icon: Phone, label: 'CONTACT' }
+                ].map((item) => (
+                  <motion.div key={item.path} variants={itemVariants}>
+                    <div
+                      onClick={() => handleNavigation(item.path)}
+                      className={cn(
+                        "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
+                        "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                        "transform hover:translate-x-2 transition-transform duration-200",
+                        currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 mr-3 text-rose-500" />
+                      {item.label}
+                    </div>
+                  </motion.div>
+                ))}
 
                 {isAuthenticated ? (
                   <>
-                    <MobileNavLink to="/profile" $currentTheme={currentTheme}>
-                      <User className="h-5 w-5" />
-                      PROFILE
-                    </MobileNavLink>
-                    <MobileNavLink 
-                      to="#" 
-                      as="button" 
-                      $currentTheme={currentTheme}
-                      onClick={handleLogout}
-                      className="w-full text-left"
-                    >
-                      <LogOut className="h-5 w-5" />
-                      LOGOUT
-                    </MobileNavLink>
+                    <motion.div variants={itemVariants}>
+                      <div
+                        onClick={() => handleNavigation('/profile')}
+                        className={cn(
+                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
+                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                          "transform hover:translate-x-2 transition-transform duration-200",
+                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        )}
+                      >
+                        <User className="h-5 w-5 mr-3 text-rose-500" />
+                        PROFILE
+                      </div>
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                      <div
+                        onClick={handleLogout}
+                        className={cn(
+                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
+                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                          "transform hover:translate-x-2 transition-transform duration-200",
+                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        )}
+                      >
+                        <LogOut className="h-5 w-5 mr-3 text-rose-500" />
+                        LOGOUT
+                      </div>
+                    </motion.div>
                   </>
                 ) : (
-                  <MobileNavLink 
-                    to="#" 
-                    as="button" 
-                    $currentTheme={currentTheme}
-                    onClick={handleLogin}
-                    className="w-full text-left"
-                  >
-                    <LogIn className="h-5 w-5" />
-                    LOGIN
-                  </MobileNavLink>
+                  <motion.div variants={itemVariants}>
+                    <div
+                      onClick={handleLogin}
+                      className={cn(
+                        "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
+                        "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
+                        "transform hover:translate-x-2 transition-transform duration-200",
+                        currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                      )}
+                    >
+                      <LogIn className="h-5 w-5 mr-3 text-rose-500" />
+                      LOGIN
+                    </div>
+                  </motion.div>
                 )}
               </div>
-            </MobileMenu>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </StyledNav>
+    </nav>
   );
 };
 
