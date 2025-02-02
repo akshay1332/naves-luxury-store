@@ -26,15 +26,6 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Plus, X } from "lucide-react";
 
-const PRODUCT_CATEGORIES = [
-  "Hoodies",
-  "T-Shirts",
-  "Sweatshirts",
-  "Oversized",
-  "Limited Edition",
-  "New Arrivals"
-];
-
 const GENDERS = ["men", "women", "unisex"] as const;
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const DEFAULT_COLORS = [
@@ -121,6 +112,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const [features, setFeatures] = useState<string[]>(
     initialData?.quick_view_data?.features || []
   );
+  const MAX_IMAGES = 10; // Maximum number of images allowed
 
   const [formData, setFormData] = useState<Product>(
     initialData || {
@@ -162,13 +154,48 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const [imageLink, setImageLink] = useState("");
 
   const handleAddImageLink = () => {
-    if (imageLink && formData.images.length < 10) {
+    if (!imageLink) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter an image URL",
+      });
+      return;
+    }
+
+    if (formData.images.length >= MAX_IMAGES) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Maximum ${MAX_IMAGES} images allowed`,
+      });
+      return;
+    }
+
+    setLoading(true);
+    // Create a new Image object to verify the URL
+    const img = new Image();
+    img.onload = () => {
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, imageLink]
       }));
       setImageLink("");
-    }
+      setLoading(false);
+      toast({
+        title: "Success",
+        description: "Image link added successfully",
+      });
+    };
+    img.onerror = () => {
+      setLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Invalid image URL or image not accessible",
+      });
+    };
+    img.src = imageLink;
   };
 
   const handleRemoveImage = (index: number) => {
@@ -183,54 +210,84 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     setLoading(true);
 
     try {
+      // Format the data properly before submission
       const productData = {
         ...formData,
-        images,
+        price: Number(formData.price),
+        stock_quantity: Number(formData.stock_quantity),
+        sale_percentage: Number(formData.sale_percentage),
         colors: selectedColors,
         sizes: selectedSizes,
+        images: formData.images.filter(img => img && img.trim() !== ''), // Filter out empty image URLs
         quick_view_data: {
           ...formData.quick_view_data,
-          care_instructions: careInstructions,
-          features,
+          care_instructions: careInstructions.filter(instruction => instruction.trim() !== ''),
+          features: features.filter(feature => feature.trim() !== '')
         },
+        // Ensure dates are in ISO format or null
+        sale_start_date: formData.sale_start_date ? new Date(formData.sale_start_date).toISOString() : null,
+        sale_end_date: formData.sale_end_date ? new Date(formData.sale_end_date).toISOString() : null,
+        // Ensure required fields are not empty
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        category: formData.category.trim(),
+        gender: formData.gender.trim(),
+        style_category: formData.style_category.trim()
       };
 
-      if (initialData) {
+      // Validate required fields
+      if (!productData.title || !productData.category || !productData.gender) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      if (initialData?.id) {
         // Update existing product
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
           .update(productData)
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select();
 
         if (error) throw error;
+
         toast({
           title: "Success",
           description: "Product updated successfully",
         });
       } else {
         // Create new product
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
           .insert([{
             ...productData,
             created_at: new Date().toISOString(),
-          }]);
+          }])
+          .select();
 
         if (error) throw error;
-      toast({
-        title: "Success",
+
+        toast({
+          title: "Success",
           description: "Product created successfully",
         });
       }
 
       onSuccess();
     } catch (error: unknown) {
-      const err = error as SupabaseError;
-      console.error('Error saving product:', err);
+      console.error('Error saving product:', error);
+      
+      // Better error handling
+      let errorMessage = "Failed to save product";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = String((error as { message: string }).message);
+      }
+
       toast({
         variant: "destructive",
         title: "Error",
-        description: err.message || "Failed to save product",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -241,41 +298,67 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     const files = e.target.files;
     if (!files) return;
 
+    if (formData.images.length + files.length > MAX_IMAGES) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `You can only upload a maximum of ${MAX_IMAGES} images. Currently ${formData.images.length} images are uploaded.`,
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `product-images/${fileName}`;
+        const filePath = `${fileName}`;
 
-        const { error: uploadError, data } = await supabase.storage
-          .from('products')
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
+        // Get the public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('products')
+          .from('product-images')
           .getPublicUrl(filePath);
 
         return publicUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
-      setImages(prev => [...prev, ...uploadedUrls]);
+      
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls]
+      }));
 
       toast({
         title: "Success",
         description: "Images uploaded successfully",
       });
     } catch (error: unknown) {
-      const err = error as StorageError;
-      console.error('Error uploading images:', err);
+      console.error('Error uploading images:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload images",
+        description: "Failed to upload images. Please try again.",
       });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Function to get image URL with cache busting
+  const getImageUrl = (url: string) => {
+    if (!url) return '';
+    // Add cache busting parameter for Supabase storage URLs
+    if (url.includes('storage.googleapis.com') || url.includes('supabase')) {
+      return `${url}?t=${new Date().getTime()}`;
+    }
+    return url;
   };
 
   return (
@@ -305,77 +388,83 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRODUCT_CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Gender</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GENDERS.map((gender) => (
-                      <SelectItem key={gender} value={gender}>
-                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                placeholder="Enter product category"
+              />
+            </div>
+            <div>
+              <Label>Gender</Label>
+              <Select
+                value={formData.gender}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENDERS.map((gender) => (
+                    <SelectItem key={gender} value={gender}>
+                      {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           {/* Images & Media */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Images & Media</h2>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={imageLink}
-                onChange={(e) => setImageLink(e.target.value)}
-                placeholder="Enter image URL"
-                disabled={formData.images.length >= 10}
-              />
-              <Button
-                type="button"
-                onClick={handleAddImageLink}
-                disabled={!imageLink || formData.images.length >= 10}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center justify-between">
+              <Label>Product Images ({formData.images.length}/{MAX_IMAGES})</Label>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {formData.images.map((url, index) => (
-                <div key={index} className="relative group">
+            <div className="space-y-4">
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                disabled={formData.images.length >= MAX_IMAGES}
+              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter image URL"
+                  value={imageLink}
+                  onChange={(e) => setImageLink(e.target.value)}
+                  disabled={formData.images.length >= MAX_IMAGES}
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddImageLink}
+                  disabled={formData.images.length >= MAX_IMAGES}
+                >
+                  Add URL
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {formData.images.map((image, index) => (
+                <div key={index} className="relative group aspect-square">
                   <img
-                    src={url}
+                    src={getImageUrl(image)}
                     alt={`Product ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-md"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder-image.jpg'; // Add a placeholder image
+                      console.error('Error loading image:', image);
+                    }}
                   />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200" />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -766,21 +855,11 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <h2 className="text-xl font-semibold">Style & Categories</h2>
             <div>
               <Label>Style Category</Label>
-              <Select
+              <Input
+                placeholder="Enter style category"
                 value={formData.style_category}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, style_category: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STYLE_CATEGORIES.map((style) => (
-                    <SelectItem key={style} value={style}>
-                      {style}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(e) => setFormData(prev => ({ ...prev, style_category: e.target.value }))}
+              />
             </div>
           </div>
 
