@@ -3,5 +3,5 @@ export const convertToINR = (price: number): string => {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0,
-  }).format(price * 83); // Approximate USD to INR conversion rate
+  }).format(price);
 };

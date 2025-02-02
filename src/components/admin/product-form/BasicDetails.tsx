@@ -8,16 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const PRODUCT_CATEGORIES = [
-  "Dresses",
-  "Tops",
-  "Bottoms",
-  "Outerwear",
-  "Accessories",
-  "Footwear",
-  "Other"
-];
-
 const STYLE_CATEGORIES = [
   "Casual",
   "Formal",
@@ -58,18 +48,12 @@ export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Category</label>
-          <Select name="category" defaultValue={initialData?.category}>
-            <SelectTrigger className="luxury-input">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {PRODUCT_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            name="category"
+            defaultValue={initialData?.category}
+            className="luxury-input"
+            placeholder="Enter category"
+          />
         </div>
 
         <div className="space-y-2">
