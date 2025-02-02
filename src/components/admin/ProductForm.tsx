@@ -9,6 +9,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Upload, Plus, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 const MAX_IMAGES = 10;
 
@@ -44,7 +52,14 @@ const productSchema = z.object({
   })
 });
 
-export const ProductForm = ({ initialData, onSuccess }) => {
+type ProductFormData = z.infer<typeof productSchema>;
+
+interface ProductFormProps {
+  initialData?: ProductFormData;
+  onSuccess: () => void;
+}
+
+export const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images || []);
@@ -60,7 +75,7 @@ export const ProductForm = ({ initialData, onSuccess }) => {
     formState: { errors, isSubmitting },
     setValue,
     watch
-  } = useForm({
+  } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: initialData || {
       title: '',
@@ -202,7 +217,7 @@ export const ProductForm = ({ initialData, onSuccess }) => {
     }
   };
 
-  const onSubmit = async (data: z.infer<typeof productSchema>) => {
+  const onSubmit = async (data: ProductFormData) => {
     try {
       const { error } = await supabase
         .from('products')
@@ -225,10 +240,10 @@ export const ProductForm = ({ initialData, onSuccess }) => {
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to create product',
+        description: error.message || 'Failed to create product',
         variant: 'destructive'
       });
     }
