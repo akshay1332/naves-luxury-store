@@ -9,10 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Upload, Plus, X } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+
+const MAX_IMAGES = 10;
 
 const productSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -28,11 +26,8 @@ const productSchema = z.object({
   is_best_seller: z.boolean(),
   is_new_arrival: z.boolean(),
   is_trending: z.boolean(),
-  images: z.array(z.string()).optional(),
+  images: z.array(z.string()).max(MAX_IMAGES, `Maximum ${MAX_IMAGES} images allowed`),
   video_url: z.string().optional(),
-  sale_percentage: z.number().min(0).max(100).optional(),
-  sale_start_date: z.date().optional(),
-  sale_end_date: z.date().optional(),
   quick_view_data: z.object({
     material: z.string(),
     fit: z.string(),
@@ -49,15 +44,11 @@ const productSchema = z.object({
   })
 });
 
-type ProductFormProps = {
-  initialData?: z.infer<typeof productSchema>;
-  onSuccess?: () => void;
-};
-
-const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
+export const ProductForm = ({ initialData, onSuccess }) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images || []);
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [careInstructions, setCareInstructions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
   const [newCareInstruction, setNewCareInstruction] = useState('');
@@ -69,7 +60,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     formState: { errors, isSubmitting },
     setValue,
     watch
-  } = useForm<z.infer<typeof productSchema>>({
+  } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: initialData || {
       title: '',
@@ -87,7 +78,6 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       is_trending: false,
       images: [],
       video_url: '',
-      sale_percentage: 0,
       quick_view_data: {
         material: '',
         fit: '',
@@ -109,8 +99,16 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    if (imageUrls.length + files.length > MAX_IMAGES) {
+      toast({
+        title: 'Error',
+        description: `Maximum ${MAX_IMAGES} images allowed`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsUploading(true);
-    setUploadProgress(0);
 
     try {
       const uploadedUrls = [];
@@ -147,10 +145,11 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
           .getPublicUrl(filePath);
 
         uploadedUrls.push(publicUrl);
-        setUploadProgress(((i + 1) / files.length) * 100);
       }
 
-      setValue('images', uploadedUrls);
+      setImageUrls([...imageUrls, ...uploadedUrls]);
+      setValue('images', [...imageUrls, ...uploadedUrls]);
+      
       toast({
         title: 'Success',
         description: 'Images uploaded successfully'
@@ -163,8 +162,30 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       });
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
     }
+  };
+
+  const handleAddImageUrl = () => {
+    if (!newImageUrl) return;
+    
+    if (imageUrls.length >= MAX_IMAGES) {
+      toast({
+        title: 'Error',
+        description: `Maximum ${MAX_IMAGES} images allowed`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setImageUrls([...imageUrls, newImageUrl]);
+    setValue('images', [...imageUrls, newImageUrl]);
+    setNewImageUrl('');
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newUrls = imageUrls.filter((_, i) => i !== index);
+    setImageUrls(newUrls);
+    setValue('images', newUrls);
   };
 
   const addCareInstruction = () => {
@@ -246,18 +267,52 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       {/* Images & Media */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Images & Media</h3>
-        <div className="flex gap-2">
-          <Input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleImageUpload}
-            disabled={isUploading}
-          />
-          <Button type="button" onClick={handleImageUpload}>
-            <Upload className="w-4 h-4" />
-          </Button>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={isUploading || imageUrls.length >= MAX_IMAGES}
+            />
+            <Button type="button" disabled={isUploading}>
+              <Upload className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="flex gap-2">
+            <Input
+              value={newImageUrl}
+              onChange={(e) => setNewImageUrl(e.target.value)}
+              placeholder="Enter image URL"
+              disabled={imageUrls.length >= MAX_IMAGES}
+            />
+            <Button type="button" onClick={handleAddImageUrl}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-5 gap-4">
+            {imageUrls.map((url, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={url}
+                  alt={`Product ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">Video URL (optional)</label>
           <Input {...register('video_url')} placeholder="Enter video URL" />
