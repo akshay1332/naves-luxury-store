@@ -22,13 +22,20 @@ const productSchema = z.object({
   is_featured: z.boolean(),
   is_best_seller: z.boolean(),
   is_new_arrival: z.boolean(),
-  is_trending: z.boolean()
+  is_trending: z.boolean(),
+  images: z.array(z.string()).optional()
 });
 
-export function ProductForm() {
+type ProductFormProps = {
+  initialData?: z.infer<typeof productSchema>;
+  onSuccess?: () => void;
+};
+
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess }) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images || []);
 
   const {
     register,
@@ -39,19 +46,20 @@ export function ProductForm() {
   } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      price: 0,
-      category: '',
-      style_category: '',
-      stock_quantity: 0,
-      sizes: [],
-      colors: [],
-      gender: 'unisex',
-      is_featured: false,
-      is_best_seller: false,
-      is_new_arrival: false,
-      is_trending: false
+      title: initialData?.title || '',
+      description: initialData?.description || '',
+      price: initialData?.price || 0,
+      category: initialData?.category || '',
+      style_category: initialData?.style_category || '',
+      stock_quantity: initialData?.stock_quantity || 0,
+      sizes: initialData?.sizes || [],
+      colors: initialData?.colors || [],
+      gender: initialData?.gender || 'unisex',
+      is_featured: initialData?.is_featured || false,
+      is_best_seller: initialData?.is_best_seller || false,
+      is_new_arrival: initialData?.is_new_arrival || false,
+      is_trending: initialData?.is_trending || false,
+      images: initialData?.images || []
     }
   });
 
@@ -100,7 +108,10 @@ export function ProductForm() {
         setUploadProgress(((i + 1) / files.length) * 100);
       }
 
-      setValue('images', uploadedUrls);
+      const newUrls = [...imageUrls, ...uploadedUrls];
+      setImageUrls(newUrls);
+      setValue('images', newUrls);
+      
       toast({
         title: 'Success',
         description: 'Images uploaded successfully'
@@ -121,7 +132,10 @@ export function ProductForm() {
     try {
       const { error } = await supabase
         .from('products')
-        .insert([data]);
+        .insert([{
+          ...data,
+          images: imageUrls
+        }]);
 
       if (error) throw error;
 
@@ -129,10 +143,12 @@ export function ProductForm() {
         title: 'Success',
         description: 'Product created successfully'
       });
-    } catch (error) {
+      
+      onSuccess?.();
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to create product',
+        description: error.message || 'Failed to create product',
         variant: 'destructive'
       });
     }
@@ -151,7 +167,7 @@ export function ProductForm() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
-          <Input {...register('category')} placeholder="Enter category" />
+          <Input {...register('category')} />
           {errors.category && (
             <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
           )}
@@ -159,7 +175,7 @@ export function ProductForm() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Style Category</label>
-          <Input {...register('style_category')} placeholder="Enter style category" />
+          <Input {...register('style_category')} />
           {errors.style_category && (
             <p className="text-red-500 text-sm mt-1">{errors.style_category.message}</p>
           )}
@@ -167,7 +183,10 @@ export function ProductForm() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Price</label>
-          <Input type="number" {...register('price', { valueAsNumber: true })} />
+          <Input 
+            type="number" 
+            {...register('price', { valueAsNumber: true })} 
+          />
           {errors.price && (
             <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
           )}
@@ -245,6 +264,30 @@ export function ProductForm() {
               </div>
             </div>
           )}
+          {imageUrls.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              {imageUrls.map((url, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={url}
+                    alt={`Product image ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newUrls = imageUrls.filter((_, i) => i !== index);
+                      setImageUrls(newUrls);
+                      setValue('images', newUrls);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -262,4 +305,6 @@ export function ProductForm() {
       </div>
     </form>
   );
-}
+};
+
+export default ProductForm;
