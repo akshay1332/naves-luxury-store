@@ -22,10 +22,16 @@ const productSchema = z.object({
   is_featured: z.boolean(),
   is_best_seller: z.boolean(),
   is_new_arrival: z.boolean(),
-  is_trending: z.boolean()
+  is_trending: z.boolean(),
+  images: z.array(z.string()).optional()
 });
 
-export function ProductForm() {
+type ProductFormProps = {
+  initialData?: z.infer<typeof productSchema>;
+  onSuccess?: () => void;
+};
+
+const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -36,9 +42,9 @@ export function ProductForm() {
     formState: { errors, isSubmitting },
     setValue,
     watch
-  } = useForm({
+  } = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       title: '',
       description: '',
       price: 0,
@@ -51,7 +57,8 @@ export function ProductForm() {
       is_featured: false,
       is_best_seller: false,
       is_new_arrival: false,
-      is_trending: false
+      is_trending: false,
+      images: []
     }
   });
 
@@ -121,7 +128,22 @@ export function ProductForm() {
     try {
       const { error } = await supabase
         .from('products')
-        .insert([data]);
+        .insert([{
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          category: data.category,
+          style_category: data.style_category,
+          stock_quantity: data.stock_quantity,
+          sizes: data.sizes,
+          colors: data.colors,
+          gender: data.gender,
+          is_featured: data.is_featured,
+          is_best_seller: data.is_best_seller,
+          is_new_arrival: data.is_new_arrival,
+          is_trending: data.is_trending,
+          images: data.images || []
+        }]);
 
       if (error) throw error;
 
@@ -129,6 +151,10 @@ export function ProductForm() {
         title: 'Success',
         description: 'Product created successfully'
       });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -262,4 +288,6 @@ export function ProductForm() {
       </div>
     </form>
   );
-}
+};
+
+export default ProductForm;
