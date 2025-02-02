@@ -8,6 +8,8 @@ import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
+import { loadRazorpayScript, createRazorpayOrder, initializeRazorpayPayment } from "@/lib/razorpay";
+import { formatIndianPrice } from "@/lib/utils";
 
 interface CheckoutFormData {
   shippingAddress: {
@@ -25,6 +27,12 @@ interface CheckoutFormData {
   customDesignFile?: File | null;
   customDesignLink?: string;
   specialInstructions?: string;
+}
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
 }
 
 const Checkout = () => {
@@ -165,7 +173,8 @@ const Checkout = () => {
         customDesignUrl = await uploadCustomDesign(formData.customDesignFile);
       }
 
-      const total = subtotal - discountAmount;
+      const total = subtotal - discountAmount + (subtotal > 499 ? 0 : 49);
+      const amountInPaise = Math.round(total ); // Convert to paise
 
       // Get cart items for order
       const { data: cartItems } = await supabase
@@ -200,63 +209,144 @@ const Checkout = () => {
         color: item.color
       }));
 
-      // Create the order with properly structured invoice_data
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user?.id,
-          status: 'pending',
-          total_amount: total,
-          shipping_address: formData.shippingAddress,
-          invoice_data: {
-            items: orderItems,
-            payment_method: formData.paymentMethod,
-            ...(formData.wantCustomDesign && {
-              custom_design: {
-                type: formData.customDesignType,
-                url: customDesignUrl,
-                instructions: formData.specialInstructions
-              }
-            })
+      // For COD orders, create the order immediately
+      if (formData.paymentMethod === 'cod') {
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: user?.id,
+            status: 'pending',
+            total_amount: total,
+            shipping_address: formData.shippingAddress,
+            invoice_data: {
+              items: orderItems,
+              payment_method: formData.paymentMethod,
+              ...(formData.wantCustomDesign && {
+                custom_design: {
+                  type: formData.customDesignType,
+                  url: customDesignUrl,
+                  instructions: formData.specialInstructions
+                }
+              })
+            },
+            discount_amount: discountAmount,
+            applied_coupon_id: appliedCouponId,
+            payment_status: 'pending'
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Update coupon usage for COD
+        if (appliedCouponId) {
+          await supabase.rpc('increment_coupon_usage', {
+            coupon_id: appliedCouponId
+          });
+        }
+
+        // Clear cart for COD
+        await supabase
+          .from('cart_items')
+          .delete()
+          .eq('user_id', user?.id);
+
+        toast({
+          title: "Order placed successfully",
+          description: "Your order has been placed with Cash on Delivery.",
+        });
+
+        navigate('/profile/orders');
+      } else {
+        // For online payments (card/UPI), create Razorpay order first
+        const { data: razorpayOrder, error } = await supabase.functions.invoke('create-razorpay-order', {
+          body: { amount: amountInPaise, orderId: `ORDER-${Date.now()}` }
+        });
+
+        if (error) throw error;
+
+        // Load Razorpay script
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          throw new Error("Failed to load Razorpay SDK");
+        }
+
+        // Initialize payment
+        const response = await initializeRazorpayPayment({
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: amountInPaise,
+          currency: "INR",
+          name: "Naves Luxury Store",
+          description: "Order Payment",
+          order_id: razorpayOrder.id,
+          prefill: {
+            name: formData.shippingAddress.fullName,
+            email: formData.shippingAddress.email,
+            contact: formData.shippingAddress.phone,
           },
-          discount_amount: discountAmount,
-          applied_coupon_id: appliedCouponId,
-          payment_status: 'pending'
-        })
-        .select()
-        .single();
+          handler: async (response: RazorpayResponse) => {
+            // Create order after successful payment
+            const { data: order, error: orderError } = await supabase
+              .from('orders')
+              .insert({
+                user_id: user?.id,
+                status: 'pending',
+                total_amount: total,
+                shipping_address: formData.shippingAddress,
+                invoice_data: {
+                  items: orderItems,
+                  payment_method: formData.paymentMethod,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  ...(formData.wantCustomDesign && {
+                    custom_design: {
+                      type: formData.customDesignType,
+                      url: customDesignUrl,
+                      instructions: formData.specialInstructions
+                    }
+                  })
+                },
+                discount_amount: discountAmount,
+                applied_coupon_id: appliedCouponId,
+                payment_status: 'paid'
+              })
+              .select()
+              .single();
 
-      if (orderError) throw orderError;
+            if (orderError) throw orderError;
 
-      // Update coupon usage if one was applied
-      if (appliedCouponId) {
-        await supabase.rpc('increment_coupon_usage', {
-          coupon_id: appliedCouponId
+            // Update coupon usage after successful payment
+            if (appliedCouponId) {
+              await supabase.rpc('increment_coupon_usage', {
+                coupon_id: appliedCouponId
+              });
+            }
+
+            // Clear cart after successful payment
+            await supabase
+              .from('cart_items')
+              .delete()
+              .eq('user_id', user?.id);
+
+            toast({
+              title: "Payment successful",
+              description: "Your order has been placed successfully.",
+            });
+
+            navigate('/profile/orders');
+          },
         });
       }
-
-      // Clear cart
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', user?.id);
-
-      toast({
-        title: "Success",
-        description: "Order placed successfully!",
-      });
-
-      navigate('/profile');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "An error occurred while placing your order";
+    } catch (error) {
+      console.error('Checkout error:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: errorMessage,
+        title: "Checkout failed",
+        description: error.message || "Something went wrong. Please try again.",
       });
     } finally {
       setLoading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -288,12 +378,12 @@ const Checkout = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span>{formatIndianPrice(subtotal)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
-                      <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                      <span>-{formatIndianPrice(discountAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
@@ -304,20 +394,20 @@ const Checkout = () => {
                         <span>Free</span>
                       </div>
                     ) : (
-                      <span>₹49</span>
+                      <span>{formatIndianPrice(49)}</span>
                     )}
                   </div>
                   {subtotal <= 499 && (
                     <p className="text-sm text-gray-500 flex items-center gap-1">
                       <AlertCircle className="h-4 w-4" />
-                      Free shipping on orders above ₹499
+                      Free shipping on orders above {formatIndianPrice(499)}
                     </p>
                   )}
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center font-bold text-lg">
                       <span>Total</span>
                       <span className="text-cyan-600">
-                        ₹{(subtotal - discountAmount + (subtotal > 499 ? 0 : 49)).toLocaleString('en-IN')}
+                        {formatIndianPrice(subtotal - discountAmount + (subtotal > 499 ? 0 : 49))}
                       </span>
                     </div>
                   </div>

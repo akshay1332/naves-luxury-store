@@ -16,6 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { formatIndianPrice } from "@/lib/utils";
 
 interface CartItem {
   id: string;
@@ -254,30 +255,25 @@ export default function Cart() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                    <span>{formatIndianPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Shipping</span>
-                    {shipping === 0 ? (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <Truck className="h-4 w-4" />
-                        <span>Free</span>
-                      </div>
-                    ) : (
-                      <span>₹{shipping.toLocaleString("en-IN")}</span>
-                    )}
-                  </div>
+                  {shipping > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Shipping</span>
+                      <span>{formatIndianPrice(shipping)}</span>
+                    </div>
+                  )}
                   {shipping > 0 && (
                     <div className="text-sm text-gray-500 flex items-center gap-1">
                       <Tag className="h-4 w-4" />
-                      <span>Free shipping on orders above ₹499</span>
+                      <span>Free shipping on orders above {formatIndianPrice(499)}</span>
                     </div>
                   )}
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center font-bold text-lg">
                       <span>Total</span>
                       <span className="text-cyan-600">
-                        ₹{total.toLocaleString("en-IN")}
+                        {formatIndianPrice(total)}
                       </span>
                     </div>
                   </div>

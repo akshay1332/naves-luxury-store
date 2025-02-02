@@ -6,6 +6,8 @@ import { Package, User, Truck, CreditCard, Palette, Download, ExternalLink } fro
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Database } from "@/integrations/supabase/types";
+import { formatIndianPrice } from "@/lib/utils";
+import { Table, TableHeader, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"] & {
   invoice_data: {
@@ -117,9 +119,9 @@ export function OrderDetails({ order, open, onOpenChange }: OrderDetailsProps) {
             </h3>
             <div className="space-y-2">
               <p><span className="font-medium">Payment Method:</span> {order.invoice_data.payment_method.toUpperCase()}</p>
-              <p><span className="font-medium">Total Amount:</span> ₹{order.total_amount.toLocaleString('en-IN')}</p>
+              <p><span className="font-medium">Total Amount:</span> {formatIndianPrice(order.total_amount)}</p>
               {order.discount_amount && order.discount_amount > 0 && (
-                <p><span className="font-medium">Discount Applied:</span> ₹{order.discount_amount.toLocaleString('en-IN')}</p>
+                <p><span className="font-medium">Discount Applied:</span> {formatIndianPrice(order.discount_amount)}</p>
               )}
             </div>
           </div>
@@ -196,38 +198,26 @@ export function OrderDetails({ order, open, onOpenChange }: OrderDetailsProps) {
           {/* Order Items */}
           <div className="col-span-2">
             <h3 className="text-lg font-semibold mb-4">Order Items</h3>
-            <ScrollArea className="h-[200px] rounded-md border p-4">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Product</th>
-                    <th className="text-center py-2">Image</th>
-                    <th className="text-right py-2">Quantity</th>
-                    <th className="text-right py-2">Price</th>
-                    <th className="text-right py-2">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.invoice_data.items.map((item) => (
-                    <tr key={item.products.id} className="border-b">
-                      <td className="py-2">{item.products.title}</td>
-                      <td className="py-2">
-                        {item.products.images && item.products.images[0] && (
-                          <img 
-                            src={item.products.images[0]} 
-                            alt={item.products.title}
-                            className="w-16 h-16 object-cover rounded-md mx-auto"
-                          />
-                        )}
-                      </td>
-                      <td className="text-right py-2">{item.quantity}</td>
-                      <td className="text-right py-2">₹{item.products.price.toLocaleString('en-IN')}</td>
-                      <td className="text-right py-2">₹{(item.quantity * item.products.price).toLocaleString('en-IN')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </ScrollArea>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {order.invoice_data.items.map((item: any) => (
+                  <TableRow key={item.products.id}>
+                    <TableCell>{item.products.title}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell className="text-right">{formatIndianPrice(item.products.price)}</TableCell>
+                    <TableCell className="text-right">{formatIndianPrice(item.quantity * item.products.price)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </DialogContent>

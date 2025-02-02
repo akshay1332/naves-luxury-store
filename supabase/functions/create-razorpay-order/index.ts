@@ -12,11 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    )
-
     const { amount, orderId } = await req.json()
     
     const response = await fetch('https://api.razorpay.com/v1/orders', {
@@ -26,7 +21,7 @@ serve(async (req) => {
         'Authorization': 'Basic ' + btoa(`${Deno.env.get('RAZORPAY_KEY_ID')}:${Deno.env.get('RAZORPAY_KEY_SECRET')}`)
       },
       body: JSON.stringify({
-        amount: amount * 100, // Convert to paise
+        amount: amount, // Amount is already in paise from frontend
         currency: 'INR',
         receipt: orderId,
       })

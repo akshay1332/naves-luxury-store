@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import type { Json } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatIndianPrice } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
 
 type QuickViewData = {
@@ -344,11 +344,13 @@ const ProductDetails = () => {
               
               {/* Price */}
               <div className="flex items-baseline gap-4 mb-6">
-                <span className="text-2xl font-bold text-red-500">₹{product.price.toLocaleString('en-IN')}</span>
+                <span className="text-2xl font-bold text-red-500">
+                  {formatIndianPrice(product.price)}
+                </span>
                 {product.sale_percentage > 0 && (
                   <>
                     <span className="text-xl text-gray-500 line-through">
-                      ₹{Math.round(product.price / (1 - product.sale_percentage / 100)).toLocaleString('en-IN')}
+                      {formatIndianPrice(Math.round(product.price / (1 - product.sale_percentage / 100)))}
                     </span>
                     <span className="text-red-500 font-semibold">
                       ({product.sale_percentage}% OFF)
@@ -365,9 +367,9 @@ const ProductDetails = () => {
                 <div className="flex items-start gap-4">
                   <span className="text-orange-500 font-semibold">₹</span>
                   <div>
-                    <p className="font-medium">Get it for as low as ₹999</p>
-                    <p className="text-sm text-gray-600">Pick Any 2 Oversized Hoodies ₹1999 | Weekend Only Offer</p>
-                    <p className="text-sm text-orange-500 mt-2">Extra ₹100 OFF for Prepaid orders</p>
+                    <p className="font-medium">Get it for as low as {formatIndianPrice(999)}</p>
+                    <p className="text-sm text-gray-600">Pick Any 2 Oversized Hoodies {formatIndianPrice(1999)} | Weekend Only Offer</p>
+                    <p className="text-sm text-orange-500 mt-2">Extra {formatIndianPrice(100)} OFF for Prepaid orders</p>
                     <p className="text-sm mt-2">
                       <span className="font-medium">Code:</span> Code Applies Automatically
                     </p>

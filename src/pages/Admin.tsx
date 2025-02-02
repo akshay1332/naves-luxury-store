@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CouponForm } from "@/components/admin/CouponForm";
+import { formatIndianPrice } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -249,7 +250,7 @@ export default function Admin() {
                     </TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell className="capitalize">{product.gender}</TableCell>
-                    <TableCell>₹{product.price}</TableCell>
+                    <TableCell>{formatIndianPrice(product.price)}</TableCell>
                     <TableCell>
                       <Badge variant={product.stock_quantity > 10 ? "secondary" : "destructive"}>
                         {product.stock_quantity}

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { CreditCard } from "lucide-react";
 import { loadRazorpayScript, createRazorpayOrder, initializeRazorpayPayment } from "@/lib/razorpay";
 import { useToast } from "@/hooks/use-toast";
+import { formatIndianPrice } from "@/lib/utils";
 
 interface PaymentSectionProps {
   loading: boolean;
@@ -104,17 +105,17 @@ export const PaymentSection = ({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
-            <span>₹{subtotal.toFixed(2)}</span>
+            <span>{formatIndianPrice(subtotal)}</span>
           </div>
           {discountAmount > 0 && (
             <div className="flex justify-between text-sm text-green-600">
               <span>Discount</span>
-              <span>-₹{discountAmount.toFixed(2)}</span>
+              <span>-{formatIndianPrice(discountAmount)}</span>
             </div>
           )}
           <div className="flex justify-between font-semibold border-t pt-2">
             <span>Total</span>
-            <span>₹{total.toFixed(2)}</span>
+            <span>{formatIndianPrice(total)}</span>
           </div>
         </div>
       </CardContent>

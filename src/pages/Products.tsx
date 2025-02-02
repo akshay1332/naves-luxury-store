@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/use-toast";
 import { SEO } from "@/components/SEO";
+import { formatIndianPrice } from "@/lib/utils";
 
 interface QuickViewData {
   material?: string;
@@ -651,11 +652,13 @@ const Products = () => {
                       )}
                       <div className="flex items-center justify-between">
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-red-500">₹{product.price.toLocaleString('en-IN')}</span>
+                          <span className="text-xl font-bold text-red-500">
+                            {formatIndianPrice(product.price)}
+                          </span>
                           {product.sale_percentage && product.sale_percentage > 0 && (
                             <>
                               <span className="text-sm text-gray-500 line-through">
-                                ₹{Math.round(product.price / (1 - product.sale_percentage / 100)).toLocaleString('en-IN')}
+                                {formatIndianPrice(Math.round(product.price / (1 - product.sale_percentage / 100)))}
                               </span>
                               <span className="text-red-500 text-sm font-semibold">
                                 ({product.sale_percentage}% OFF)
