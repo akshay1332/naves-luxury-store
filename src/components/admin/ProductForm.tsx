@@ -1,585 +1,835 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Upload, Plus, X } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { CalendarIcon, Plus, X } from "lucide-react";
 
-const MAX_IMAGES = 10;
+const PRODUCT_CATEGORIES = [
+  "Hoodies",
+  "T-Shirts",
+  "Sweatshirts",
+  "Oversized",
+  "Limited Edition",
+  "New Arrivals"
+];
 
-const productSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  price: z.number().min(0, 'Price must be positive'),
-  category: z.string().min(1, 'Category is required'),
-  style_category: z.string().min(1, 'Style category is required'),
-  stock_quantity: z.number().min(0, 'Stock quantity must be positive'),
-  sizes: z.array(z.string()),
-  colors: z.array(z.string()),
-  gender: z.string(),
-  is_featured: z.boolean(),
-  is_best_seller: z.boolean(),
-  is_new_arrival: z.boolean(),
-  is_trending: z.boolean(),
-  images: z.array(z.string()).max(MAX_IMAGES, `Maximum ${MAX_IMAGES} images allowed`),
-  video_url: z.string().optional(),
-  quick_view_data: z.object({
-    material: z.string(),
-    fit: z.string(),
-    care_instructions: z.array(z.string()),
-    features: z.array(z.string())
-  }),
-  key_highlights: z.object({
-    fit_type: z.string(),
-    fabric: z.string(),
-    neck: z.string(),
-    sleeve: z.string(),
-    pattern: z.string(),
-    length: z.string()
-  })
-});
+const GENDERS = ["men", "women", "unisex"] as const;
+const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+const DEFAULT_COLORS = [
+  { name: "Black", value: "#000000" },
+  { name: "White", value: "#FFFFFF" },
+  { name: "Gray", value: "#808080" },
+  { name: "Red", value: "#FF0000" },
+  { name: "Blue", value: "#0000FF" },
+  { name: "Green", value: "#00FF00" },
+  { name: "Yellow", value: "#FFFF00" },
+  { name: "Purple", value: "#800080" },
+  { name: "Pink", value: "#FFC0CB" },
+  { name: "Orange", value: "#FFA500" },
+];
 
-type ProductFormData = z.infer<typeof productSchema>;
+const STYLE_CATEGORIES = [
+  "Casual",
+  "Streetwear",
+  "Athletic",
+  "Formal",
+  "Vintage",
+  "Modern",
+  "Classic",
+];
 
 interface ProductFormProps {
-  initialData?: ProductFormData;
+  initialData?: Product;
   onSuccess: () => void;
 }
 
-export const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
-  const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>(initialData?.images || []);
-  const [newImageUrl, setNewImageUrl] = useState('');
-  const [careInstructions, setCareInstructions] = useState<string[]>([]);
-  const [features, setFeatures] = useState<string[]>([]);
-  const [newCareInstruction, setNewCareInstruction] = useState('');
-  const [newFeature, setNewFeature] = useState('');
+interface Product {
+  id?: string;
+    title: string;
+    description: string;
+    price: number;
+  category: string;
+  gender: string;
+    stock_quantity: number;
+    is_featured: boolean;
+    is_best_seller: boolean;
+  is_new_arrival: boolean;
+  is_trending: boolean;
+  video_url: string;
+  style_category: string;
+  sale_percentage: number;
+  sale_start_date: string | null;
+  sale_end_date: string | null;
+  quick_view_data: {
+    material: string;
+    fit: string;
+    care_instructions: string[];
+    features: string[];
+  };
+  key_highlights: {
+    fit_type: string;
+    fabric: string;
+    neck: string;
+    sleeve: string;
+    pattern: string;
+    length: string;
+  };
+  sizes: string[];
+  colors: string[];
+  images: string[];
+}
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    watch
-  } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: initialData || {
-      title: '',
-      description: '',
+interface SupabaseError {
+  message: string;
+}
+
+interface StorageError {
+  message: string;
+}
+
+const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [selectedColors, setSelectedColors] = useState<string[]>(initialData?.colors || []);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(initialData?.sizes || []);
+  const [careInstructions, setCareInstructions] = useState<string[]>(
+    initialData?.quick_view_data?.care_instructions || []
+  );
+  const [features, setFeatures] = useState<string[]>(
+    initialData?.quick_view_data?.features || []
+  );
+
+  const [formData, setFormData] = useState<Product>(
+    initialData || {
+      title: "",
+      description: "",
       price: 0,
-      category: '',
-      style_category: '',
+      category: "",
+      gender: "",
       stock_quantity: 0,
-      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
-      colors: [],
-      gender: 'unisex',
       is_featured: false,
       is_best_seller: false,
       is_new_arrival: false,
       is_trending: false,
-      images: [],
-      video_url: '',
+      video_url: "",
+      style_category: "",
+      sale_percentage: 0,
+      sale_start_date: null,
+      sale_end_date: null,
       quick_view_data: {
-        material: '',
-        fit: '',
+        material: "",
+        fit: "",
         care_instructions: [],
-        features: []
+        features: [],
       },
       key_highlights: {
-        fit_type: '',
-        fabric: '',
-        neck: '',
-        sleeve: '',
-        pattern: '',
-        length: ''
-      }
+        fit_type: "",
+        fabric: "",
+        neck: "",
+        sleeve: "",
+        pattern: "",
+        length: "",
+      },
+      sizes: [],
+      colors: [],
+      images: [],
     }
-  });
+  );
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  const [imageLink, setImageLink] = useState("");
 
-    if (imageUrls.length + files.length > MAX_IMAGES) {
-      toast({
-        title: 'Error',
-        description: `Maximum ${MAX_IMAGES} images allowed`,
-        variant: 'destructive'
-      });
-      return;
+  const handleAddImageLink = () => {
+    if (imageLink && formData.images.length < 10) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageLink]
+      }));
+      setImageLink("");
     }
-
-    setIsUploading(true);
-
-    try {
-      const uploadedUrls = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.size > 3 * 1024 * 1024) {
-          toast({
-            title: 'Error',
-            description: `File ${file.name} exceeds 3MB limit`,
-            variant: 'destructive'
-          });
-          continue;
-        }
-
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file);
-
-        if (uploadError) {
-          toast({
-            title: 'Error',
-            description: `Failed to upload ${file.name}`,
-            variant: 'destructive'
-          });
-          continue;
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-
-        uploadedUrls.push(publicUrl);
-      }
-
-      setImageUrls([...imageUrls, ...uploadedUrls]);
-      setValue('images', [...imageUrls, ...uploadedUrls]);
-      
-      toast({
-        title: 'Success',
-        description: 'Images uploaded successfully'
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to upload images',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleAddImageUrl = () => {
-    if (!newImageUrl) return;
-    
-    if (imageUrls.length >= MAX_IMAGES) {
-      toast({
-        title: 'Error',
-        description: `Maximum ${MAX_IMAGES} images allowed`,
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setImageUrls([...imageUrls, newImageUrl]);
-    setValue('images', [...imageUrls, newImageUrl]);
-    setNewImageUrl('');
   };
 
   const handleRemoveImage = (index: number) => {
-    const newUrls = imageUrls.filter((_, i) => i !== index);
-    setImageUrls(newUrls);
-    setValue('images', newUrls);
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
-  const addCareInstruction = () => {
-    if (newCareInstruction) {
-      setCareInstructions([...careInstructions, newCareInstruction]);
-      setNewCareInstruction('');
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const addFeature = () => {
-    if (newFeature) {
-      setFeatures([...features, newFeature]);
-      setNewFeature('');
-    }
-  };
-
-  const onSubmit = async (data: ProductFormData) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .insert([{
-          ...data,
-          quick_view_data: {
-            ...data.quick_view_data,
-            care_instructions: careInstructions,
-            features: features
-          }
-        }]);
+      const productData = {
+        ...formData,
+        images,
+        colors: selectedColors,
+        sizes: selectedSizes,
+        quick_view_data: {
+          ...formData.quick_view_data,
+          care_instructions: careInstructions,
+          features,
+        },
+      };
 
-      if (error) throw error;
+      if (initialData) {
+        // Update existing product
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', initialData.id);
 
+        if (error) throw error;
+        toast({
+          title: "Success",
+          description: "Product updated successfully",
+        });
+      } else {
+        // Create new product
+        const { error } = await supabase
+          .from('products')
+          .insert([{
+            ...productData,
+            created_at: new Date().toISOString(),
+          }]);
+
+        if (error) throw error;
       toast({
-        title: 'Success',
-        description: 'Product created successfully'
-      });
-      
-      if (onSuccess) {
-        onSuccess();
+        title: "Success",
+          description: "Product created successfully",
+        });
       }
-    } catch (error: any) {
+
+      onSuccess();
+    } catch (error: unknown) {
+      const err = error as SupabaseError;
+      console.error('Error saving product:', err);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create product',
-        variant: 'destructive'
+        variant: "destructive",
+        title: "Error",
+        description: err.message || "Failed to save product",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `product-images/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
+
+        return publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setImages(prev => [...prev, ...uploadedUrls]);
+
+      toast({
+        title: "Success",
+        description: "Images uploaded successfully",
+      });
+    } catch (error: unknown) {
+      const err = error as StorageError;
+      console.error('Error uploading images:', err);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to upload images",
       });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {/* Basic Information */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Basic Information</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <Input {...register('title')} />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
-            <Input {...register('category')} />
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
-            )}
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+    >
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">
+            {initialData ? 'Edit Product' : 'Add New Product'}
+          </h1>
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <Textarea {...register('description')} />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Images & Media */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Images & Media</h3>
-        <div className="space-y-4">
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Basic Information</h2>
             <Input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={isUploading || imageUrls.length >= MAX_IMAGES}
+              required
+              placeholder="Product Title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
             />
-            <Button type="button" disabled={isUploading}>
-              <Upload className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="flex gap-2">
-            <Input
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="Enter image URL"
-              disabled={imageUrls.length >= MAX_IMAGES}
+            <Textarea
+              placeholder="Product Description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             />
-            <Button type="button" onClick={handleAddImageUrl}>
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-5 gap-4">
-            {imageUrls.map((url, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={url}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Category</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 >
-                  <X className="w-4 h-4" />
-                </button>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Video URL (optional)</label>
-          <Input {...register('video_url')} placeholder="Enter video URL" />
-        </div>
-      </div>
-
-      {/* Pricing & Stock */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Pricing & Stock</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Price (₹)</label>
-            <Input type="number" {...register('price', { valueAsNumber: true })} />
-            {errors.price && (
-              <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-            <Input
-              type="number"
-              {...register('stock_quantity', { valueAsNumber: true })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Sale Percentage (%)</label>
-            <Input
-              type="number"
-              {...register('sale_percentage', { valueAsNumber: true })}
-              min="0"
-              max="100"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Sale Start Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !watch('sale_start_date') && "text-muted-foreground"
-                  )}
+              <div>
+                <Label>Gender</Label>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
                 >
-                  {watch('sale_start_date') ? 
-                    format(watch('sale_start_date'), "PPP") : 
-                    "Pick a date"
-                  }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={watch('sale_start_date')}
-                  onSelect={(date) => setValue('sale_start_date', date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GENDERS.map((gender) => (
+                      <SelectItem key={gender} value={gender}>
+                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Sale End Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !watch('sale_end_date') && "text-muted-foreground"
-                  )}
-                >
-                  {watch('sale_end_date') ? 
-                    format(watch('sale_end_date'), "PPP") : 
-                    "Pick a date"
-                  }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={watch('sale_end_date')}
-                  onSelect={(date) => setValue('sale_end_date', date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-      </div>
 
-      {/* Product Details */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Product Details</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Material</label>
-            <Input {...register('quick_view_data.material')} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Fit</label>
-            <Input {...register('quick_view_data.fit')} />
-          </div>
-        </div>
-        
-        {/* Care Instructions */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Care Instructions</label>
-          <div className="flex gap-2 mb-2">
-            <Input
-              value={newCareInstruction}
-              onChange={(e) => setNewCareInstruction(e.target.value)}
-              placeholder="Add care instruction"
-            />
-            <Button type="button" onClick={addCareInstruction}>
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {careInstructions.map((instruction, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded"
+          {/* Images & Media */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Images & Media</h2>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={imageLink}
+                onChange={(e) => setImageLink(e.target.value)}
+                placeholder="Enter image URL"
+                disabled={formData.images.length >= 10}
+              />
+              <Button
+                type="button"
+                onClick={handleAddImageLink}
+                disabled={!imageLink || formData.images.length >= 10}
               >
-                <span>{instruction}</span>
-                <button
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {formData.images.map((url, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={url}
+                    alt={`Product ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <Input
+              placeholder="Video URL (optional)"
+              value={formData.video_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+            />
+          </div>
+
+          {/* Pricing & Stock */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Pricing & Stock</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Price (₹)</Label>
+                <Input
+                  type="number"
+                  required
+                  min={0}
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label>Stock Quantity</Label>
+                <Input
+                  type="number"
+                  required
+                  min={0}
+                  value={formData.stock_quantity}
+                  onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: Number(e.target.value) }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Sale Percentage (%)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formData.sale_percentage}
+                  onChange={(e) => setFormData(prev => ({ ...prev, sale_percentage: Number(e.target.value) }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Sale Start Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.sale_start_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.sale_start_date ? format(new Date(formData.sale_start_date), "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.sale_start_date ? new Date(formData.sale_start_date) : undefined}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, sale_start_date: date?.toISOString() || null }))}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Sale End Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.sale_end_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.sale_end_date ? format(new Date(formData.sale_end_date), "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.sale_end_date ? new Date(formData.sale_end_date) : undefined}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, sale_end_date: date?.toISOString() || null }))}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+
+          {/* Variants */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Variants</h2>
+            <div>
+              <Label>Colors</Label>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {DEFAULT_COLORS.map(color => (
+                  <button
+                    key={color.name}
+                    type="button"
+                    onClick={() => {
+                      setSelectedColors(prev =>
+                        prev.includes(color.name)
+                          ? prev.filter(c => c !== color.name)
+                          : [...prev, color.name]
+                      );
+                    }}
+                    className={cn(
+                      "w-10 h-10 rounded-full border-2 transition-transform hover:scale-110",
+                      selectedColors.includes(color.name)
+                        ? "border-primary scale-110"
+                        : "border-gray-200"
+                    )}
+                    style={{ backgroundColor: color.value }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Sizes</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {DEFAULT_SIZES.map(size => (
+                  <Button
+                    key={size}
+                    type="button"
+                    variant={selectedSizes.includes(size) ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedSizes(prev =>
+                        prev.includes(size)
+                          ? prev.filter(s => s !== size)
+                          : [...prev, size]
+                      );
+                    }}
+                    className="w-12 h-12 rounded-full"
+                  >
+                    {size}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Product Details */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Product Details</h2>
+            <Input
+              placeholder="Material"
+              value={formData.quick_view_data.material}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                quick_view_data: {
+                  ...prev.quick_view_data,
+                  material: e.target.value
+                }
+              }))}
+            />
+            <Input
+              placeholder="Fit"
+              value={formData.quick_view_data.fit}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                quick_view_data: {
+                  ...prev.quick_view_data,
+                  fit: e.target.value
+                }
+              }))}
+            />
+            <div>
+              <Label>Care Instructions</Label>
+              <div className="space-y-2">
+                {careInstructions.map((instruction, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={instruction}
+                      onChange={(e) => {
+                        const newInstructions = [...careInstructions];
+                        newInstructions[index] = e.target.value;
+                        setCareInstructions(newInstructions);
+                        setFormData(prev => ({
+                          ...prev,
+                          quick_view_data: {
+                            ...prev.quick_view_data,
+                            care_instructions: newInstructions
+                          }
+                        }));
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => {
+                        const newInstructions = careInstructions.filter((_, i) => i !== index);
+                        setCareInstructions(newInstructions);
+                        setFormData(prev => ({
+                          ...prev,
+                          quick_view_data: {
+                            ...prev.quick_view_data,
+                            care_instructions: newInstructions
+                          }
+                        }));
+                      }}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                ))}
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => {
-                    setCareInstructions(careInstructions.filter((_, i) => i !== index));
+                    const newInstructions = [...careInstructions, ""];
+                    setCareInstructions(newInstructions);
+                    setFormData(prev => ({
+                      ...prev,
+                      quick_view_data: {
+                        ...prev.quick_view_data,
+                        care_instructions: newInstructions
+                      }
+                    }));
                   }}
                 >
-                  <X className="w-4 h-4" />
-                </button>
+                  Add Care Instruction
+                </Button>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Features */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Features</label>
-          <div className="flex gap-2 mb-2">
-            <Input
-              value={newFeature}
-              onChange={(e) => setNewFeature(e.target.value)}
-              placeholder="Add feature"
-            />
-            <Button type="button" onClick={addFeature}>
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded"
-              >
-                <span>{feature}</span>
-                <button
+            </div>
+            <div>
+              <Label>Features</Label>
+              <div className="space-y-2">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={feature}
+                      onChange={(e) => {
+                        const newFeatures = [...features];
+                        newFeatures[index] = e.target.value;
+                        setFeatures(newFeatures);
+                        setFormData(prev => ({
+                          ...prev,
+                          quick_view_data: {
+                            ...prev.quick_view_data,
+                            features: newFeatures
+                          }
+                        }));
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => {
+                        const newFeatures = features.filter((_, i) => i !== index);
+                        setFeatures(newFeatures);
+                        setFormData(prev => ({
+                          ...prev,
+                          quick_view_data: {
+                            ...prev.quick_view_data,
+                            features: newFeatures
+                          }
+                        }));
+                      }}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                ))}
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => {
-                    setFeatures(features.filter((_, i) => i !== index));
+                    const newFeatures = [...features, ""];
+                    setFeatures(newFeatures);
+                    setFormData(prev => ({
+                      ...prev,
+                      quick_view_data: {
+                        ...prev.quick_view_data,
+                        features: newFeatures
+                      }
+                    }));
                   }}
                 >
-                  <X className="w-4 h-4" />
-                </button>
+                  Add Feature
+                </Button>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Key Highlights */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Key Highlights</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Fit Type</label>
-            <Input {...register('key_highlights.fit_type')} />
+          {/* Key Highlights */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Key Highlights</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Fit Type</Label>
+                <Input
+                  value={formData.key_highlights.fit_type}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      fit_type: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label>Fabric</Label>
+                <Input
+                  value={formData.key_highlights.fabric}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      fabric: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label>Neck</Label>
+                <Input
+                  value={formData.key_highlights.neck}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      neck: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label>Sleeve</Label>
+                <Input
+                  value={formData.key_highlights.sleeve}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      sleeve: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label>Pattern</Label>
+                <Input
+                  value={formData.key_highlights.pattern}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      pattern: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label>Length</Label>
+                <Input
+                  value={formData.key_highlights.length}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    key_highlights: {
+                      ...prev.key_highlights,
+                      length: e.target.value
+                    }
+                  }))}
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Fabric</label>
-            <Input {...register('key_highlights.fabric')} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Neck</label>
-            <Input {...register('key_highlights.neck')} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Sleeve</label>
-            <Input {...register('key_highlights.sleeve')} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Pattern</label>
-            <Input {...register('key_highlights.pattern')} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Length</label>
-            <Input {...register('key_highlights.length')} />
-          </div>
-        </div>
-      </div>
 
-      {/* Product Status */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Product Status</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_featured"
-              {...register('is_featured')}
-            />
-            <label htmlFor="is_featured">Featured Product</label>
+          {/* Style & Categories */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Style & Categories</h2>
+            <div>
+              <Label>Style Category</Label>
+              <Select
+                value={formData.style_category}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, style_category: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STYLE_CATEGORIES.map((style) => (
+                    <SelectItem key={style} value={style}>
+                      {style}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_best_seller"
-              {...register('is_best_seller')}
-            />
-            <label htmlFor="is_best_seller">Best Seller</label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_new_arrival"
-              {...register('is_new_arrival')}
-            />
-            <label htmlFor="is_new_arrival">New Arrival</label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_trending"
-              {...register('is_trending')}
-            />
-            <label htmlFor="is_trending">Trending</label>
-          </div>
-        </div>
-      </div>
 
-      <div className="flex justify-end space-x-4">
-        <Button type="submit" disabled={isSubmitting || isUploading}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {initialData ? 'Updating...' : 'Creating...'}
-            </>
-          ) : (
-            initialData ? 'Update Product' : 'Create Product'
-          )}
-        </Button>
-      </div>
-    </form>
+          {/* Product Status */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Product Status</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="featured">Featured Product</Label>
+                <Switch
+                  id="featured"
+                  checked={formData.is_featured}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="bestseller">Best Seller</Label>
+                <Switch
+                  id="bestseller"
+                  checked={formData.is_best_seller}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_best_seller: checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="new-arrival">New Arrival</Label>
+                <Switch
+                  id="new-arrival"
+                  checked={formData.is_new_arrival}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_new_arrival: checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="trending">Trending</Label>
+                <Switch
+                  id="trending"
+                  checked={formData.is_trending}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_trending: checked }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Saving..." : initialData ? "Update Product" : "Create Product"}
+          </Button>
+        </form>
+      </Card>
+    </motion.div>
   );
 };
 
