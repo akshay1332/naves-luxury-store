@@ -5,9 +5,14 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, Plus, X } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const productSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -23,7 +28,25 @@ const productSchema = z.object({
   is_best_seller: z.boolean(),
   is_new_arrival: z.boolean(),
   is_trending: z.boolean(),
-  images: z.array(z.string()).optional()
+  images: z.array(z.string()).optional(),
+  video_url: z.string().optional(),
+  sale_percentage: z.number().min(0).max(100).optional(),
+  sale_start_date: z.date().optional(),
+  sale_end_date: z.date().optional(),
+  quick_view_data: z.object({
+    material: z.string(),
+    fit: z.string(),
+    care_instructions: z.array(z.string()),
+    features: z.array(z.string())
+  }),
+  key_highlights: z.object({
+    fit_type: z.string(),
+    fabric: z.string(),
+    neck: z.string(),
+    sleeve: z.string(),
+    pattern: z.string(),
+    length: z.string()
+  })
 });
 
 type ProductFormProps = {
@@ -35,6 +58,10 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [careInstructions, setCareInstructions] = useState<string[]>([]);
+  const [features, setFeatures] = useState<string[]>([]);
+  const [newCareInstruction, setNewCareInstruction] = useState('');
+  const [newFeature, setNewFeature] = useState('');
 
   const {
     register,
@@ -51,14 +78,30 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       category: '',
       style_category: '',
       stock_quantity: 0,
-      sizes: [],
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
       colors: [],
       gender: 'unisex',
       is_featured: false,
       is_best_seller: false,
       is_new_arrival: false,
       is_trending: false,
-      images: []
+      images: [],
+      video_url: '',
+      sale_percentage: 0,
+      quick_view_data: {
+        material: '',
+        fit: '',
+        care_instructions: [],
+        features: []
+      },
+      key_highlights: {
+        fit_type: '',
+        fabric: '',
+        neck: '',
+        sleeve: '',
+        pattern: '',
+        length: ''
+      }
     }
   });
 
@@ -86,7 +129,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, file);
 
@@ -124,25 +167,31 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     }
   };
 
+  const addCareInstruction = () => {
+    if (newCareInstruction) {
+      setCareInstructions([...careInstructions, newCareInstruction]);
+      setNewCareInstruction('');
+    }
+  };
+
+  const addFeature = () => {
+    if (newFeature) {
+      setFeatures([...features, newFeature]);
+      setNewFeature('');
+    }
+  };
+
   const onSubmit = async (data: z.infer<typeof productSchema>) => {
     try {
       const { error } = await supabase
         .from('products')
         .insert([{
-          title: data.title,
-          description: data.description,
-          price: data.price,
-          category: data.category,
-          style_category: data.style_category,
-          stock_quantity: data.stock_quantity,
-          sizes: data.sizes,
-          colors: data.colors,
-          gender: data.gender,
-          is_featured: data.is_featured,
-          is_best_seller: data.is_best_seller,
-          is_new_arrival: data.is_new_arrival,
-          is_trending: data.is_trending,
-          images: data.images || []
+          ...data,
+          quick_view_data: {
+            ...data.quick_view_data,
+            care_instructions: careInstructions,
+            features: features
+          }
         }]);
 
       if (error) throw error;
@@ -165,112 +214,286 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
-          <Input {...register('title')} />
-          {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Basic Information</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <Input {...register('title')} />
+            {errors.title && (
+              <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Category</label>
+            <Input {...register('category')} />
+            {errors.category && (
+              <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+            )}
+          </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Category</label>
-          <Input {...register('category')} placeholder="Enter category" />
-          {errors.category && (
-            <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Style Category</label>
-          <Input {...register('style_category')} placeholder="Enter style category" />
-          {errors.style_category && (
-            <p className="text-red-500 text-sm mt-1">{errors.style_category.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Price</label>
-          <Input type="number" {...register('price', { valueAsNumber: true })} />
-          {errors.price && (
-            <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-          <Input
-            type="number"
-            {...register('stock_quantity', { valueAsNumber: true })}
-          />
-          {errors.stock_quantity && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.stock_quantity.message}
-            </p>
-          )}
-        </div>
-
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
           <Textarea {...register('description')} />
           {errors.description && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.description.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
           )}
         </div>
+      </div>
 
+      {/* Images & Media */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Images & Media</h3>
+        <div className="flex gap-2">
+          <Input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
+            disabled={isUploading}
+          />
+          <Button type="button" onClick={handleImageUpload}>
+            <Upload className="w-4 h-4" />
+          </Button>
+        </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Images</label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-            <div className="space-y-1 text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="flex text-sm text-gray-600">
-                <label
-                  htmlFor="images"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                >
-                  <span>Upload images</span>
-                  <input
-                    id="images"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="sr-only"
-                    onChange={handleImageUpload}
-                    disabled={isUploading}
-                  />
-                </label>
-              </div>
-              <p className="text-xs text-gray-500">PNG, JPG up to 3MB</p>
-            </div>
+          <label className="block text-sm font-medium mb-1">Video URL (optional)</label>
+          <Input {...register('video_url')} placeholder="Enter video URL" />
+        </div>
+      </div>
+
+      {/* Pricing & Stock */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Pricing & Stock</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Price (₹)</label>
+            <Input type="number" {...register('price', { valueAsNumber: true })} />
+            {errors.price && (
+              <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+            )}
           </div>
-          {isUploading && (
-            <div className="mt-2">
-              <div className="relative pt-1">
-                <div className="flex mb-2 items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
-                      Uploading
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-indigo-600">
-                      {Math.round(uploadProgress)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-200">
-                  <div
-                    style={{ width: `${uploadProgress}%` }}
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500 transition-all duration-500"
-                  ></div>
-                </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Stock Quantity</label>
+            <Input
+              type="number"
+              {...register('stock_quantity', { valueAsNumber: true })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Sale Percentage (%)</label>
+            <Input
+              type="number"
+              {...register('sale_percentage', { valueAsNumber: true })}
+              min="0"
+              max="100"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Sale Start Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !watch('sale_start_date') && "text-muted-foreground"
+                  )}
+                >
+                  {watch('sale_start_date') ? 
+                    format(watch('sale_start_date'), "PPP") : 
+                    "Pick a date"
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={watch('sale_start_date')}
+                  onSelect={(date) => setValue('sale_start_date', date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Sale End Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !watch('sale_end_date') && "text-muted-foreground"
+                  )}
+                >
+                  {watch('sale_end_date') ? 
+                    format(watch('sale_end_date'), "PPP") : 
+                    "Pick a date"
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={watch('sale_end_date')}
+                  onSelect={(date) => setValue('sale_end_date', date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      </div>
+
+      {/* Product Details */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Product Details</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Material</label>
+            <Input {...register('quick_view_data.material')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Fit</label>
+            <Input {...register('quick_view_data.fit')} />
+          </div>
+        </div>
+        
+        {/* Care Instructions */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Care Instructions</label>
+          <div className="flex gap-2 mb-2">
+            <Input
+              value={newCareInstruction}
+              onChange={(e) => setNewCareInstruction(e.target.value)}
+              placeholder="Add care instruction"
+            />
+            <Button type="button" onClick={addCareInstruction}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {careInstructions.map((instruction, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded"
+              >
+                <span>{instruction}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCareInstructions(careInstructions.filter((_, i) => i !== index));
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        </div>
+
+        {/* Features */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Features</label>
+          <div className="flex gap-2 mb-2">
+            <Input
+              value={newFeature}
+              onChange={(e) => setNewFeature(e.target.value)}
+              placeholder="Add feature"
+            />
+            <Button type="button" onClick={addFeature}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded"
+              >
+                <span>{feature}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFeatures(features.filter((_, i) => i !== index));
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Key Highlights */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Key Highlights</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Fit Type</label>
+            <Input {...register('key_highlights.fit_type')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Fabric</label>
+            <Input {...register('key_highlights.fabric')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Neck</label>
+            <Input {...register('key_highlights.neck')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Sleeve</label>
+            <Input {...register('key_highlights.sleeve')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Pattern</label>
+            <Input {...register('key_highlights.pattern')} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Length</label>
+            <Input {...register('key_highlights.length')} />
+          </div>
+        </div>
+      </div>
+
+      {/* Product Status */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Product Status</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_featured"
+              {...register('is_featured')}
+            />
+            <label htmlFor="is_featured">Featured Product</label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_best_seller"
+              {...register('is_best_seller')}
+            />
+            <label htmlFor="is_best_seller">Best Seller</label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_new_arrival"
+              {...register('is_new_arrival')}
+            />
+            <label htmlFor="is_new_arrival">New Arrival</label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_trending"
+              {...register('is_trending')}
+            />
+            <label htmlFor="is_trending">Trending</label>
+          </div>
         </div>
       </div>
 
@@ -279,10 +502,10 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
+              {initialData ? 'Updating...' : 'Creating...'}
             </>
           ) : (
-            'Create Product'
+            initialData ? 'Update Product' : 'Create Product'
           )}
         </Button>
       </div>
