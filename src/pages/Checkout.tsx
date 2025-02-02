@@ -174,7 +174,7 @@ const Checkout = () => {
       }
 
       const total = subtotal - discountAmount + (subtotal > 499 ? 0 : 49);
-      const amountInPaise = Math.round(total ); // Convert to paise
+      const amountInPaise = Math.round(total *100); // Convert to paise
 
       // Get cart items for order
       const { data: cartItems } = await supabase
