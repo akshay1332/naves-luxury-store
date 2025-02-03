@@ -15,7 +15,7 @@ interface ProductContentProps {
   onAddToCart: () => void;
 }
 
-export const ProductContent = ({
+const ProductContent = ({
   product,
   selectedSize,
   selectedColor,
@@ -65,3 +65,5 @@ export const ProductContent = ({
     </div>
   );
 };
+
+export default ProductContent;

@@ -142,10 +142,10 @@ export function CouponForm({ productId, onSuccess }: CouponFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="discount_value"
+            name="discount_percentage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Discount Value</FormLabel>
+                <FormLabel>Discount Percentage</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -272,7 +272,7 @@ export function CouponForm({ productId, onSuccess }: CouponFormProps) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <Button
+          <Button
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
@@ -329,7 +329,7 @@ export function CouponForm({ productId, onSuccess }: CouponFormProps) {
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Creating..." : "Create Coupon"}
-        </Button>
+          </Button>
       </form>
     </Form>
   );
