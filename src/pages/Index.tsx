@@ -1,28 +1,40 @@
-import React from "react";
-import { HeroSection } from "@/components/home/HeroSection";
-import { FeaturedSection } from "@/components/home/FeaturedSection";
-import { NewArrivalsSection } from "@/components/home/NewArrivalsSection";
-import { TrendingSection } from "@/components/home/TrendingSection";
-import { BestSellersSection } from "@/components/home/BestSellersSection";
-import { RecentlyViewedSection } from "@/components/home/RecentlyViewedSection";
-import { ReviewsSection } from "@/components/home/ReviewsSection";
+import React from 'react';
 import { SEO } from "@/components/SEO";
-import Hero from "@/components/Hero";
+import Hero from '@/components/Hero';
+import { BestSellersSection } from '@/components/home/BestSellersSection';
+import { NewArrivalsSection } from '@/components/home/NewArrivalsSection';
+import { FeaturedSection } from '@/components/home/FeaturedSection';
+import { TrendingSection } from '@/components/home/TrendingSection';
+import { ReviewsSection } from '@/components/home/ReviewsSection';
+import NewsletterSection from '@/components/home/NewsletterSection';
+import SizeGuideSection from '@/components/home/SizeGuideSection';
+import StyleGuideSection from '@/components/home/StyleGuideSection';
+import { RecentlyViewedSection } from '@/components/home/RecentlyViewedSection';
 
-export function HomePage() {
+export default function Index() {
   return (
     <>
-      <SEO
-        title="Custom Print - Premium Custom Clothing"
-        description="Discover unique, high-quality custom printed clothing that expresses your style. Shop our collection of t-shirts, hoodies, and more."
+      <SEO 
+        title="Naves Luxury Store - Premium Fashion & Accessories"
+        description="Discover luxury fashion, accessories, and custom designs at Naves Luxury Store. Shop our curated collection of premium clothing and accessories."
       />
       <main className="min-h-screen">
         <Hero />
-        <FeaturedSection />
-        <ReviewsSection />
+        
+        <div className="container mx-auto px-4 space-y-24 py-16">
+          <NewArrivalsSection />
+          <BestSellersSection />
+          <FeaturedSection />
+          <TrendingSection />
+          <ReviewsSection />
+          <RecentlyViewedSection />
+          <div className="space-y-16">
+            <SizeGuideSection />
+            <StyleGuideSection />
+          </div>
+          <NewsletterSection />
+        </div>
       </main>
     </>
   );
 }
-
-export default HomePage;

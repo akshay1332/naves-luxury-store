@@ -20,11 +20,11 @@ export function formatPrice(amount: number): string {
  * @param minimumFractionDigits Minimum number of decimal places (default: 2)
  * @returns Formatted string with ₹ symbol
  */
-export const formatIndianPrice = (amount: number, minimumFractionDigits: number = 2): string => {
+export function formatIndianPrice(amount: number, minimumFractionDigits: number = 2): string {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits,
     maximumFractionDigits: 2
   }).format(amount);
-};
+}

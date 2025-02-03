@@ -4,7 +4,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export interface Order {
   id: string;
   user_id: string;
-  status: OrderStatus;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   total_amount: number;
   shipping_address: {
     fullName: string;
@@ -27,7 +27,7 @@ export interface Order {
     country: string;
   } | null;
   invoice_data: {
-    items: Array<{
+    items: {
       product: {
         id: string;
         title: string;
@@ -37,14 +37,17 @@ export interface Order {
       quantity: number;
       size?: string;
       color?: string;
-    }>;
+    }[];
     payment_method: string;
     custom_design?: {
-      type: 'upload' | 'link';
+      type: 'link' | 'upload';
       url: string;
       instructions?: string;
     };
-  } | null;
+    subtotal: number;
+    discount: number;
+    total: number;
+  };
   payment_status: PaymentStatus;
   payment_method?: string;
   payment_id?: string;

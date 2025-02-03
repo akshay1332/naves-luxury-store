@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn, Bell, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +14,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import logo from '../assets/logo.png';
-import { cn } from "@/lib/utils";
+import { cn, formatIndianPrice } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +27,10 @@ const Navbar = () => {
   const { theme: currentTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { searchResults, isSearching } = useSearch(debouncedSearch);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -41,7 +49,7 @@ const Navbar = () => {
         description: "Logged out successfully.",
       });
       navigate('/login');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -113,6 +121,32 @@ const Navbar = () => {
       transition: { duration: 0.3 }
     }
   };
+
+  const handleSearchFocus = useCallback(() => {
+    setIsSearchOpen(true);
+    searchInputRef.current?.focus();
+  }, []);
+
+  const handleSearchClose = useCallback(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Close search on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleSearchClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleSearchClose]);
 
   return (
     <nav className={cn(
@@ -193,35 +227,84 @@ const Navbar = () => {
 
             {/* Search Icon and Input */}
             <div className="relative flex items-center">
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className={cn(
-                  "p-1.5 rounded-full transition-colors duration-300",
-                  "hover:bg-primary-light/10",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={handleSearchFocus}
               >
                 <Search className="h-4 w-4" />
-              </button>
-              <AnimatePresence>
-                {isSearchOpen && (
-                  <motion.input
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    variants={searchVariants}
-                    type="text"
-                    placeholder="Search..."
-                    className={cn(
-                      "absolute right-10 ml-2 px-3 py-1 rounded-full text-sm",
-                      "border focus:outline-none focus:ring-2 focus:ring-primary-light",
-                      currentTheme === 'dark' 
-                        ? "bg-gray-800/50 border-gray-700 text-luxury-pearl placeholder-gray-400" 
-                        : "bg-white/50 border-gray-200 text-luxury-gold placeholder-gray-500"
-                    )}
-                  />
+              </Button>
+              
+              <div
+                className={cn(
+                  "absolute left-0 top-full mt-2",
+                  "bg-white dark:bg-gray-900 rounded-lg shadow-lg border dark:border-gray-800",
+                  "transition-all duration-200 ease-in-out",
+                  isSearchOpen
+                    ? "w-[400px] opacity-100 translate-y-0"
+                    : "w-0 opacity-0 -translate-y-2 pointer-events-none"
                 )}
-              </AnimatePresence>
+              >
+                <div className="relative w-full">
+                  <div className="flex items-center p-2 border-b dark:border-gray-800">
+                    <Search className="h-4 w-4 text-gray-400 dark:text-gray-600 ml-2" />
+                    <Input
+                      ref={searchInputRef}
+                      className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      placeholder="Search products, categories..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleSearchClose}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Search Results */}
+                  <div className="max-h-[400px] overflow-y-auto p-2">
+                    {isSearching ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-light" />
+                      </div>
+                    ) : searchQuery && searchResults.length === 0 ? (
+                      <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        No results found
+                      </div>
+                    ) : searchResults.map((result) => (
+                      <Link
+                        key={result.id}
+                        to={`/products/${result.id}`}
+                        className={cn(
+                          "flex items-center gap-3 p-2 rounded-lg",
+                          "hover:bg-gray-100 dark:hover:bg-gray-800",
+                          "transition-colors duration-200"
+                        )}
+                        onClick={handleSearchClose}
+                      >
+                        <img
+                          src={result.image}
+                          alt={result.title}
+                          className="w-12 h-12 object-cover rounded-md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">
+                            {result.title}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {formatIndianPrice(result.price)}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -232,7 +315,6 @@ const Navbar = () => {
               "hidden lg:block font-montserrat text-xl font-black tracking-wide",
               currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
             )}>
-              2024
             </div>
 
             {/* Auth and Cart Actions */}

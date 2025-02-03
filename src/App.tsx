@@ -40,79 +40,77 @@ const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        {({ theme }) => (
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <div className="flex flex-col min-h-screen">
-                <div className="fixed top-4 right-4 z-50">
-                  <ThemeToggle />
-                </div>
-                <Navbar />
-                <main className="flex-grow pt-20">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/products/:id" element={<ProductDetails />} />
-                    <Route
-                      path="/cart"
-                      element={
-                        <PrivateRoute>
-                          <Cart />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <PrivateRoute>
-                          <Profile />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/admin/*"
-                      element={
-                        <AdminRoute>
-                          <Routes>
-                            <Route path="/" element={<Admin />} />
-                            <Route path="/analytics" element={<AdminAnalytics />} />
-                            <Route path="/users" element={<AdminUsers />} />
-                            <Route path="/orders" element={<AdminOrders />} />
-                            <Route path="/messages" element={<AdminMessages />} />
-                            <Route path="/reviews" element={<AdminReviews />} />
-                            <Route path="/coupons" element={<AdminCoupons />} />
-                          </Routes>
-                        </AdminRoute>
-                      }
-                    />
-                    <Route
-                      path="/checkout"
-                      element={
-                        <PrivateRoute>
-                          <Checkout />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route path="/faq" element={<FAQ />} />
-                    <Route path="/shipping" element={<ShippingInfo />} />
-                    <Route path="/returns" element={<Returns />} />
-                    <Route path="/size-guide" element={<SizeGuide />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/refund" element={<Refund />} />
-                    <Route path="/cookies" element={<Cookies />} />
-                  </Routes>
-                </main>
-                <Footer />
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="flex flex-col min-h-screen">
+              <div className="fixed top-4 right-4 z-50">
+                <ThemeToggle />
               </div>
-            </BrowserRouter>
-          </TooltipProvider>
-        )}
+              <Navbar />
+              <main className="flex-grow pt-20">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/products/:id" element={<ProductDetails />} />
+                  <Route
+                    path="/cart"
+                    element={
+                      <PrivateRoute>
+                        <Cart />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <PrivateRoute>
+                        <Profile />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <AdminRoute>
+                        <Routes>
+                          <Route path="/" element={<Admin />} />
+                          <Route path="/analytics" element={<AdminAnalytics />} />
+                          <Route path="/users" element={<AdminUsers />} />
+                          <Route path="/orders" element={<AdminOrders />} />
+                          <Route path="/messages" element={<AdminMessages />} />
+                          <Route path="/reviews" element={<AdminReviews />} />
+                          <Route path="/coupons" element={<AdminCoupons />} />
+                        </Routes>
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <PrivateRoute>
+                        <Checkout />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/shipping" element={<ShippingInfo />} />
+                  <Route path="/returns" element={<Returns />} />
+                  <Route path="/size-guide" element={<SizeGuide />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/refund" element={<Refund />} />
+                  <Route path="/cookies" element={<Cookies />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </HelmetProvider>
