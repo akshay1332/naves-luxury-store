@@ -6,7 +6,6 @@ interface SidebarContextProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
   isMobile: boolean;
-  toggleSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -36,21 +35,23 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
-
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen, isMobile, toggleSidebar }}>
+    <SidebarContext.Provider value={{ isOpen, setIsOpen, isMobile }}>
       {children}
     </SidebarContext.Provider>
   );
 }
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+interface SidebarProps {
+  children: React.ReactNode;
   className?: string;
+  open?: boolean;
+  setOpen?: (value: boolean) => void;
 }
 
-export function Sidebar({ className, children, ...props }: SidebarProps) {
-  const { isOpen, isMobile } = useSidebar();
+export function Sidebar({ children, className, open, setOpen }: SidebarProps) {
+  const sidebarContext = useSidebar();
+  const isOpen = open !== undefined ? open : sidebarContext.isOpen;
 
   return (
     <motion.div
@@ -61,9 +62,43 @@ export function Sidebar({ className, children, ...props }: SidebarProps) {
       )}
       initial={false}
       animate={{ x: isOpen ? 0 : "-100%" }}
-      {...props}
     >
       {children}
     </motion.div>
+  );
+}
+
+interface SidebarBodyProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function SidebarBody({ children, className }: SidebarBodyProps) {
+  return (
+    <div className={cn("flex h-full flex-col p-4", className)}>
+      {children}
+    </div>
+  );
+}
+
+interface SidebarLinkProps {
+  link: {
+    label: string;
+    href: string;
+    icon?: React.ReactNode;
+  };
+  onClick?: () => void;
+}
+
+export function SidebarLink({ link, onClick }: SidebarLinkProps) {
+  return (
+    <a
+      href={link.href}
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+    >
+      {link.icon}
+      <span>{link.label}</span>
+    </a>
   );
 }

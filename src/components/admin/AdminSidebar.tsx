@@ -131,4 +131,4 @@ const Logo = () => {
       </motion.span>
     </Link>
   );
-}; 
+};
