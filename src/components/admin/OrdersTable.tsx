@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { OrderDetails } from "./OrderDetails";
+import OrderDetails from "./OrderDetails";
 import { UserDetails } from "./UserDetails";
 import { MoreHorizontal, Eye, User, Palette, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
