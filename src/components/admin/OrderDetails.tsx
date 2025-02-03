@@ -6,40 +6,19 @@ import { format } from "date-fns";
 import { ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import type { jsPDF as jsPDFType } from 'jspdf';
+import "jspdf-autotable";
+import { UserOptions } from "jspdf-autotable";
 
-interface OrderDetailsProps {
-  order: Order;
-}
-
-interface AutoTableStyles {
-  fontSize?: number;
-  cellPadding?: number;
-  fillColor?: number[];
-  textColor?: number[];
-  fontStyle?: string;
-  halign?: 'left' | 'center' | 'right';
-  cellWidth?: number;
-}
-
-interface AutoTableOptions {
-  startY: number;
-  head: string[][];
-  body: string[][];
-  theme?: string;
-  headStyles?: AutoTableStyles;
-  styles?: AutoTableStyles;
-  columnStyles?: {
-    [key: number]: AutoTableStyles;
-  };
-}
-
-interface ExtendedJsPDF extends jsPDFType {
-  autoTable: (options: AutoTableOptions) => void;
+// Extend jsPDF type to include autoTable
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: UserOptions) => void;
   lastAutoTable: {
     finalY: number;
   };
+}
+
+interface OrderDetailsProps {
+  order: Order;
 }
 
 export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
@@ -73,7 +52,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF() as ExtendedJsPDF;
+    const doc = new jsPDF() as jsPDFWithAutoTable;
     
     // Add header with logo and branding
     doc.setFillColor(44, 62, 80);
@@ -103,17 +82,18 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     const orderInfo = [
-      ["Order ID:", order.id],
+      ["Order ID:", order.id.toString()],
       ["Date:", format(new Date(order.created_at), 'PPP')],
       ["Status:", order.status.toUpperCase()],
       ["Payment Status:", order.payment_status.toUpperCase()]
     ];
     
     orderInfo.forEach((item, index) => {
+      const [label, value] = item;
       doc.setFont("helvetica", "bold");
-      doc.text(item[0], 20, 70 + (index * 7));
+      doc.text(label, 20, 70 + (index * 7));
       doc.setFont("helvetica", "normal");
-      doc.text(item[1], 80, 70 + (index * 7));
+      doc.text(String(value), 80, 70 + (index * 7));
     });
 
     // Customer Information
@@ -133,12 +113,13 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
       ];
       
       customerInfo.forEach((item, index) => {
-        if (item[0]) {
+        const [label, value] = item;
+        if (label) {
           doc.setFont("helvetica", "bold");
-          doc.text(item[0], 20, 115 + (index * 7));
+          doc.text(label, 20, 115 + (index * 7));
         }
         doc.setFont("helvetica", "normal");
-        doc.text(item[1], item[0] ? 80 : 80, 115 + (index * 7));
+        doc.text(String(value), label ? 80 : 80, 115 + (index * 7));
       });
     }
 
@@ -149,7 +130,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
     const tableData = order.invoice_data?.items?.filter(item => item && item.product).map(item => [
       item.product?.title || 'Unknown Product',
-      item.quantity?.toString() || '0',
+      (item.quantity || 0).toString(),
       formatIndianPrice(item.product?.price || 0),
       formatIndianPrice((item.product?.price || 0) * (item.quantity || 0))
     ]) || [];
@@ -346,16 +327,16 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
           <div className="space-y-4">
             <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
               <h3 className="font-semibold mb-3">Order Items</h3>
-      <Table>
-        <TableHeader>
-          <TableRow>
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     <TableHeader className="w-[40%]">Product</TableHeader>
-            <TableHeader>Quantity</TableHeader>
+                    <TableHeader>Quantity</TableHeader>
                     <TableHeader>Price</TableHeader>
                     <TableHeader className="text-right">Total</TableHeader>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {order.invoice_data?.items?.filter(item => item && item.product).map((item) => (
                     <TableRow key={item.product?.id || 'unknown'}>
                       <TableCell className="font-medium">
@@ -368,8 +349,8 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                       <TableCell className="text-right">
                         {formatIndianPrice((item.product?.price || 0) * (item.quantity || 0))}
                       </TableCell>
-            </TableRow>
-          ))}
+                    </TableRow>
+                  ))}
                   <TableRow>
                     <TableCell colSpan={3} className="text-right font-medium">
                       Subtotal
@@ -396,8 +377,8 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                       {formatIndianPrice((order.total_amount || 0) - (order.discount_amount || 0))}
                     </TableCell>
                   </TableRow>
-        </TableBody>
-      </Table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Order History */}
