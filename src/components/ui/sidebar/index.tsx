@@ -6,10 +6,6 @@ interface SidebarContextProps {
   isOpen: boolean;
   isMobile: boolean;
   toggleSidebar: () => void;
-  state: {
-    isOpen: boolean;
-    isMobile: boolean;
-  };
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -36,10 +32,6 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     isOpen,
     isMobile,
     toggleSidebar,
-    state: {
-      isOpen,
-      isMobile,
-    },
   };
 
   return (
