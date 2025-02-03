@@ -1,3 +1,5 @@
+import { DatabaseCoupon } from './coupons';
+
 export interface Product {
   id: string;
   title: string;

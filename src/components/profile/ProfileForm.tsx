@@ -5,45 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-export interface ProfileData {
-  id: string;
-  email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean | null;
-  created_at: string;
-  updated_at: string;
-  phone_number: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  notification_preferences: Record<string, unknown> | null;
-}
-
-export function ProfileForm({ user }: { user: ProfileData }) {
+export function ProfileForm() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
-
     try {
-      const formData = {
-        id: user.id, // Add the required id field
-        full_name: e.currentTarget.full_name.value,
-        phone_number: e.currentTarget.phone_number.value,
-        address: e.currentTarget.address.value,
-        city: e.currentTarget.city.value,
-        state: e.currentTarget.state.value,
-        country: e.currentTarget.country.value,
-        updated_at: new Date().toISOString()
+      const formData = new FormData(e.currentTarget);
+      const profileData = {
+        id: user.id, // Add the id field
+        full_name: formData.get('full_name') as string,
+        phone_number: formData.get('phone_number') as string,
+        address: formData.get('address') as string,
+        city: formData.get('city') as string,
+        state: formData.get('state') as string,
+        country: formData.get('country') as string,
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
         .from('profiles')
-        .update(formData)
+        .update(profileData)
         .eq('id', user.id);
 
       if (error) throw error;
@@ -52,12 +39,11 @@ export function ProfileForm({ user }: { user: ProfileData }) {
         title: "Success",
         description: "Profile updated successfully",
       });
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update profile",
+        description: error.message || "Failed to update profile",
       });
     } finally {
       setLoading(false);
