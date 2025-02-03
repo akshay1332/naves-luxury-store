@@ -119,8 +119,8 @@ const About = () => {
   };
 
   const stats = [
-    { number: "5000+", label: "Happy Clients", icon: Users },
-    { number: "15K+", label: "Projects Completed", icon: Target },
+    { number: "500+", label: "Happy Clients", icon: Users },
+    { number: "1000+", label: "Design generated", icon: Target },
     { number: "24/7", label: "Customer Support", icon: Clock },
     { number: "100%", label: "Quality Assured", icon: Shield },
   ];

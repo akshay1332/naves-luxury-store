@@ -276,7 +276,7 @@ const Navbar = () => {
                     to="/cart"
                     className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
                   >
-                    <CartIndicator />
+                      <CartIndicator />
                   </Link>
                   <div className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300">
                     <NotificationBell />
@@ -322,7 +322,7 @@ const Navbar = () => {
 
             {/* Modern Hamburger Button */}
             <motion.button
-              onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setIsOpen(!isOpen)}
               className={cn(
                 "md:hidden p-1.5 rounded-lg transition-colors duration-300 relative",
                 "hover:bg-gray-100 dark:hover:bg-gray-800",
@@ -385,9 +385,9 @@ const Navbar = () => {
                         )}
                       >
                         <ShoppingBag className="h-5 w-5 mr-3 text-rose-500" />
-                        CART
-                        <div className="ml-auto">
-                          <CartIndicator />
+                      CART
+                      <div className="ml-auto">
+                        <CartIndicator />
                         </div>
                       </div>
                     </motion.div>
@@ -400,9 +400,9 @@ const Navbar = () => {
                         )}
                       >
                         <Bell className="h-5 w-5 mr-3 text-rose-500" />
-                        NOTIFICATIONS
-                        <div className="ml-auto">
-                          <NotificationBell />
+                      NOTIFICATIONS
+                      <div className="ml-auto">
+                        <NotificationBell />
                         </div>
                       </div>
                     </motion.div>
@@ -444,12 +444,12 @@ const Navbar = () => {
                         )}
                       >
                         <User className="h-5 w-5 mr-3 text-rose-500" />
-                        PROFILE
+                      PROFILE
                       </div>
                     </motion.div>
                     <motion.div variants={itemVariants}>
                       <div
-                        onClick={handleLogout}
+                      onClick={handleLogout}
                         className={cn(
                           "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
                           "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
@@ -458,14 +458,14 @@ const Navbar = () => {
                         )}
                       >
                         <LogOut className="h-5 w-5 mr-3 text-rose-500" />
-                        LOGOUT
+                      LOGOUT
                       </div>
                     </motion.div>
                   </>
                 ) : (
                   <motion.div variants={itemVariants}>
                     <div
-                      onClick={handleLogin}
+                    onClick={handleLogin}
                       className={cn(
                         "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
                         "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
@@ -474,7 +474,7 @@ const Navbar = () => {
                       )}
                     >
                       <LogIn className="h-5 w-5 mr-3 text-rose-500" />
-                      LOGIN
+                    LOGIN
                     </div>
                   </motion.div>
                 )}

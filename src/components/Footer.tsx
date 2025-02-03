@@ -1,139 +1,8 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Phone, Mail, MapPin, Linkedin, Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import styled from 'styled-components';
 import { useTheme } from "@/hooks/useTheme";
-import { theme as themeConfig } from '../styles/theme';
-
-interface ThemeProps {
-  $currentTheme: 'light' | 'dark';
-}
-
-const FooterContainer = styled(motion.footer)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.surface
-    : themeConfig.light.surface};
-  border-top: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)'};
-  padding: 4rem 0 2rem;
-  margin-top: 4rem;
-`;
-
-const FooterContent = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-`;
-
-const FooterGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 2rem;
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
-`;
-
-const FooterSection = styled(motion.div)`
-  h3 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    font-family: 'Playfair Display', serif;
-  }
-`;
-
-const CompanyInfo = styled.div<ThemeProps>`
-  p {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.secondary
-      : themeConfig.light.text.secondary};
-  }
-
-  svg {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.primaryAccent
-      : themeConfig.light.primaryAccent};
-  }
-`;
-
-const FooterLinks = styled.div<ThemeProps>`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  a {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.secondary
-      : themeConfig.light.text.secondary};
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: ${props => props.$currentTheme === 'dark'
-        ? themeConfig.dark.primaryAccent
-        : themeConfig.light.primaryAccent};
-    }
-  }
-`;
-
-const SocialLinks = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-`;
-
-const SocialIcon = styled(motion.a)<ThemeProps>`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.05)'};
-  color: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.text.primary
-    : themeConfig.light.text.primary};
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.primaryAccent
-      : themeConfig.light.primaryAccent};
-    color: white;
-    transform: translateY(-3px);
-  }
-`;
-
-const Copyright = styled(motion.div)<ThemeProps>`
-  text-align: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid ${props => props.$currentTheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)'};
-  color: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.text.secondary
-    : themeConfig.light.text.secondary};
-
-  p {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-`;
+import { cn } from "@/lib/utils";
 
 const Footer = () => {
   const { theme: currentTheme } = useTheme();
@@ -159,152 +28,220 @@ const Footer = () => {
     }
   };
 
+  const socialLinks = [
+    {
+      icon: Instagram,
+      href: "https://www.instagram.com/the.customprint",
+      label: "Instagram"
+    },
+    {
+      icon: Facebook,
+      href: "https://www.facebook.com/people/Customs-Print/",
+      label: "Facebook"
+    },
+    {
+      icon: Linkedin,
+      href: "https://www.linkedin.com/in/custom-print-436307349/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      label: "LinkedIn"
+    }
+  ];
+
   return (
-    <FooterContainer
-      $currentTheme={currentTheme}
+    <motion.footer
+      className={cn(
+        "w-full py-12 mt-16",
+        "border-t transition-colors duration-300",
+        currentTheme === 'dark' 
+          ? "bg-gray-900 border-gray-800 text-white" 
+          : "bg-white border-gray-200 text-gray-900"
+      )}
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
-            viewport={{ once: true }}
-          >
-      <FooterContent>
-        <FooterGrid>
-          <FooterSection variants={itemVariants}>
+      viewport={{ once: true }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Brand Section */}
+          <motion.div variants={itemVariants} className="space-y-4">
             <motion.h3
+              className="text-2xl font-bold font-montserrat tracking-wide"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Custom Print
+              CUSTOM<span className="text-rose-500">PRINT</span>
             </motion.h3>
-            <CompanyInfo $currentTheme={currentTheme}>
-              <p>
-                <Phone size={20} />
-                +91 6284 249 565
-              </p>
-              <p>
-                <Mail size={20} />
-                support@customprint.co.in
-              </p>
-              <p>
-                <MapPin size={20} />
-                India
-              </p>
-            </CompanyInfo>
-            <SocialLinks>
-              <SocialIcon 
-                href="#" 
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <Phone size={18} className="text-rose-500" />
+                <span className="text-sm">+91 6284 249 565</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail size={18} className="text-rose-500" />
+                <span className="text-sm">support@customprint.co.in</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin size={18} className="text-rose-500" />
+                <span className="text-sm">Jalandhar, Punjab, India</span>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-4">
+              {socialLinks.map((social) => (
+                <motion.a
+                  key={social.label}
+                  href={social.href}
                 target="_blank"
-                $currentTheme={currentTheme}
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "p-2 rounded-full transition-colors duration-300",
+                    currentTheme === 'dark'
+                      ? "bg-gray-800 hover:bg-gray-700"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  )}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Facebook size={20} />
-              </SocialIcon>
-              <SocialIcon 
-                href="#" 
-                target="_blank"
-                $currentTheme={currentTheme}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Instagram size={20} />
-              </SocialIcon>
-              <SocialIcon 
-                href="#" 
-                target="_blank"
-                $currentTheme={currentTheme}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Twitter size={20} />
-              </SocialIcon>
-              <SocialIcon 
-                href="#" 
-                target="_blank"
-                $currentTheme={currentTheme}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Linkedin size={20} />
-              </SocialIcon>
-            </SocialLinks>
-          </FooterSection>
+                  <social.icon size={20} className="text-rose-500" />
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
 
-          <FooterSection variants={itemVariants}>
-            <motion.h3
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Quick Links
-            </motion.h3>
-            <FooterLinks $currentTheme={currentTheme}>
-              <Link to="/">Home</Link>
-              <Link to="/products">Products</Link>
-              <Link to="/about">About Us</Link>
-              <Link to="/contact">Contact</Link>
-            </FooterLinks>
-          </FooterSection>
+          {/* Quick Links */}
+          <motion.div variants={itemVariants} className="space-y-4">
+            <h3 className="text-lg font-semibold font-montserrat tracking-wide">Quick Links</h3>
+            <div className="space-y-2">
+              {[
+                { to: "/", label: "Home" },
+                { to: "/products", label: "Products" },
+                { to: "/about", label: "About Us" },
+                { to: "/contact", label: "Contact" }
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={cn(
+                    "block text-sm transition-colors duration-300 hover:text-rose-500",
+                    currentTheme === 'dark' ? "text-gray-300" : "text-gray-600"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
 
-          <FooterSection variants={itemVariants}>
-            <motion.h3
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Customer Service
-            </motion.h3>
-            <FooterLinks $currentTheme={currentTheme}>
-              <Link to="/faq">FAQ</Link>
-              <Link to="/shipping">Shipping Info</Link>
-              <Link to="/returns">Returns</Link>
-              <Link to="/size-guide">Size Guide</Link>
-            </FooterLinks>
-          </FooterSection>
+          {/* Customer Service */}
+          <motion.div variants={itemVariants} className="space-y-4">
+            <h3 className="text-lg font-semibold font-montserrat tracking-wide">Customer Service</h3>
+            <div className="space-y-2">
+              {[
+                { to: "/faq", label: "FAQ" },
+                { to: "/shipping", label: "Shipping Info" },
+                { to: "/returns", label: "Returns" },
+                { to: "/size-guide", label: "Size Guide" }
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={cn(
+                    "block text-sm transition-colors duration-300 hover:text-rose-500",
+                    currentTheme === 'dark' ? "text-gray-300" : "text-gray-600"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
 
-          <FooterSection variants={itemVariants}>
-            <motion.h3
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Legal
-            </motion.h3>
-            <FooterLinks $currentTheme={currentTheme}>
-              <Link to="/privacy">Privacy Policy</Link>
-              <Link to="/terms">Terms of Service</Link>
-              <Link to="/refund">Refund Policy</Link>
-              <Link to="/cookies">Cookie Policy</Link>
-            </FooterLinks>
-          </FooterSection>
-        </FooterGrid>
+          {/* Legal */}
+          <motion.div variants={itemVariants} className="space-y-4">
+            <h3 className="text-lg font-semibold font-montserrat tracking-wide">Legal</h3>
+            <div className="space-y-2">
+              {[
+                { to: "/privacy", label: "Privacy Policy" },
+                { to: "/terms", label: "Terms of Service" },
+                { to: "/refund", label: "Refund Policy" },
+                { to: "/cookies", label: "Cookie Policy" }
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={cn(
+                    "block text-sm transition-colors duration-300 hover:text-rose-500",
+                    currentTheme === 'dark' ? "text-gray-300" : "text-gray-600"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        </div>
 
-        <Copyright 
-          $currentTheme={currentTheme}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+        {/* Footer Bottom */}
+        <motion.div
+          className={cn(
+            "mt-12 pt-8 border-t",
+            currentTheme === 'dark' ? "border-gray-800" : "border-gray-200"
+          )}
+          variants={itemVariants}
         >
-          <p>
-            © {new Date().getFullYear()} Custom Print. Made with 
-            <motion.span
-              animate={{ 
-                scale: [1, 1.2, 1],
-                color: ['#ff0000', '#ff69b4', '#ff0000']
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity
-              }}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Copyright */}
+            <motion.p 
+              className="flex items-center justify-center gap-2 text-sm"
+              variants={itemVariants}
             >
-              <Heart size={16} />
-            </motion.span>
-            in India
-          </p>
-        </Copyright>
-      </FooterContent>
-    </FooterContainer>
+              © {new Date().getFullYear()} Custom Print. Made with 
+              <motion.span
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  color: ['#ff0000', '#ff69b4', '#ff0000']
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity
+                }}
+              >
+                <Heart size={16} className="text-rose-500" />
+              </motion.span>
+              in India
+            </motion.p>
+
+            {/* Developer Credits */}
+            <motion.p 
+              className={cn(
+                "text-sm text-center md:text-right",
+                currentTheme === 'dark' ? "text-gray-400" : "text-gray-600"
+              )}
+              variants={itemVariants}
+            >
+              Designed & Developed by{" "}
+              <a 
+                href="https://akshayys.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rose-500 hover:text-rose-400 transition-colors duration-300 font-medium"
+              >
+                Akshay Pratap Singh
+              </a>
+              {" "}at{" "}
+              <a 
+                href="https://akshayys.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rose-500 hover:text-rose-400 transition-colors duration-300 font-medium"
+              >
+                ADev Web Agency
+              </a>
+            </motion.p>
+          </div>
+        </motion.div>
+      </div>
+    </motion.footer>
   );
 };
 

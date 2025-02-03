@@ -31,8 +31,8 @@ const Contact = () => {
         {/* Hero Section */}
         <section className="relative h-[40vh] overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070"
-            alt="Contact Us"
+            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084"
+            alt="Contact Custom Print"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/40"></div>
@@ -41,7 +41,7 @@ const Contact = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-4xl md:text-6xl text-white font-serif"
+              className="text-4xl md:text-6xl text-white font-montserrat font-bold"
             >
               Contact Us
             </motion.h1>
@@ -57,22 +57,31 @@ const Contact = () => {
               transition={{ duration: 0.8 }}
               className="bg-secondary-dark text-white p-8 rounded-lg"
             >
-              <h2 className="text-3xl font-serif mb-6 text-luxury-gold">Get in Touch</h2>
+              <h2 className="text-3xl font-montserrat font-bold mb-6 text-rose-500">Get in Touch</h2>
               <p className="text-gray-300 mb-8">
-                We'd love to hear from you. Please fill out the form below and we'll get back to you as soon as possible.
+                Have questions about our custom printing services? We're here to help! Fill out the form, and our team will get back to you shortly.
               </p>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-serif mb-2 text-luxury-gold">Visit Our Store</h3>
-                  <p className="text-gray-300">123 Fashion Street</p>
-                  <p className="text-gray-300">New Delhi, India</p>
+                  <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Visit Our Store</h3>
+                  <p className="text-gray-300">Custom Print Studio</p>
+                  <p className="text-gray-300">42, Fashion Hub, Sector 18</p>
+                  <p className="text-gray-300">Noida, Uttar Pradesh 201301</p>
                 </div>
                 
                 <div>
-                  <h3 className="text-xl font-serif mb-2 text-luxury-gold">Contact Information</h3>
-                  <p className="text-gray-300">Email: info@labelnaves.com</p>
-                  <p className="text-gray-300">Phone: +91 (555) 123-4567</p>
+                  <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Contact Information</h3>
+                  <p className="text-gray-300">Email: support@customprint.co.in</p>
+                  <p className="text-gray-300">Phone: +91 98765 43210</p>
+                  <p className="text-gray-300">Hours: Mon-Sat, 10:00 AM - 7:00 PM</p>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Follow Us</h3>
+                  <p className="text-gray-300">Instagram: @customprint.in</p>
+                  <p className="text-gray-300">Facebook: @customprintindia</p>
+                  <p className="text-gray-300">Twitter: @customprint_in</p>
                 </div>
               </div>
             </motion.div>

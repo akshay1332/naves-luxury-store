@@ -27,6 +27,14 @@ import AdminCoupons from './pages/admin/Coupons';
 import AdminAnalytics from './pages/admin/Analytics';
 import Checkout from './pages/Checkout';
 import { queryClient } from './lib/react-query';
+import FAQ from "@/pages/FAQ";
+import ShippingInfo from "@/pages/ShippingInfo";
+import Returns from "@/pages/Returns";
+import SizeGuide from "@/pages/SizeGuide";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
+import Refund from "@/pages/Refund";
+import Cookies from "@/pages/Cookies";
 
 const App = () => (
   <HelmetProvider>
@@ -90,6 +98,14 @@ const App = () => (
                         </PrivateRoute>
                       }
                     />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/shipping" element={<ShippingInfo />} />
+                    <Route path="/returns" element={<Returns />} />
+                    <Route path="/size-guide" element={<SizeGuide />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/refund" element={<Refund />} />
+                    <Route path="/cookies" element={<Cookies />} />
                   </Routes>
                 </main>
                 <Footer />
