@@ -1,11 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { createContext, useContext, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface SidebarContextProps {
   isOpen: boolean;
-  setIsOpen: (value: boolean) => void;
   isMobile: boolean;
+  state: {
+    isOpen: boolean;
+    isMobile: boolean;
+  };
+  toggleSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -20,19 +23,22 @@ export function useSidebar() {
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile] = useState(window.innerWidth < 768);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const value = {
+    isOpen,
+    isMobile,
+    state: {
+      isOpen,
+      isMobile,
+    },
+    toggleSidebar,
+  };
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen, isMobile }}>
+    <SidebarContext.Provider value={value}>
       {children}
     </SidebarContext.Provider>
   );
@@ -41,59 +47,49 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 interface SidebarProps {
   children: React.ReactNode;
   className?: string;
-  open?: boolean;
-  setOpen?: (value: boolean) => void;
 }
 
-export function Sidebar({ children, className, open, setOpen }: SidebarProps) {
-  const sidebarContext = useSidebar();
-  const isOpen = open !== undefined ? open : sidebarContext.isOpen;
+export function Sidebar({ children, className }: SidebarProps) {
+  const { isOpen } = useSidebar();
 
   return (
-    <motion.div
+    <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background",
+        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white dark:bg-gray-900 transition-transform duration-300",
+        isOpen ? "translate-x-0" : "-translate-x-full",
         className
       )}
-      initial={false}
-      animate={{ x: isOpen ? 0 : "-100%" }}
     >
       {children}
-    </motion.div>
+    </aside>
   );
 }
 
-interface SidebarBodyProps {
-  children: React.ReactNode;
-  className?: string;
+export function SidebarContent({ children }: { children: React.ReactNode }) {
+  return <div className="flex-1 overflow-y-auto p-4">{children}</div>;
 }
 
-export function SidebarBody({ children, className }: SidebarBodyProps) {
+export function SidebarTrigger() {
+  const { toggleSidebar } = useSidebar();
   return (
-    <div className={cn("flex h-full flex-col p-4", className)}>
-      {children}
-    </div>
-  );
-}
-
-interface SidebarLinkProps {
-  link: {
-    label: string;
-    href: string;
-    icon?: React.ReactNode;
-  };
-  onClick?: () => void;
-}
-
-export function SidebarLink({ link, onClick }: SidebarLinkProps) {
-  return (
-    <a
-      href={link.href}
-      onClick={onClick}
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+    <button
+      onClick={toggleSidebar}
+      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
     >
-      {link.icon}
-      <span>{link.label}</span>
-    </a>
+      <span className="sr-only">Toggle Sidebar</span>
+      <svg
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 6h16M4 12h16M4 18h16"
+        />
+      </svg>
+    </button>
   );
 }

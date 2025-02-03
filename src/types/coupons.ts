@@ -20,3 +20,18 @@ export interface DatabaseCoupon {
 }
 
 export type NewCoupon = Omit<DatabaseCoupon, 'id' | 'created_at' | 'updated_at' | 'times_used'>;
+
+export interface CouponFormData {
+  code: string;
+  description: string;
+  category?: string;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  min_purchase_amount: number;
+  max_discount_amount: number;
+  valid_from: string;
+  valid_until: string;
+  usage_limit: number;
+  is_active: boolean;
+  product_id?: string;
+}
