@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ProductContainer from "@/components/product/ProductContainer";
-import ProductContent from "@/components/product/ProductContent";
+import { ProductContainer } from "@/components/product/ProductContainer";
+import { ProductContent } from "@/components/product/ProductContent";
 import { ProductReviews } from "@/components/product/ProductReviews";
-import RelatedProducts from "@/components/product/RelatedProducts";
+import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { ReviewForm } from "@/components/product/ReviewForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

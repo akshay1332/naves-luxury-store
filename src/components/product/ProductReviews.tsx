@@ -1,148 +1,113 @@
-import React, { useState } from 'react';
-import { Star, MessageCircle, ThumbsUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-interface Review {
-  id: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-  admin_response: string | null;
-  profiles: {
-    full_name: string;
-  };
-}
-
-interface ProductReviewsProps {
-  reviews: Review[];
-  isAdmin?: boolean;
-  onReviewsUpdate: () => void;
-}
-
-const ProductReviews = ({ reviews, isAdmin = false, onReviewsUpdate }: ProductReviewsProps) => {
-  const [responses, setResponses] = useState<{ [key: string]: string }>({});
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+export const ProductReviews: React.FC<{ productId: string }> = ({ productId }) => {
   const { toast } = useToast();
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newReview, setNewReview] = useState({ comment: '', rating: 0 });
 
-  const handleAdminResponse = async (reviewId: string) => {
-    if (!responses[reviewId]?.trim()) return;
-    
-    setLoading(prev => ({ ...prev, [reviewId]: true }));
+  useEffect(() => {
+    fetchReviews();
+  }, [productId]);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to fetch reviews',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       const { error } = await supabase
         .from('reviews')
-        .update({ admin_response: responses[reviewId] })
-        .eq('id', reviewId);
+        .insert([{ ...newReview, product_id: productId }]);
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Response added successfully",
+        title: 'Success',
+        description: 'Review submitted successfully',
       });
-      
-      onReviewsUpdate();
-      setResponses(prev => ({ ...prev, [reviewId]: '' }));
-    } catch (error: any) {
+      setNewReview({ comment: '', rating: 0 });
+      fetchReviews();
+    } catch (error) {
+      console.error('Error submitting review:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add response",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to submit review',
       });
-    } finally {
-      setLoading(prev => ({ ...prev, [reviewId]: false }));
     }
   };
 
   return (
-    <div className="mt-12">
-      <h2 className="text-3xl font-serif font-bold mb-8 text-center">
-        <span className="bg-gradient-to-r from-luxury-gold to-luxury-silver bg-clip-text text-transparent">
-          Customer Reviews
-        </span>
-      </h2>
-      <div className="space-y-8">
-        <AnimatePresence>
-          {reviews.map((review, index) => (
-            <motion.div
-              key={review.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="font-medium text-gray-900">
-                  {review.profiles.full_name || "Anonymous"}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {new Date(review.created_at).toLocaleDateString()}
-                </span>
+    <div className="mt-8">
+      <h2 className="text-2xl font-bold mb-4">Product Reviews</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div>
+          {reviews.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            reviews.map((review) => (
+              <div key={review.id} className="border-b py-4">
+                <p className="font-semibold">{review.user_id}</p>
+                <p>{review.comment}</p>
+                <p className="text-sm text-gray-500">Rating: {review.rating}</p>
               </div>
-              <div className="flex items-start gap-3">
-                <MessageCircle className="w-5 h-5 text-luxury-gold mt-1" />
-                <p className="text-gray-600 flex-1">{review.comment}</p>
-              </div>
-              
-              {review.admin_response && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 pl-4 border-l-4 border-luxury-gold bg-luxury-pearl/20 p-4 rounded-r-lg"
-                >
-                  <p className="text-sm font-medium text-gray-900 mb-1 flex items-center gap-2">
-                    <ThumbsUp className="w-4 h-4 text-luxury-gold" />
-                    Admin Response:
-                  </p>
-                  <p className="text-gray-600">{review.admin_response}</p>
-                </motion.div>
-              )}
-
-              {isAdmin && !review.admin_response && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="mt-4 space-y-2"
-                >
-                  <Textarea
-                    value={responses[review.id] || ''}
-                    onChange={(e) => setResponses(prev => ({
-                      ...prev,
-                      [review.id]: e.target.value
-                    }))}
-                    placeholder="Write your response..."
-                    className="min-h-[100px] border-luxury-gold/20 focus:border-luxury-gold focus:ring-luxury-gold"
-                  />
-                  <Button
-                    onClick={() => handleAdminResponse(review.id)}
-                    disabled={loading[review.id] || !responses[review.id]?.trim()}
-                    className="bg-luxury-gold hover:bg-luxury-gold/90 transition-colors"
-                  >
-                    {loading[review.id] ? "Sending..." : "Send Response"}
-                  </Button>
-                </motion.div>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+            ))
+          )}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="mt-6">
+        <textarea
+          className="w-full p-2 border rounded"
+          placeholder="Write your review..."
+          value={newReview.comment}
+          onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+          required
+        />
+        <div className="flex items-center mt-2">
+          <label className="mr-2">Rating:</label>
+          <select
+            className="border rounded p-1"
+            value={newReview.rating}
+            onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
+            required
+          >
+            <option value={0}>Select rating</option>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+            <option value={4}>4</option>
+            <option value={5}>5</option>
+          </select>
+        </div>
+        <button type="submit" className="mt-4 bg-blue-500 text-white p-2 rounded">
+          Submit Review
+        </button>
+      </form>
     </div>
   );
 };
-
-export default ProductReviews;
