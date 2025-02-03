@@ -101,40 +101,6 @@ const Navbar = () => {
     }
   };
 
-  const hamburgerVariants = {
-    closed: {
-      rotate: 0,
-      scale: 1,
-      transition: {
-        duration: 0.3
-      }
-    },
-    open: {
-      rotate: 45,
-      scale: 1.1,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
-
-  const Path = (props: any) => (
-    <motion.path
-      fill="transparent"
-      strokeWidth="2"
-      stroke={currentTheme === 'dark' ? "white" : "black"}
-      strokeLinecap="round"
-      {...props}
-    />
-  );
-
-  const handleNavigation = (path: string) => {
-    setIsOpen(false);
-    navigate(path);
-    // Scroll to top after navigation
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const searchVariants = {
     hidden: { 
       width: 0,
@@ -153,8 +119,8 @@ const Navbar = () => {
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
       "border-b shadow-sm py-1",
       currentTheme === 'dark' 
-        ? "bg-gray-900/95 border-gray-800 backdrop-blur-md" 
-        : "bg-white/95 border-gray-100 backdrop-blur-md"
+        ? "bg-gray-900/80 border-gray-800 backdrop-blur-md" 
+        : "bg-white/80 border-gray-100 backdrop-blur-md"
     )}>
       <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
         <div className="flex items-center justify-between h-14">
@@ -177,10 +143,10 @@ const Navbar = () => {
                 <motion.div
                   className={cn(
                     "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
-                    currentTheme === 'dark' ? "text-white" : "text-gray-800"
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
                   )}
                 >
-                  CUSTOM<span className="text-primary">PRINT</span>
+                  CUSTOM<span className="text-primary-light">PRINT</span>
                 </motion.div>
               </motion.div>
             </Link>
@@ -191,8 +157,8 @@ const Navbar = () => {
             <Link 
               to="/" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
-                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
               )}
             >
               HOME
@@ -200,8 +166,8 @@ const Navbar = () => {
             <Link 
               to="/products" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
-                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
               )}
             >
               PRODUCTS
@@ -209,8 +175,8 @@ const Navbar = () => {
             <Link 
               to="/about" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
-                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
               )}
             >
               ABOUT
@@ -218,8 +184,8 @@ const Navbar = () => {
             <Link 
               to="/contact" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
-                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
               )}
             >
               CONTACT
@@ -231,8 +197,8 @@ const Navbar = () => {
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className={cn(
                   "p-1.5 rounded-full transition-colors duration-300",
-                  "hover:bg-gray-100 dark:hover:bg-gray-800",
-                  currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                  "hover:bg-primary-light/10",
+                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
                 )}
               >
                 <Search className="h-4 w-4" />
@@ -248,10 +214,10 @@ const Navbar = () => {
                     placeholder="Search..."
                     className={cn(
                       "absolute right-10 ml-2 px-3 py-1 rounded-full text-sm",
-                      "border focus:outline-none focus:ring-2 focus:ring-primary",
+                      "border focus:outline-none focus:ring-2 focus:ring-primary-light",
                       currentTheme === 'dark' 
-                        ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400" 
-                        : "bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-500"
+                        ? "bg-gray-800/50 border-gray-700 text-luxury-pearl placeholder-gray-400" 
+                        : "bg-white/50 border-gray-200 text-luxury-gold placeholder-gray-500"
                     )}
                   />
                 )}
@@ -264,7 +230,7 @@ const Navbar = () => {
             {/* Year Text - Hidden on Mobile */}
             <div className={cn(
               "hidden lg:block font-montserrat text-xl font-black tracking-wide",
-              currentTheme === 'dark' ? "text-gray-200" : "text-gray-800"
+              currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
             )}>
               2024
             </div>
@@ -275,11 +241,19 @@ const Navbar = () => {
                 <div className="flex items-center gap-2">
                   <Link 
                     to="/cart"
-                    className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
+                    className={cn(
+                      "p-1.5 rounded-full transition-colors duration-300",
+                      "hover:bg-primary-light/10",
+                      currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+                    )}
                   >
-                      <CartIndicator />
+                    <CartIndicator />
                   </Link>
-                  <div className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300">
+                  <div className={cn(
+                    "p-1.5 rounded-full transition-colors duration-300",
+                    "hover:bg-primary-light/10",
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+                  )}>
                     <NotificationBell />
                   </div>
                 </div>
@@ -289,8 +263,8 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <button className={cn(
                     "p-1.5 rounded-full transition-colors duration-300",
-                    "hover:bg-gray-100 dark:hover:bg-gray-800",
-                    currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                    "hover:bg-primary-light/10",
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
                   )}>
                     <User className="h-4 w-4" />
                   </button>
@@ -299,21 +273,21 @@ const Navbar = () => {
                   {isAuthenticated ? (
                     <>
                       <DropdownMenuItem onClick={() => navigate('/profile')}>
-                        <User className="mr-2 h-4 w-4 text-rose-500" />
+                        <User className="mr-2 h-4 w-4 text-primary-light" />
                         Profile
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin')}>
-                        <ShoppingBag className="mr-2 h-4 w-4 text-rose-500" />
+                        <ShoppingBag className="mr-2 h-4 w-4 text-primary-light" />
                         Admin Dashboard
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4 text-rose-500" />
+                        <LogOut className="mr-2 h-4 w-4 text-primary-light" />
                         Logout
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <DropdownMenuItem onClick={handleLogin}>
-                      <LogIn className="mr-2 h-4 w-4 text-rose-500" />
+                      <LogIn className="mr-2 h-4 w-4 text-primary-light" />
                       Login
                     </DropdownMenuItem>
                   )}
@@ -321,89 +295,68 @@ const Navbar = () => {
               </DropdownMenu>
             </div>
 
-            {/* Modern Hamburger Button */}
-            <motion.button
-                onClick={() => setIsOpen(!isOpen)}
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
               className={cn(
                 "md:hidden p-1.5 rounded-lg transition-colors duration-300 relative",
-                "hover:bg-gray-100 dark:hover:bg-gray-800",
-                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                "hover:bg-primary-light/10",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
               )}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
-              <MenuIcon />
-            </motion.button>
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Menu with Enhanced Animations */}
-        <AnimatePresence mode="wait">
+        {/* Mobile Menu */}
+        <AnimatePresence>
           {isOpen && (
             <motion.div
-              variants={{
-                closed: {
-                  opacity: 0,
-                  height: 0,
-                  transition: {
-                    duration: 0.3,
-                    staggerChildren: 0.05,
-                    staggerDirection: -1,
-                    ease: "easeInOut"
-                  }
-                },
-                open: {
-                  opacity: 1,
-                  height: "auto",
-                  transition: {
-                    duration: 0.3,
-                    staggerChildren: 0.05,
-                    delayChildren: 0.1,
-                    ease: "easeInOut"
-                  }
-                }
-              }}
+              variants={menuVariants}
               initial="closed"
               animate="open"
               exit="closed"
               className={cn(
-                "md:hidden overflow-hidden absolute top-full left-0 right-0 max-h-[calc(100vh-4rem)]",
-                "backdrop-blur-lg bg-white/90 dark:bg-gray-900/90",
-                "border-b border-gray-200 dark:border-gray-800",
-                "shadow-lg overflow-y-auto"
+                "md:hidden overflow-hidden",
+                "absolute top-full left-0 right-0",
+                "backdrop-blur-lg",
+                currentTheme === 'dark'
+                  ? "bg-gray-900/90 border-b border-gray-800"
+                  : "bg-white/90 border-b border-gray-200"
               )}
             >
-              <div className="py-1 space-y-0.5">
+              <div className="py-2 space-y-1">
                 {isAuthenticated && (
                   <>
                     <motion.div variants={itemVariants}>
-                      <div
-                        onClick={() => handleNavigation('/cart')}
+                      <Link
+                        to="/cart"
                         className={cn(
-                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
-                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                          "flex items-center px-4 py-2",
+                          "text-sm font-semibold",
+                          currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                          "hover:bg-primary-light/10"
                         )}
                       >
-                        <ShoppingBag className="h-5 w-5 mr-3 text-rose-500" />
-                      CART
-                      <div className="ml-auto">
-                        <CartIndicator />
+                        <ShoppingBag className="h-5 w-5 mr-3" />
+                        Cart
+                        <div className="ml-auto">
+                          <CartIndicator />
                         </div>
-                      </div>
+                      </Link>
                     </motion.div>
                     <motion.div variants={itemVariants}>
-                      <div
-                        className={cn(
-                          "flex items-center px-4 py-3 text-sm font-semibold",
-                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
-                        )}
-                      >
-                        <Bell className="h-5 w-5 mr-3 text-rose-500" />
-                      NOTIFICATIONS
-                      <div className="ml-auto">
-                        <NotificationBell />
+                      <div className={cn(
+                        "flex items-center px-4 py-2",
+                        "text-sm font-semibold",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
+                      )}>
+                        <Bell className="h-5 w-5 mr-3" />
+                        Notifications
+                        <div className="ml-auto">
+                          <NotificationBell />
                         </div>
                       </div>
                     </motion.div>
@@ -417,66 +370,74 @@ const Navbar = () => {
                   { path: '/contact', icon: Phone, label: 'CONTACT' }
                 ].map((item) => (
                   <motion.div key={item.path} variants={itemVariants}>
-                    <div
-                      onClick={() => handleNavigation(item.path)}
+                    <Link
+                      to={item.path}
                       className={cn(
-                        "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
-                        "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                        "transform hover:translate-x-2 transition-transform duration-200",
-                        currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        "flex items-center px-4 py-2",
+                        "text-sm font-semibold",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
                       )}
+                      onClick={() => setIsOpen(false)}
                     >
-                      <item.icon className="h-5 w-5 mr-3 text-rose-500" />
+                      <item.icon className="h-5 w-5 mr-3" />
                       {item.label}
-                    </div>
+                    </Link>
                   </motion.div>
                 ))}
 
                 {isAuthenticated ? (
                   <>
                     <motion.div variants={itemVariants}>
-                      <div
-                        onClick={() => handleNavigation('/profile')}
+                      <Link
+                        to="/profile"
                         className={cn(
-                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
-                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                          "transform hover:translate-x-2 transition-transform duration-200",
-                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                          "flex items-center px-4 py-2",
+                          "text-sm font-semibold",
+                          currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                          "hover:bg-primary-light/10"
                         )}
+                        onClick={() => setIsOpen(false)}
                       >
-                        <User className="h-5 w-5 mr-3 text-rose-500" />
-                      PROFILE
-                      </div>
+                        <User className="h-5 w-5 mr-3" />
+                        PROFILE
+                      </Link>
                     </motion.div>
                     <motion.div variants={itemVariants}>
-                      <div
-                      onClick={handleLogout}
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsOpen(false);
+                        }}
                         className={cn(
-                          "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
-                          "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                          "transform hover:translate-x-2 transition-transform duration-200",
-                          currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                          "flex items-center px-4 py-2 w-full",
+                          "text-sm font-semibold text-left",
+                          currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                          "hover:bg-primary-light/10"
                         )}
                       >
-                        <LogOut className="h-5 w-5 mr-3 text-rose-500" />
-                      LOGOUT
-                      </div>
+                        <LogOut className="h-5 w-5 mr-3" />
+                        LOGOUT
+                      </button>
                     </motion.div>
                   </>
                 ) : (
                   <motion.div variants={itemVariants}>
-                    <div
-                    onClick={handleLogin}
+                    <button
+                      onClick={() => {
+                        handleLogin();
+                        setIsOpen(false);
+                      }}
                       className={cn(
-                        "flex items-center px-4 py-3 text-sm font-semibold cursor-pointer",
-                        "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300",
-                        "transform hover:translate-x-2 transition-transform duration-200",
-                        currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                        "flex items-center px-4 py-2 w-full",
+                        "text-sm font-semibold text-left",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
                       )}
                     >
-                      <LogIn className="h-5 w-5 mr-3 text-rose-500" />
-                    LOGIN
-                    </div>
+                      <LogIn className="h-5 w-5 mr-3" />
+                      LOGIN
+                    </button>
                   </motion.div>
                 )}
               </div>
