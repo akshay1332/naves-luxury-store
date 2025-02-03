@@ -10,7 +10,7 @@ interface ProductContainerProps {
   children: React.ReactNode;
 }
 
-const ProductContainer = ({ id, isWishlist, setIsWishlist, children }: ProductContainerProps) => {
+export const ProductContainer = ({ id, isWishlist, setIsWishlist, children }: ProductContainerProps) => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 md:py-12">
       <motion.div
@@ -41,5 +41,3 @@ const ProductContainer = ({ id, isWishlist, setIsWishlist, children }: ProductCo
     </div>
   );
 };
-
-export default ProductContainer;

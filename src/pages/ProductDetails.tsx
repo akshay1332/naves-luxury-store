@@ -7,12 +7,18 @@ import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { ReviewForm } from "@/components/product/ReviewForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isWishlist, setIsWishlist] = useState(false);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   const fetchProduct = async () => {
     try {
@@ -37,8 +43,14 @@ export default function ProductDetails() {
     }
   };
 
+  const handleAddToCart = () => {
+    // Add your add to cart logic here
+  };
+
   useEffect(() => {
-    fetchProduct();
+    if (id) {
+      fetchProduct();
+    }
   }, [id]);
 
   if (loading) {
@@ -50,12 +62,36 @@ export default function ProductDetails() {
   }
 
   return (
-    <ProductContainer>
-      <ProductContent product={product} />
-      <ReviewForm productId={product.id} />
-      <ProductReviews productId={product.id} />
-      <RelatedProducts categoryId={product.category} />
+    <ProductContainer
+      id={id!}
+      isWishlist={isWishlist}
+      setIsWishlist={setIsWishlist}
+    >
+      <ProductContent
+        product={product}
+        selectedSize={selectedSize}
+        selectedColor={selectedColor}
+        quantity={quantity}
+        setSelectedSize={setSelectedSize}
+        setSelectedColor={setSelectedColor}
+        setQuantity={setQuantity}
+        onAddToCart={handleAddToCart}
+      />
+      {user && (
+        <ReviewForm
+          productId={product.id}
+          userId={user.id}
+        />
+      )}
+      <ProductReviews
+        reviews={[]}
+        isAdmin={false}
+        onReviewsUpdate={fetchProduct}
+      />
+      <RelatedProducts
+        currentProductId={product.id}
+        category={product.category}
+      />
     </ProductContainer>
   );
 }
-
