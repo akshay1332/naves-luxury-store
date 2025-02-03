@@ -1,4 +1,4 @@
-export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
 
 export interface Order {
   id: string;
@@ -22,14 +22,10 @@ export interface Order {
   razorpay_order_id: string | null;
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
-  order_status_history?: OrderStatusHistory[];
-}
-
-export interface OrderStatusHistory {
-  id: string;
-  order_id: string;
-  status: OrderStatus;
-  notes: string | null;
-  changed_by: string | null;
-  created_at: string | null;
+  order_status_history: Array<{
+    id: string;
+    status: OrderStatus;
+    created_at: string;
+    notes?: string;
+  }>;
 }
