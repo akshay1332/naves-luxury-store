@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn, Bell } from "lucide-react";
+import { Menu, X, User, LogOut, Home, ShoppingBag, Info, Phone, LogIn, Bell, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { theme: currentTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -134,53 +135,26 @@ const Navbar = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Modern hamburger icon with better animation
-  const MenuIcon = () => (
-    <motion.div
-      className="relative w-6 h-6"
-      animate={isOpen ? "open" : "closed"}
-      variants={hamburgerVariants}
-    >
-      <motion.span
-        className={cn(
-          "absolute top-1/2 left-0 w-6 h-0.5 -translate-y-1/2",
-          currentTheme === 'dark' ? "bg-white" : "bg-black"
-        )}
-        variants={{
-          closed: { rotate: 0, y: "-50%" },
-          open: { rotate: 90, y: "-50%" }
-        }}
-      />
-      <motion.span
-        className={cn(
-          "absolute top-1/2 left-0 w-6 h-0.5 -translate-y-2.5",
-          currentTheme === 'dark' ? "bg-white" : "bg-black"
-        )}
-        variants={{
-          closed: { rotate: 0 },
-          open: { rotate: 45 }
-        }}
-      />
-      <motion.span
-        className={cn(
-          "absolute top-1/2 left-0 w-6 h-0.5 translate-y-1.5",
-          currentTheme === 'dark' ? "bg-white" : "bg-black"
-        )}
-        variants={{
-          closed: { rotate: 0 },
-          open: { rotate: -45 }
-        }}
-      />
-    </motion.div>
-  );
+  const searchVariants = {
+    hidden: { 
+      width: 0,
+      opacity: 0,
+      transition: { duration: 0.3 }
+    },
+    visible: { 
+      width: "200px",
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
+  };
 
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
       "border-b shadow-sm py-1",
       currentTheme === 'dark' 
-        ? "bg-gray-900 border-gray-800" 
-        : "bg-white border-gray-200"
+        ? "bg-gray-900/95 border-gray-800 backdrop-blur-md" 
+        : "bg-white/95 border-gray-100 backdrop-blur-md"
     )}>
       <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
         <div className="flex items-center justify-between h-14">
@@ -199,20 +173,14 @@ const Navbar = () => {
                   className="w-10 h-10 md:w-9 md:h-9 object-contain rounded-xl filter drop-shadow-lg"
                   variants={logoVariants}
                   draggable={false}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
                 />
                 <motion.div
                   className={cn(
                     "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
-                    currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                    currentTheme === 'dark' ? "text-white" : "text-gray-800"
                   )}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
                 >
-                  CUSTOM<span className="text-rose-500">PRINT</span>
+                  CUSTOM<span className="text-primary">PRINT</span>
                 </motion.div>
               </motion.div>
             </Link>
@@ -223,8 +191,8 @@ const Navbar = () => {
             <Link 
               to="/" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
-                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
+                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
               )}
             >
               HOME
@@ -232,8 +200,8 @@ const Navbar = () => {
             <Link 
               to="/products" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
-                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
+                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
               )}
             >
               PRODUCTS
@@ -241,8 +209,8 @@ const Navbar = () => {
             <Link 
               to="/about" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
-                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
+                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
               )}
             >
               ABOUT
@@ -250,12 +218,45 @@ const Navbar = () => {
             <Link 
               to="/contact" 
               className={cn(
-                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-rose-500",
-                currentTheme === 'dark' ? "text-white" : "text-gray-900"
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary",
+                currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
               )}
             >
               CONTACT
             </Link>
+
+            {/* Search Icon and Input */}
+            <div className="relative flex items-center">
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className={cn(
+                  "p-1.5 rounded-full transition-colors duration-300",
+                  "hover:bg-gray-100 dark:hover:bg-gray-800",
+                  currentTheme === 'dark' ? "text-gray-200" : "text-gray-700"
+                )}
+              >
+                <Search className="h-4 w-4" />
+              </button>
+              <AnimatePresence>
+                {isSearchOpen && (
+                  <motion.input
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={searchVariants}
+                    type="text"
+                    placeholder="Search..."
+                    className={cn(
+                      "absolute right-10 ml-2 px-3 py-1 rounded-full text-sm",
+                      "border focus:outline-none focus:ring-2 focus:ring-primary",
+                      currentTheme === 'dark' 
+                        ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400" 
+                        : "bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-500"
+                    )}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Right Side Actions */}
@@ -263,7 +264,7 @@ const Navbar = () => {
             {/* Year Text - Hidden on Mobile */}
             <div className={cn(
               "hidden lg:block font-montserrat text-xl font-black tracking-wide",
-              currentTheme === 'dark' ? "text-white" : "text-gray-900"
+              currentTheme === 'dark' ? "text-gray-200" : "text-gray-800"
             )}>
               2024
             </div>
