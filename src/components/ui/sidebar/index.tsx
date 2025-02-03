@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState } from "react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface SidebarContextProps {
   isOpen: boolean;
   isMobile: boolean;
+  toggleSidebar: () => void;
   state: {
     isOpen: boolean;
     isMobile: boolean;
   };
-  toggleSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
@@ -21,7 +22,11 @@ export function useSidebar() {
   return context;
 }
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
+interface SidebarProviderProps {
+  children: React.ReactNode;
+}
+
+export function SidebarProvider({ children }: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile] = useState(window.innerWidth < 768);
 
@@ -30,11 +35,11 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const value = {
     isOpen,
     isMobile,
+    toggleSidebar,
     state: {
       isOpen,
       isMobile,
     },
-    toggleSidebar,
   };
 
   return (
@@ -53,43 +58,46 @@ export function Sidebar({ children, className }: SidebarProps) {
   const { isOpen } = useSidebar();
 
   return (
-    <aside
+    <motion.aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white dark:bg-gray-900 transition-transform duration-300",
+        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white dark:bg-gray-900",
         isOpen ? "translate-x-0" : "-translate-x-full",
         className
       )}
+      initial={false}
+      animate={{ x: isOpen ? 0 : -256 }}
+      transition={{ duration: 0.3 }}
     >
       {children}
-    </aside>
+    </motion.aside>
   );
 }
 
-export function SidebarContent({ children }: { children: React.ReactNode }) {
-  return <div className="flex-1 overflow-y-auto p-4">{children}</div>;
+export function SidebarBody({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex flex-col flex-1 overflow-y-auto p-4", className)}>
+      {children}
+    </div>
+  );
 }
 
-export function SidebarTrigger() {
-  const { toggleSidebar } = useSidebar();
+interface SidebarLinkProps {
+  link: {
+    label: string;
+    href: string;
+    icon?: React.ReactNode;
+  };
+  onClick?: () => void;
+}
+
+export function SidebarLink({ link, onClick }: SidebarLinkProps) {
   return (
     <button
-      onClick={toggleSidebar}
-      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
     >
-      <span className="sr-only">Toggle Sidebar</span>
-      <svg
-        className="h-6 w-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
+      {link.icon}
+      <span className="text-sm font-medium">{link.label}</span>
     </button>
   );
 }

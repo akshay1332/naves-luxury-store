@@ -5,16 +5,16 @@ export interface Order {
   user_id: string;
   status: OrderStatus;
   total_amount: number;
-  shipping_address: any;
+  shipping_address: Record<string, any> | null;
   created_at: string;
   updated_at: string;
   invoice_number: string | null;
-  invoice_data: any;
+  invoice_data: Record<string, any> | null;
   applied_coupon_id: string | null;
   discount_amount: number | null;
   updated_by: string | null;
   tracking_number: string | null;
-  billing_address: any;
+  billing_address: Record<string, any> | null;
   payment_status: string | null;
   payment_method: string | null;
   notes: string | null;
@@ -24,10 +24,8 @@ export interface Order {
   razorpay_signature: string | null;
   order_status_history: Array<{
     id: string;
-    order_id: string;
     status: OrderStatus;
-    notes?: string;
-    changed_by?: string;
     created_at: string;
+    notes?: string;
   }>;
 }
