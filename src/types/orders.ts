@@ -1,5 +1,3 @@
-import { Database } from "@/integrations/supabase/types";
-
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
@@ -17,7 +15,7 @@ export interface Order {
     state: string;
     zipCode: string;
     country: string;
-  };
+  } | null;
   billing_address?: {
     fullName: string;
     email: string;
@@ -27,10 +25,10 @@ export interface Order {
     state: string;
     zipCode: string;
     country: string;
-  };
+  } | null;
   invoice_data: {
     items: Array<{
-      products: {
+      product: {
         id: string;
         title: string;
         price: number;
@@ -46,19 +44,21 @@ export interface Order {
       url: string;
       instructions?: string;
     };
-  };
+  } | null;
   payment_status: PaymentStatus;
   payment_method?: string;
   payment_id?: string;
-  tracking_info?: {
-    number?: string;
-    url?: string;
-    carrier?: string;
-  };
+  tracking_number?: string;
   created_at: string;
   updated_at: string;
   invoice_number?: string;
   notes?: string;
   discount_amount?: number;
   applied_coupon_id?: string;
+  order_status_history?: Array<{
+    status: OrderStatus;
+    notes?: string;
+    changed_by?: string;
+    created_at: string;
+  }>;
 }
