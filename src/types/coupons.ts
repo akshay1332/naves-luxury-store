@@ -1,9 +1,11 @@
+export type CouponDiscountType = 'percentage' | 'fixed';
+
 export interface DatabaseCoupon {
   id: string;
   code: string;
   description: string | null;
   category: string | null;
-  discount_type: 'percentage' | 'fixed';
+  discount_type: CouponDiscountType;
   discount_value: number;
   min_purchase_amount: number;
   max_discount_amount: number;

@@ -1,4 +1,4 @@
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
 
 export interface Order {
   id: string;
@@ -28,7 +28,7 @@ export interface Order {
 export interface OrderStatusHistory {
   id: string;
   order_id: string;
-  status: string;
+  status: OrderStatus;
   notes: string | null;
   changed_by: string | null;
   created_at: string | null;

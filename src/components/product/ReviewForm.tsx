@@ -1,36 +1,31 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Rating } from "@/components/ui/rating";
 
-interface ReviewFormProps {
-  productId: string;
-  onSuccess?: () => void;
-}
-
-export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
+export function ReviewForm({ productId }: { productId: string }) {
   const { toast } = useToast();
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    
     setLoading(true);
+
     try {
-      const formData = new FormData(e.currentTarget);
-      const reviewData = {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase.from("reviews").insert({
         product_id: productId,
         user_id: user.id,
-        rating: parseInt(formData.get('rating') as string),
-        comment: formData.get('comment') as string,
-        created_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from('reviews')
-        .insert([reviewData]);
+        rating,
+        comment,
+        created_at: new Date().toISOString()
+      });
 
       if (error) throw error;
 
@@ -38,9 +33,9 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
         title: "Success",
         description: "Review submitted successfully",
       });
-      
-      if (onSuccess) onSuccess();
-      
+
+      setRating(0);
+      setComment("");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -55,29 +50,23 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="rating" className="block text-sm font-medium text-gray-700">Rating</label>
-        <input
-          type="number"
-          id="rating"
-          name="rating"
-          min="1"
-          max="5"
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
-        />
+        <label className="block text-sm font-medium mb-2">Rating</label>
+        <Rating value={rating} onChange={setRating} />
       </div>
+
       <div>
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700">Comment</label>
-        <textarea
-          id="comment"
-          name="comment"
+        <label className="block text-sm font-medium mb-2">Comment</label>
+        <Textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Share your thoughts about this product..."
           required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
         />
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded-md">
+
+      <Button type="submit" disabled={loading || rating === 0}>
         {loading ? "Submitting..." : "Submit Review"}
-      </button>
+      </Button>
     </form>
   );
 }
