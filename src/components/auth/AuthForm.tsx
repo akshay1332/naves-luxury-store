@@ -171,24 +171,38 @@ export const AuthForm = () => {
         });
         if (error) throw error;
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Sign up flow
+        const { error: signUpError, data } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
-              name: formData.name,
+              full_name: formData.name,
             },
+            emailRedirectTo: `${window.location.origin}/auth/callback`
           },
         });
+
         if (signUpError) throw signUpError;
-        
-        toast({
-          title: "Success!",
-          description: "Please check your email to verify your account.",
-        });
+
+        if (data?.user) {
+          toast({
+            title: "Account created successfully!",
+            description: "Please check your email to verify your account.",
+          });
+          // Reset form
+          setFormData({ email: '', password: '', name: '' });
+          setIsLogin(true);
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Auth error:', err);
       setError(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -317,6 +331,7 @@ export const AuthForm = () => {
           onClick={() => {
             setIsLogin(!isLogin);
             setError('');
+            setFormData({ email: '', password: '', name: '' });
           }}
         >
           {isLogin ? 'Sign Up' : 'Sign In'}
@@ -324,4 +339,4 @@ export const AuthForm = () => {
       </ToggleText>
     </AuthContainer>
   );
-}; 
+};
