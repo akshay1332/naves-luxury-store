@@ -8,7 +8,7 @@ interface RelatedProductsProps {
   category?: string;
 }
 
-const RelatedProducts = ({ currentProductId, category }: RelatedProductsProps) => {
+export const RelatedProducts = ({ currentProductId, category }: RelatedProductsProps) => {
   const { data: relatedProducts } = useQuery({
     queryKey: ["related-products", currentProductId, category],
     queryFn: async () => {
@@ -49,5 +49,3 @@ const RelatedProducts = ({ currentProductId, category }: RelatedProductsProps) =
     </div>
   );
 };
-
-export default RelatedProducts;
