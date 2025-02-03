@@ -25,6 +25,7 @@ import AdminMessages from './pages/admin/Messages';
 import AdminReviews from './pages/admin/Reviews';
 import AdminCoupons from './pages/admin/Coupons';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminSettings from './pages/admin/Settings';
 import Checkout from './pages/Checkout';
 import { queryClient } from './lib/react-query';
 import FAQ from "@/pages/FAQ";
@@ -35,6 +36,7 @@ import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import Refund from "@/pages/Refund";
 import Cookies from "@/pages/Cookies";
+import NotFound from "@/pages/NotFound";
 
 const App = () => (
   <HelmetProvider>
@@ -74,18 +76,66 @@ const App = () => (
                     }
                   />
                   <Route
-                    path="/admin/*"
+                    path="/admin"
                     element={
                       <AdminRoute>
-                        <Routes>
-                          <Route path="/" element={<Admin />} />
-                          <Route path="/analytics" element={<AdminAnalytics />} />
-                          <Route path="/users" element={<AdminUsers />} />
-                          <Route path="/orders" element={<AdminOrders />} />
-                          <Route path="/messages" element={<AdminMessages />} />
-                          <Route path="/reviews" element={<AdminReviews />} />
-                          <Route path="/coupons" element={<AdminCoupons />} />
-                        </Routes>
+                        <Admin />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/analytics"
+                    element={
+                      <AdminRoute>
+                        <AdminAnalytics />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <AdminRoute>
+                        <AdminUsers />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/orders"
+                    element={
+                      <AdminRoute>
+                        <AdminOrders />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/messages"
+                    element={
+                      <AdminRoute>
+                        <AdminMessages />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/reviews"
+                    element={
+                      <AdminRoute>
+                        <AdminReviews />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/coupons"
+                    element={
+                      <AdminRoute>
+                        <AdminCoupons />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={
+                      <AdminRoute>
+                        <AdminSettings />
                       </AdminRoute>
                     }
                   />
@@ -105,6 +155,7 @@ const App = () => (
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/refund" element={<Refund />} />
                   <Route path="/cookies" element={<Cookies />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
               <Footer />
