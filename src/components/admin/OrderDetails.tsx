@@ -327,16 +327,16 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
           <div className="space-y-4">
             <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
               <h3 className="font-semibold mb-3">Order Items</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
+      <Table>
+        <TableHeader>
+          <TableRow>
                     <TableHeader className="w-[40%]">Product</TableHeader>
-                    <TableHeader>Quantity</TableHeader>
+            <TableHeader>Quantity</TableHeader>
                     <TableHeader>Price</TableHeader>
                     <TableHeader className="text-right">Total</TableHeader>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
                   {order.invoice_data?.items?.filter(item => item && item.product).map((item) => (
                     <TableRow key={item.product?.id || 'unknown'}>
                       <TableCell className="font-medium">
@@ -349,8 +349,8 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                       <TableCell className="text-right">
                         {formatIndianPrice((item.product?.price || 0) * (item.quantity || 0))}
                       </TableCell>
-                    </TableRow>
-                  ))}
+            </TableRow>
+          ))}
                   <TableRow>
                     <TableCell colSpan={3} className="text-right font-medium">
                       Subtotal
@@ -377,8 +377,8 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                       {formatIndianPrice((order.total_amount || 0) - (order.discount_amount || 0))}
                     </TableCell>
                   </TableRow>
-                </TableBody>
-              </Table>
+        </TableBody>
+      </Table>
             </div>
 
             {/* Order History */}

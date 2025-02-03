@@ -219,84 +219,84 @@ const Navbar = () => {
         </TooltipProvider>
       </div>
 
-      <nav className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        "border-b shadow-sm py-1",
-        currentTheme === 'dark' 
-          ? "bg-gray-900/80 border-gray-800 backdrop-blur-md" 
-          : "bg-white/80 border-gray-100 backdrop-blur-md"
-      )}>
-        <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo and Brand */}
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center">
+    <nav className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      "border-b shadow-sm py-1",
+      currentTheme === 'dark' 
+        ? "bg-gray-900/80 border-gray-800 backdrop-blur-md" 
+        : "bg-white/80 border-gray-100 backdrop-blur-md"
+    )}>
+      <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo and Brand */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <motion.div
+                className="flex items-center gap-0.5 cursor-pointer p-0.5 rounded-2xl"
+                initial="initial"
+                whileHover="hover"
+                animate="initial"
+              >
+                <motion.img
+                  src={logo}
+                  alt="Brand Logo"
+                  className="w-10 h-10 md:w-9 md:h-9 object-contain rounded-xl filter drop-shadow-lg"
+                  variants={logoVariants}
+                  draggable={false}
+                />
                 <motion.div
-                  className="flex items-center gap-0.5 cursor-pointer p-0.5 rounded-2xl"
-                  initial="initial"
-                  whileHover="hover"
-                  animate="initial"
+                  className={cn(
+                    "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+                  )}
                 >
-                  <motion.img
-                    src={logo}
-                    alt="Brand Logo"
-                    className="w-10 h-10 md:w-9 md:h-9 object-contain rounded-xl filter drop-shadow-lg"
-                    variants={logoVariants}
-                    draggable={false}
-                  />
-                  <motion.div
-                    className={cn(
-                      "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
-                      currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                    )}
-                  >
-                    CUSTOM<span className="text-primary-light">PRINT</span>
-                  </motion.div>
+                  CUSTOM<span className="text-primary-light">PRINT</span>
                 </motion.div>
-              </Link>
-            </div>
+              </motion.div>
+            </Link>
+          </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-6">
-              <Link 
-                to="/" 
-                className={cn(
-                  "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
-              >
-                HOME
-              </Link>
-              <Link 
-                to="/products" 
-                className={cn(
-                  "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
-              >
-                PRODUCTS
-              </Link>
-              <Link 
-                to="/about" 
-                className={cn(
-                  "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
-              >
-                ABOUT
-              </Link>
-              <Link 
-                to="/contact" 
-                className={cn(
-                  "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
-              >
-                CONTACT
-              </Link>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link 
+              to="/" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+              )}
+            >
+              HOME
+            </Link>
+            <Link 
+              to="/products" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+              )}
+            >
+              PRODUCTS
+            </Link>
+            <Link 
+              to="/about" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+              )}
+            >
+              ABOUT
+            </Link>
+            <Link 
+              to="/contact" 
+              className={cn(
+                "uppercase text-sm tracking-wider font-semibold font-montserrat transition-colors duration-300 hover:text-primary-light",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+              )}
+            >
+              CONTACT
+            </Link>
 
-              {/* Search Icon and Input */}
-              <div className="relative flex items-center">
+            {/* Search Icon and Input */}
+            <div className="relative flex items-center">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -307,7 +307,7 @@ const Navbar = () => {
                 </Button>
                 
                 <div
-                  className={cn(
+                className={cn(
                     "absolute left-0 top-full mt-2",
                     "bg-white dark:bg-gray-900 rounded-lg shadow-lg border dark:border-gray-800",
                     "transition-all duration-200 ease-in-out",
@@ -350,7 +350,7 @@ const Navbar = () => {
                         <Link
                           key={result.id}
                           to={`/products/${result.id}`}
-                          className={cn(
+                    className={cn(
                             "flex items-center gap-3 p-2 rounded-lg",
                             "hover:bg-gray-100 dark:hover:bg-gray-800",
                             "transition-colors duration-200"
@@ -376,44 +376,44 @@ const Navbar = () => {
                   </div>
                 </div>
               </div>
-            </div>
+          </div>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
-              {/* Auth and Cart Actions */}
-              <div className="hidden md:flex items-center gap-2">
-                {isAuthenticated && (
-                  <div className="flex items-center gap-2">
-                    <Link 
-                      to="/cart"
-                      className={cn(
-                        "p-1.5 rounded-full transition-colors duration-300",
-                        "hover:bg-primary-light/10",
-                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                      )}
-                    >
-                      <CartIndicator />
-                    </Link>
-                    <div className={cn(
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-2">
+            {/* Auth and Cart Actions */}
+            <div className="hidden md:flex items-center gap-2">
+              {isAuthenticated && (
+                <div className="flex items-center gap-2">
+                  <Link 
+                    to="/cart"
+                    className={cn(
                       "p-1.5 rounded-full transition-colors duration-300",
                       "hover:bg-primary-light/10",
                       currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                    )}>
-                      <NotificationBell />
-                    </div>
+                    )}
+                  >
+                    <CartIndicator />
+                  </Link>
+                  <div className={cn(
+                    "p-1.5 rounded-full transition-colors duration-300",
+                    "hover:bg-primary-light/10",
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+                  )}>
+                    <NotificationBell />
                   </div>
-                )}
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className={cn(
-                      "p-1.5 rounded-full transition-colors duration-300",
-                      "hover:bg-primary-light/10",
-                      currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                    )}>
-                      <User className="h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
+                </div>
+              )}
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className={cn(
+                    "p-1.5 rounded-full transition-colors duration-300",
+                    "hover:bg-primary-light/10",
+                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+                  )}>
+                    <User className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     align="end" 
                     className={cn(
@@ -423,122 +423,141 @@ const Navbar = () => {
                       "shadow-lg rounded-lg"
                     )}
                   >
-                    {isAuthenticated ? (
-                      <>
+                  {isAuthenticated ? (
+                    <>
                         <DropdownMenuItem 
                           onClick={() => navigate('/profile')}
                           className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                         >
-                          <User className="mr-2 h-4 w-4 text-primary-light" />
-                          Profile
-                        </DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4 text-primary-light" />
+                        Profile
+                      </DropdownMenuItem>
                         {isAdmin && (
                           <DropdownMenuItem 
                             onClick={() => navigate('/admin')}
                             className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
-                            <ShoppingBag className="mr-2 h-4 w-4 text-primary-light" />
-                            Admin Dashboard
-                          </DropdownMenuItem>
+                        <ShoppingBag className="mr-2 h-4 w-4 text-primary-light" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
                         )}
                         <DropdownMenuItem 
                           onClick={handleLogout}
                           className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                         >
-                          <LogOut className="mr-2 h-4 w-4 text-primary-light" />
-                          Logout
-                        </DropdownMenuItem>
-                      </>
-                    ) : (
+                        <LogOut className="mr-2 h-4 w-4 text-primary-light" />
+                        Logout
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
                       <DropdownMenuItem 
                         onClick={handleLogin}
                         className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                       >
-                        <LogIn className="mr-2 h-4 w-4 text-primary-light" />
-                        Login
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                  "md:hidden p-1.5 rounded-lg transition-colors duration-300 relative",
-                  "hover:bg-primary-light/10",
-                  currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                )}
-              >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
+                      <LogIn className="mr-2 h-4 w-4 text-primary-light" />
+                      Login
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
 
-          {/* Mobile Menu */}
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                variants={menuVariants}
-                initial="closed"
-                animate="open"
-                exit="closed"
-                className={cn(
-                  "md:hidden overflow-hidden",
-                  "absolute top-full left-0 right-0",
-                  "backdrop-blur-lg",
-                  currentTheme === 'dark'
-                    ? "bg-gray-900/90 border-b border-gray-800"
-                    : "bg-white/90 border-b border-gray-200"
-                )}
-              >
-                <div className="py-2 space-y-1">
-                  {isAuthenticated && (
-                    <>
-                      <motion.div variants={itemVariants}>
-                        <Link
-                          to="/cart"
-                          className={cn(
-                            "flex items-center px-4 py-2",
-                            "text-sm font-semibold",
-                            currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
-                            "hover:bg-primary-light/10"
-                          )}
-                        >
-                          <ShoppingBag className="h-5 w-5 mr-3" />
-                          Cart
-                          <div className="ml-auto">
-                            <CartIndicator />
-                          </div>
-                        </Link>
-                      </motion.div>
-                      <motion.div variants={itemVariants}>
-                        <div className={cn(
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={cn(
+                "md:hidden p-1.5 rounded-lg transition-colors duration-300 relative",
+                "hover:bg-primary-light/10",
+                currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
+              )}
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              variants={menuVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className={cn(
+                "md:hidden overflow-hidden",
+                "absolute top-full left-0 right-0",
+                "backdrop-blur-lg",
+                currentTheme === 'dark'
+                  ? "bg-gray-900/90 border-b border-gray-800"
+                  : "bg-white/90 border-b border-gray-200"
+              )}
+            >
+              <div className="py-2 space-y-1">
+                {isAuthenticated && (
+                  <>
+                    <motion.div variants={itemVariants}>
+                      <Link
+                        to="/cart"
+                        className={cn(
                           "flex items-center px-4 py-2",
                           "text-sm font-semibold",
                           currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
                           "hover:bg-primary-light/10"
-                        )}>
-                          <Bell className="h-5 w-5 mr-3" />
-                          Notifications
-                          <div className="ml-auto">
-                            <NotificationBell />
-                          </div>
+                        )}
+                      >
+                        <ShoppingBag className="h-5 w-5 mr-3" />
+                        Cart
+                        <div className="ml-auto">
+                          <CartIndicator />
                         </div>
-                      </motion.div>
-                    </>
-                  )}
+                      </Link>
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                      <div className={cn(
+                        "flex items-center px-4 py-2",
+                        "text-sm font-semibold",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
+                      )}>
+                        <Bell className="h-5 w-5 mr-3" />
+                        Notifications
+                        <div className="ml-auto">
+                          <NotificationBell />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
 
-                  {[
-                    { path: '/', icon: Home, label: 'HOME' },
-                    { path: '/products', icon: ShoppingBag, label: 'PRODUCTS' },
-                    { path: '/about', icon: Info, label: 'ABOUT' },
-                    { path: '/contact', icon: Phone, label: 'CONTACT' }
-                  ].map((item) => (
-                    <motion.div key={item.path} variants={itemVariants}>
+                {[
+                  { path: '/', icon: Home, label: 'HOME' },
+                  { path: '/products', icon: ShoppingBag, label: 'PRODUCTS' },
+                  { path: '/about', icon: Info, label: 'ABOUT' },
+                  { path: '/contact', icon: Phone, label: 'CONTACT' }
+                ].map((item) => (
+                  <motion.div key={item.path} variants={itemVariants}>
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        "flex items-center px-4 py-2",
+                        "text-sm font-semibold",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
+                      )}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <item.icon className="h-5 w-5 mr-3" />
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                ))}
+
+                {isAuthenticated ? (
+                  <>
+                    <motion.div variants={itemVariants}>
                       <Link
-                        to={item.path}
+                        to="/profile"
                         className={cn(
                           "flex items-center px-4 py-2",
                           "text-sm font-semibold",
@@ -547,52 +566,14 @@ const Navbar = () => {
                         )}
                         onClick={() => setIsOpen(false)}
                       >
-                        <item.icon className="h-5 w-5 mr-3" />
-                        {item.label}
+                        <User className="h-5 w-5 mr-3" />
+                        PROFILE
                       </Link>
                     </motion.div>
-                  ))}
-
-                  {isAuthenticated ? (
-                    <>
-                      <motion.div variants={itemVariants}>
-                        <Link
-                          to="/profile"
-                          className={cn(
-                            "flex items-center px-4 py-2",
-                            "text-sm font-semibold",
-                            currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
-                            "hover:bg-primary-light/10"
-                          )}
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <User className="h-5 w-5 mr-3" />
-                          PROFILE
-                        </Link>
-                      </motion.div>
-                      <motion.div variants={itemVariants}>
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setIsOpen(false);
-                          }}
-                          className={cn(
-                            "flex items-center px-4 py-2 w-full",
-                            "text-sm font-semibold text-left",
-                            currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
-                            "hover:bg-primary-light/10"
-                          )}
-                        >
-                          <LogOut className="h-5 w-5 mr-3" />
-                          LOGOUT
-                        </button>
-                      </motion.div>
-                    </>
-                  ) : (
                     <motion.div variants={itemVariants}>
                       <button
                         onClick={() => {
-                          handleLogin();
+                          handleLogout();
                           setIsOpen(false);
                         }}
                         className={cn(
@@ -602,17 +583,36 @@ const Navbar = () => {
                           "hover:bg-primary-light/10"
                         )}
                       >
-                        <LogIn className="h-5 w-5 mr-3" />
-                        LOGIN
+                        <LogOut className="h-5 w-5 mr-3" />
+                        LOGOUT
                       </button>
                     </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </nav>
+                  </>
+                ) : (
+                  <motion.div variants={itemVariants}>
+                    <button
+                      onClick={() => {
+                        handleLogin();
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "flex items-center px-4 py-2 w-full",
+                        "text-sm font-semibold text-left",
+                        currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold",
+                        "hover:bg-primary-light/10"
+                      )}
+                    >
+                      <LogIn className="h-5 w-5 mr-3" />
+                      LOGIN
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </nav>
     </>
   );
 };
