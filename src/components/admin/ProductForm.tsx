@@ -19,6 +19,14 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useForm } from "react-hook-form";
+import { BasicDetails } from "./product-form/BasicDetails";
+import { PricingStock } from "./product-form/PricingStock";
+import { Features } from "./product-form/Features";
+import { ImageUpload } from "./product-form/ImageUpload";
+import { Variants } from "./product-form/Variants";
+import { ProductFormActions } from "./product-form/ProductFormActions";
+import { ProductFormHeader } from "./product-form/ProductFormHeader";
 
 const PRODUCT_CATEGORIES = [
   "Hoodies",
@@ -59,9 +67,37 @@ interface ProductFormProps {
   onSuccess: () => void;
 }
 
+interface ProductFormData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  gender: string;
+  stock_quantity: number;
+  colors: string[];
+  sizes: string[];
+  images: string[];
+  is_featured: boolean;
+  is_best_seller: boolean;
+  is_new_arrival: boolean;
+  style_category: string;
+  quick_view_data: {
+    features: string[];
+    care_instructions: string[];
+  };
+  sale_percentage: number;
+  sale_start_date?: string;
+  sale_end_date?: string;
+  video_url?: string;
+  key_highlights?: string[];
+  allows_custom_printing: boolean;
+  custom_printing_price: number;
+}
+
 const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const isEditMode = !!initialData?.id; // Check if we're in edit mode
   const [selectedColors, setSelectedColors] = useState<string[]>(initialData?.colors || []);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(initialData?.sizes || []);
   const [careInstructions, setCareInstructions] = useState<string[]>(
@@ -73,47 +109,44 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   const MAX_IMAGES = 10;
   const [imageLink, setImageLink] = useState("");
 
-  const [formData, setFormData] = useState({
-    title: initialData?.title || "",
-    description: initialData?.description || "",
-    price: initialData?.price || 0,
-    category: initialData?.category || "",
-    gender: initialData?.gender || "",
-    stock_quantity: initialData?.stock_quantity || 0,
-    is_featured: initialData?.is_featured || false,
-    is_best_seller: initialData?.is_best_seller || false,
-    is_new_arrival: initialData?.is_new_arrival || false,
-    is_trending: initialData?.is_trending || false,
-    video_url: initialData?.video_url || "",
-    style_category: initialData?.style_category || "",
-    quick_view_data: {
-      material: initialData?.quick_view_data?.material || "",
-      fit: initialData?.quick_view_data?.fit || "",
-      care_instructions: careInstructions,
-      features: features,
+  const form = useForm<ProductFormData>({
+    defaultValues: {
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      price: initialData?.price || 0,
+      category: initialData?.category || "",
+      gender: initialData?.gender || "",
+      stock_quantity: initialData?.stock_quantity || 0,
+      colors: initialData?.colors || [],
+      sizes: initialData?.sizes || [],
+      images: initialData?.images || [],
+      is_featured: initialData?.is_featured || false,
+      is_best_seller: initialData?.is_best_seller || false,
+      is_new_arrival: initialData?.is_new_arrival || false,
+      style_category: initialData?.style_category || "",
+      quick_view_data: {
+        features: initialData?.quick_view_data?.features || [],
+        care_instructions: initialData?.quick_view_data?.care_instructions || []
+      },
+      sale_percentage: initialData?.sale_percentage || 0,
+      sale_start_date: initialData?.sale_start_date || "",
+      sale_end_date: initialData?.sale_end_date || "",
+      video_url: initialData?.video_url || "",
+      key_highlights: initialData?.key_highlights || [],
+      allows_custom_printing: initialData?.allows_custom_printing || false,
+      custom_printing_price: initialData?.custom_printing_price || 0,
     },
-    key_highlights: {
-      fit_type: initialData?.key_highlights?.fit_type || "",
-      fabric: initialData?.key_highlights?.fabric || "",
-      neck: initialData?.key_highlights?.neck || "",
-      sleeve: initialData?.key_highlights?.sleeve || "",
-      pattern: initialData?.key_highlights?.pattern || "",
-      length: initialData?.key_highlights?.length || "",
-    },
-    sizes: selectedSizes,
-    colors: selectedColors,
-    images: initialData?.images || [],
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    if (formData.images.length + files.length > MAX_IMAGES) {
+    if (form.getValues('images').length + files.length > MAX_IMAGES) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: `You can only upload a maximum of ${MAX_IMAGES} images. Currently ${formData.images.length} images are uploaded.`,
+        description: `You can only upload a maximum of ${MAX_IMAGES} images. Currently ${form.getValues('images').length} images are uploaded.`,
       });
       return;
     }
@@ -139,10 +172,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedUrls]
-      }));
+      form.setValue('images', [...form.getValues('images'), ...uploadedUrls]);
 
       toast({
         title: "Success",
@@ -170,7 +200,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       return;
     }
 
-    if (formData.images.length >= MAX_IMAGES) {
+    if (form.getValues('images').length >= MAX_IMAGES) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -182,10 +212,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     // Create a new Image object to verify the URL
     const img = new Image();
     img.onload = () => {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageLink]
-      }));
+      form.setValue('images', [...form.getValues('images'), imageLink]);
       setImageLink("");
       toast({
         title: "Success",
@@ -203,41 +230,45 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
   };
 
   const handleRemoveImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    form.setValue('images', form.getValues('images').filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ProductFormData) => {
     setLoading(true);
 
     try {
-      const productData = {
-        ...formData,
-        price: Number(formData.price),
-        stock_quantity: Number(formData.stock_quantity),
-        colors: selectedColors,
-        sizes: selectedSizes,
-        images: formData.images.filter(img => img && img.trim() !== ''),
-        quick_view_data: {
-          ...formData.quick_view_data,
-          care_instructions: careInstructions.filter(instruction => instruction.trim() !== ''),
-          features: features.filter(feature => feature.trim() !== '')
-        },
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        category: formData.category.trim(),
-        gender: formData.gender.trim(),
-        style_category: formData.style_category.trim()
+      // Ensure quick_view_data exists with default values
+      const quick_view_data = {
+        features: data.quick_view_data?.features || [],
+        care_instructions: data.quick_view_data?.care_instructions || []
       };
 
-      if (!productData.title || !productData.category || !productData.gender) {
-        throw new Error('Please fill in all required fields');
-      }
+      const productData = {
+        title: data.title.trim(),
+        description: data.description.trim(),
+        price: Number(data.price),
+        category: data.category.trim(),
+        gender: data.gender.trim(),
+        stock_quantity: Number(data.stock_quantity),
+        colors: data.colors || [],
+        sizes: data.sizes || [],
+        images: data.images || [],
+        is_featured: data.is_featured || false,
+        is_best_seller: data.is_best_seller || false,
+        is_new_arrival: data.is_new_arrival || false,
+        style_category: data.style_category.trim(),
+        quick_view_data, // Use the safely constructed object
+        sale_percentage: Number(data.sale_percentage || 0),
+        sale_start_date: data.sale_start_date || null,
+        sale_end_date: data.sale_end_date || null,
+        video_url: data.video_url?.trim() || null,
+        key_highlights: data.key_highlights || [],
+        allows_custom_printing: data.allows_custom_printing || false,
+        custom_printing_price: Number(data.custom_printing_price || 0),
+        updated_at: new Date().toISOString()
+      };
 
-      if (initialData?.id) {
+      if (isEditMode) {
         const { error } = await supabase
           .from('products')
           .update(productData)
@@ -307,485 +338,51 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     >
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">
-            {initialData ? 'Edit Product' : 'Add New Product'}
+          <h1 className="text-2xl font-bold text-black">
+            {isEditMode ? 'Edit Product' : 'Create New Product'}
           </h1>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Basic Information</h2>
-            <Input
-              required
-              placeholder="Product Title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            />
-            <Textarea
-              placeholder="Product Description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            />
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                placeholder="Enter product category"
-              />
-            </div>
-            <div>
-              <Label>Gender</Label>
-              <Select
-                value={formData.gender}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  {GENDERS.map((gender) => (
-                    <SelectItem key={gender} value={gender}>
-                      {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Images & Media */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Images & Media</h2>
-            <div className="flex items-center justify-between">
-              <Label>Product Images ({formData.images.length}/{MAX_IMAGES})</Label>
-            </div>
-            <div className="space-y-4">
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                disabled={formData.images.length >= MAX_IMAGES}
-              />
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter image URL"
-                  value={imageLink}
-                  onChange={(e) => setImageLink(e.target.value)}
-                  disabled={formData.images.length >= MAX_IMAGES}
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddImageLink}
-                  disabled={formData.images.length >= MAX_IMAGES}
-                >
-                  Add URL
-                </Button>
-              </div>
+        
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <ProductFormHeader />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              <BasicDetails form={form} initialData={initialData} />
+              <PricingStock form={form} initialData={initialData} />
+              <Features form={form} initialData={initialData} />
             </div>
             
-            {/* Image Preview Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {formData.images.map((image, index) => (
-                <div key={index} className="relative group aspect-square">
-                  <img
-                    src={getImageUrl(image)}
-                    alt={`Product ${index + 1}`}
-                    className="w-full h-full object-cover rounded-md"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      console.error('Error loading image:', image);
-                      target.src = 'https://placehold.co/400x400?text=Image+Not+Found';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <Input
-              placeholder="Video URL (optional)"
-              value={formData.video_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-            />
-          </div>
-
-          {/* Pricing & Stock */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Pricing & Stock</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Price (₹)</Label>
-                <Input
-                  type="number"
-                  required
-                  min={0}
-                  value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
-                />
-              </div>
-              <div>
-                <Label>Stock Quantity</Label>
-                <Input
-                  type="number"
-                  required
-                  min={0}
-                  value={formData.stock_quantity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: Number(e.target.value) }))}
-                />
-              </div>
+            <div className="space-y-8">
+              <ImageUpload form={form} initialData={initialData} />
+              <Variants form={form} initialData={initialData} />
             </div>
           </div>
 
-          {/* Rest of the form */}
-          {/* Variants */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Variants</h2>
-            <div>
-              <Label>Colors</Label>
-              <div className="flex flex-wrap gap-3 mt-2">
-                {DEFAULT_COLORS.map(color => (
-                  <button
-                    key={color.name}
-                    type="button"
-                    onClick={() => {
-                      setSelectedColors(prev =>
-                        prev.includes(color.name)
-                          ? prev.filter(c => c !== color.name)
-                          : [...prev, color.name]
-                      );
-                    }}
-                    className={cn(
-                      "w-10 h-10 rounded-full border-2 transition-transform hover:scale-110",
-                      selectedColors.includes(color.name)
-                        ? "border-primary scale-110"
-                        : "border-gray-200"
-                    )}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>Sizes</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {DEFAULT_SIZES.map(size => (
-                  <Button
-                    key={size}
-                    type="button"
-                    variant={selectedSizes.includes(size) ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedSizes(prev =>
-                        prev.includes(size)
-                          ? prev.filter(s => s !== size)
-                          : [...prev, size]
-                      );
-                    }}
-                    className="w-12 h-12 rounded-full"
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.history.back()}
+              className="border-black text-black hover:bg-black hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit"
+              disabled={loading}
+              className="bg-black text-white hover:bg-black/90"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⏳</span>
+                  {isEditMode ? 'Updating...' : 'Creating...'}
+                </span>
+              ) : (
+                isEditMode ? 'Update Product' : 'Create Product'
+              )}
+            </Button>
           </div>
-
-          {/* Product Details */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Product Details</h2>
-            <Input
-              placeholder="Material"
-              value={formData.quick_view_data.material}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                quick_view_data: {
-                  ...prev.quick_view_data,
-                  material: e.target.value
-                }
-              }))}
-            />
-            <Input
-              placeholder="Fit"
-              value={formData.quick_view_data.fit}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                quick_view_data: {
-                  ...prev.quick_view_data,
-                  fit: e.target.value
-                }
-              }))}
-            />
-            <div>
-              <Label>Care Instructions</Label>
-              <div className="space-y-2">
-                {careInstructions.map((instruction, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={instruction}
-                      onChange={(e) => {
-                        const newInstructions = [...careInstructions];
-                        newInstructions[index] = e.target.value;
-                        setCareInstructions(newInstructions);
-                        setFormData(prev => ({
-                          ...prev,
-                          quick_view_data: {
-                            ...prev.quick_view_data,
-                            care_instructions: newInstructions
-                          }
-                        }));
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => {
-                        const newInstructions = careInstructions.filter((_, i) => i !== index);
-                        setCareInstructions(newInstructions);
-                        setFormData(prev => ({
-                          ...prev,
-                          quick_view_data: {
-                            ...prev.quick_view_data,
-                            care_instructions: newInstructions
-                          }
-                        }));
-                      }}
-                    >
-                      <X size={16} />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const newInstructions = [...careInstructions, ""];
-                    setCareInstructions(newInstructions);
-                    setFormData(prev => ({
-                      ...prev,
-                      quick_view_data: {
-                        ...prev.quick_view_data,
-                        care_instructions: newInstructions
-                      }
-                    }));
-                  }}
-                >
-                  Add Care Instruction
-                </Button>
-              </div>
-            </div>
-            <div>
-              <Label>Features</Label>
-              <div className="space-y-2">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={feature}
-                      onChange={(e) => {
-                        const newFeatures = [...features];
-                        newFeatures[index] = e.target.value;
-                        setFeatures(newFeatures);
-                        setFormData(prev => ({
-                          ...prev,
-                          quick_view_data: {
-                            ...prev.quick_view_data,
-                            features: newFeatures
-                          }
-                        }));
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => {
-                        const newFeatures = features.filter((_, i) => i !== index);
-                        setFeatures(newFeatures);
-                        setFormData(prev => ({
-                          ...prev,
-                          quick_view_data: {
-                            ...prev.quick_view_data,
-                            features: newFeatures
-                          }
-                        }));
-                      }}
-                    >
-                      <X size={16} />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const newFeatures = [...features, ""];
-                    setFeatures(newFeatures);
-                    setFormData(prev => ({
-                      ...prev,
-                      quick_view_data: {
-                        ...prev.quick_view_data,
-                        features: newFeatures
-                      }
-                    }));
-                  }}
-                >
-                  Add Feature
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Highlights */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Key Highlights</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Fit Type</Label>
-                <Input
-                  value={formData.key_highlights.fit_type}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      fit_type: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label>Fabric</Label>
-                <Input
-                  value={formData.key_highlights.fabric}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      fabric: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label>Neck</Label>
-                <Input
-                  value={formData.key_highlights.neck}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      neck: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label>Sleeve</Label>
-                <Input
-                  value={formData.key_highlights.sleeve}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      sleeve: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label>Pattern</Label>
-                <Input
-                  value={formData.key_highlights.pattern}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      pattern: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label>Length</Label>
-                <Input
-                  value={formData.key_highlights.length}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    key_highlights: {
-                      ...prev.key_highlights,
-                      length: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Style & Categories */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Style & Categories</h2>
-            <div>
-              <Label>Style Category</Label>
-              <Input
-                placeholder="Enter style category"
-                value={formData.style_category}
-                onChange={(e) => setFormData(prev => ({ ...prev, style_category: e.target.value }))}
-              />
-            </div>
-          </div>
-
-          {/* Product Status */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Product Status</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="featured">Featured Product</Label>
-                <Switch
-                  id="featured"
-                  checked={formData.is_featured}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="bestseller">Best Seller</Label>
-                <Switch
-                  id="bestseller"
-                  checked={formData.is_best_seller}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_best_seller: checked }))}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="new-arrival">New Arrival</Label>
-                <Switch
-                  id="new-arrival"
-                  checked={formData.is_new_arrival}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_new_arrival: checked }))}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="trending">Trending</Label>
-                <Switch
-                  id="trending"
-                  checked={formData.is_trending}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_trending: checked }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Saving..." : initialData ? "Update Product" : "Create Product"}
-          </Button>
         </form>
       </Card>
     </motion.div>

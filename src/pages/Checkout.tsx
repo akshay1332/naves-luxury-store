@@ -27,12 +27,21 @@ interface CheckoutFormData {
   customDesignFile?: File | null;
   customDesignLink?: string;
   specialInstructions?: string;
+  wantsCustomPrinting: boolean;
 }
 
 interface RazorpayResponse {
   razorpay_payment_id: string;
   razorpay_order_id: string;
   razorpay_signature: string;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  allows_custom_printing?: boolean;
+  custom_printing_price?: number;
 }
 
 const Checkout = () => {
@@ -60,7 +69,10 @@ const Checkout = () => {
     customDesignFile: null,
     customDesignLink: "",
     specialInstructions: "",
+    wantsCustomPrinting: false,
   });
+  const [product, setProduct] = useState<Product | null>(null);
+  const [customPrintingPrice, setCustomPrintingPrice] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -92,12 +104,24 @@ const Checkout = () => {
           title,
           price,
           sale_percentage,
-          images
+          images,
+          allows_custom_printing,
+          custom_printing_price
         )
       `)
       .eq('user_id', user.id);
 
-    if (!cartItems) return;
+    if (!cartItems || cartItems.length === 0) return;
+
+    // Set the first product's details (assuming single product checkout)
+    const firstProduct = cartItems[0].products;
+    setProduct({
+      id: firstProduct.id,
+      title: firstProduct.title,
+      price: firstProduct.price,
+      allows_custom_printing: firstProduct.allows_custom_printing,
+      custom_printing_price: firstProduct.custom_printing_price
+    });
 
     const total = cartItems.reduce((sum, item) => {
       const price = item.products?.price || 0;
@@ -162,6 +186,12 @@ const Checkout = () => {
     }
   };
 
+  // Calculate total with all components
+  const calculateTotal = () => {
+    const shippingCost = subtotal > 499 ? 0 : 49;
+    return subtotal + customPrintingPrice - discountAmount + shippingCost;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -173,8 +203,8 @@ const Checkout = () => {
         customDesignUrl = await uploadCustomDesign(formData.customDesignFile);
       }
 
-      const total = subtotal - discountAmount + (subtotal > 499 ? 0 : 49);
-      const amountInPaise = Math.round(total *100); // Convert to paise
+      const total = calculateTotal();
+      const amountInPaise = Math.round(total * 100);
 
       // Get cart items for order
       const { data: cartItems } = await supabase
@@ -209,30 +239,35 @@ const Checkout = () => {
         color: item.color
       }));
 
-      // For COD orders, create the order immediately
+      // Update the order data to include custom printing info
+      const orderData = {
+        user_id: user?.id,
+        status: 'pending',
+        total_amount: total,
+        shipping_address: formData.shippingAddress,
+        invoice_data: {
+          items: orderItems,
+          payment_method: formData.paymentMethod,
+          custom_printing: formData.wantsCustomPrinting ? {
+            price: customPrintingPrice
+          } : null,
+          ...(formData.wantCustomDesign && {
+            custom_design: {
+              type: formData.customDesignType,
+              url: customDesignUrl,
+              instructions: formData.specialInstructions
+            }
+          })
+        },
+        discount_amount: discountAmount,
+        applied_coupon_id: appliedCouponId,
+        payment_status: formData.paymentMethod === 'cod' ? 'pending' : 'paid'
+      };
+
       if (formData.paymentMethod === 'cod') {
         const { data: order, error: orderError } = await supabase
           .from('orders')
-          .insert({
-            user_id: user?.id,
-            status: 'pending',
-            total_amount: total,
-            shipping_address: formData.shippingAddress,
-            invoice_data: {
-              items: orderItems,
-              payment_method: formData.paymentMethod,
-              ...(formData.wantCustomDesign && {
-                custom_design: {
-                  type: formData.customDesignType,
-                  url: customDesignUrl,
-                  instructions: formData.specialInstructions
-                }
-              })
-            },
-            discount_amount: discountAmount,
-            applied_coupon_id: appliedCouponId,
-            payment_status: 'pending'
-          })
+          .insert(orderData)
           .select()
           .single();
 
@@ -256,7 +291,7 @@ const Checkout = () => {
           description: "Your order has been placed with Cash on Delivery.",
         });
 
-        navigate('/profile/orders');
+        navigate('/profile');
       } else {
         // For online payments (card/UPI), create Razorpay order first
         const { data: razorpayOrder, error } = await supabase.functions.invoke('create-razorpay-order', {
@@ -289,27 +324,13 @@ const Checkout = () => {
             const { data: order, error: orderError } = await supabase
               .from('orders')
               .insert({
-                user_id: user?.id,
-                status: 'pending',
-                total_amount: total,
-                shipping_address: formData.shippingAddress,
+                ...orderData,
                 invoice_data: {
-                  items: orderItems,
-                  payment_method: formData.paymentMethod,
+                  ...orderData.invoice_data,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_signature: response.razorpay_signature,
-                  ...(formData.wantCustomDesign && {
-                    custom_design: {
-                      type: formData.customDesignType,
-                      url: customDesignUrl,
-                      instructions: formData.specialInstructions
-                    }
-                  })
-                },
-                discount_amount: discountAmount,
-                applied_coupon_id: appliedCouponId,
-                payment_status: 'paid'
+                }
               })
               .select()
               .single();
@@ -334,7 +355,7 @@ const Checkout = () => {
               description: "Your order has been placed successfully.",
             });
 
-            navigate('/profile/orders');
+            navigate('/profile');
           },
         });
       }
@@ -348,6 +369,10 @@ const Checkout = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateTotalPrice = (price: number) => {
+    setCustomPrintingPrice(price);
   };
 
   return (
@@ -368,6 +393,9 @@ const Checkout = () => {
                 setFormData={setFormData}
                 handleFileChange={handleFileChange}
                 uploadProgress={uploadProgress}
+                loading={loading}
+                product={product || undefined}
+                updateTotalPrice={updateTotalPrice}
               />
             </div>
 
@@ -380,6 +408,12 @@ const Checkout = () => {
                     <span className="text-gray-600">Subtotal</span>
                     <span>{formatIndianPrice(subtotal)}</span>
                   </div>
+                  {customPrintingPrice > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Custom Printing</span>
+                      <span>{formatIndianPrice(customPrintingPrice)}</span>
+                    </div>
+                  )}
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
@@ -407,7 +441,7 @@ const Checkout = () => {
                     <div className="flex justify-between items-center font-bold text-lg">
                       <span>Total</span>
                       <span className="text-cyan-600">
-                        {formatIndianPrice(subtotal - discountAmount + (subtotal > 499 ? 0 : 49))}
+                        {formatIndianPrice(calculateTotal())}
                       </span>
                     </div>
                   </div>

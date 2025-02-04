@@ -1,5 +1,7 @@
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -8,125 +10,84 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const PRODUCT_CATEGORIES = [
-  "Dresses",
-  "Tops",
-  "Bottoms",
-  "Outerwear",
-  "Accessories",
-  "Footwear",
-  "Other"
-];
-
-const STYLE_CATEGORIES = [
-  "Casual",
-  "Formal",
-  "Sports",
-  "Ethnic",
-  "Party",
-  "Beach",
-  "Business"
-];
-
-const GENDER_OPTIONS = ["men", "women", "unisex"];
-
 interface BasicDetailsProps {
   initialData?: {
     title: string;
     description: string;
     category: string;
     gender: string;
-    style_category?: string;
-    video_url?: string;
+    style_category: string;
   };
+  form: any;
 }
 
-export const BasicDetails = ({ initialData }: BasicDetailsProps) => {
+const GENDERS = ["men", "women", "unisex"] as const;
+
+export const BasicDetails = ({ initialData, form }: BasicDetailsProps) => {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Title</label>
-        <Input
-          name="title"
-          defaultValue={initialData?.title}
-          required
-          className="luxury-input"
-          placeholder="Enter product title"
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
+    <Card className="p-6 space-y-6 border-black">
+      <h3 className="text-lg font-semibold text-black">Basic Details</h3>
+      
+      <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Category</label>
-          <Select name="category" defaultValue={initialData?.category}>
-            <SelectTrigger className="luxury-input">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {PRODUCT_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="title" className="text-black">Title</Label>
+          <Input
+            id="title"
+            {...form.register("title", { required: "Title is required" })}
+            className="border-black text-black"
+          />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Style</label>
-          <Select name="style_category" defaultValue={initialData?.style_category}>
-            <SelectTrigger className="luxury-input">
-              <SelectValue placeholder="Select style" />
-            </SelectTrigger>
-            <SelectContent>
-              {STYLE_CATEGORIES.map((style) => (
-                <SelectItem key={style} value={style}>
-                  {style}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="description" className="text-black">Description</Label>
+          <Textarea
+            id="description"
+            {...form.register("description", { required: "Description is required" })}
+            className="border-black text-black min-h-[100px]"
+          />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Gender</label>
-          <Select name="gender" defaultValue={initialData?.gender || 'unisex'}>
-            <SelectTrigger className="luxury-input">
-              <SelectValue placeholder="Select gender" />
-            </SelectTrigger>
-            <SelectContent>
-              {GENDER_OPTIONS.map((gender) => (
-                <SelectItem key={gender} value={gender}>
-                  {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-black">Category</Label>
+            <Input
+              id="category"
+              {...form.register("category", { required: "Category is required" })}
+              placeholder="Enter product category"
+              className="border-black text-black"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gender" className="text-black">Gender</Label>
+            <Select
+              defaultValue={initialData?.gender}
+              onValueChange={(value) => form.setValue("gender", value)}
+            >
+              <SelectTrigger className="border-black text-black">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                {GENDERS.map((gender) => (
+                  <SelectItem key={gender} value={gender}>
+                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="style_category" className="text-black">Style Category</Label>
+            <Input
+              id="style_category"
+              {...form.register("style_category", { required: "Style category is required" })}
+              placeholder="Enter style category"
+              className="border-black text-black"
+            />
+          </div>
         </div>
       </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Video URL</label>
-        <Input
-          name="video_url"
-          defaultValue={initialData?.video_url}
-          className="luxury-input"
-          placeholder="Enter product video URL"
-          type="url"
-        />
-        <p className="text-sm text-gray-500">Add a video URL to show on hover (optional)</p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Description</label>
-        <Textarea
-          name="description"
-          defaultValue={initialData?.description}
-          required
-          className="luxury-input min-h-[100px]"
-          placeholder="Enter product description"
-        />
-      </div>
-    </div>
+    </Card>
   );
 };

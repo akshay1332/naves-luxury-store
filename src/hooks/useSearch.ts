@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebounce } from './useDebounce';
 
 interface SearchResult {
   id: string;
@@ -29,83 +30,46 @@ interface ProductResult {
   video_url?: string;
 }
 
-export function useSearch(query: string) {
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+export const useSearch = () => {
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    async function performSearch() {
-      if (!query.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-      setIsSearching(true);
-      try {
-        // Search in products table
-        const { data: products, error } = await supabase
-          .from('products')
-          .select('*')
-          .or(
-            `title.ilike.%${query}%,` +
-            `description.ilike.%${query}%,` +
-            `category.ilike.%${query}%`
-          )
-          .limit(10);
-
-        if (error) throw error;
-
-        // Process and rank results
-        const rankedResults = (products as ProductResult[]).map(product => {
-          let relevanceScore = 0;
-
-          // Title match (highest priority)
-          if (product.title.toLowerCase().includes(query.toLowerCase())) {
-            relevanceScore += 10;
-            // Exact match gets higher score
-            if (product.title.toLowerCase() === query.toLowerCase()) {
-              relevanceScore += 5;
-            }
-          }
-
-          // Category match (medium priority)
-          if (product.category.toLowerCase().includes(query.toLowerCase())) {
-            relevanceScore += 5;
-          }
-
-          // Description match (lower priority)
-          if (product.description.toLowerCase().includes(query.toLowerCase())) {
-            relevanceScore += 3;
-          }
-
-          return {
-            ...product,
-            relevanceScore,
-            image: product.images[0] // Use first image as main image
-          };
-        });
-
-        // Sort by relevance score
-        rankedResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-        // Convert to SearchResult type
-        const formattedResults: SearchResult[] = rankedResults.map(({ relevanceScore, images, ...product }) => ({
-          ...product,
-          image: images[0]
-        }));
-
-        setSearchResults(formattedResults);
-      } catch (error) {
-        console.error('Search error:', error);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
+  const performSearch = useCallback(async (query: string | undefined) => {
+    // Handle undefined or empty query
+    if (!query || typeof query !== 'string') {
+      setSearchResults([]);
+      return;
     }
 
-    const timeoutId = setTimeout(performSearch, 300);
-    return () => clearTimeout(timeoutId);
-  }, [query]);
+    const trimmedQuery = query.trim();
+    if (trimmedQuery === '') {
+      setSearchResults([]);
+      return;
+    }
 
-  return { searchResults, isSearching };
-} 
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .or(`title.ilike.%${trimmedQuery}%,description.ilike.%${trimmedQuery}%`)
+        .limit(5);
+
+      if (error) throw error;
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const debouncedSearch = useDebounce(performSearch, 300);
+
+  return {
+    searchResults,
+    isSearching,
+    search: debouncedSearch
+  };
+}; 

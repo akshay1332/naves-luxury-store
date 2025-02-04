@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const indianStates = [
   "Andhra Pradesh",
@@ -51,6 +52,7 @@ interface CheckoutFormData {
   customDesignFile?: File | null;
   customDesignLink?: string;
   specialInstructions?: string;
+  wantsCustomPrinting: boolean;
 }
 
 interface CheckoutFormProps {
@@ -59,6 +61,14 @@ interface CheckoutFormProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploadProgress: number;
   loading?: boolean;
+  product?: {
+    id: string;
+    title: string;
+    price: number;
+    allows_custom_printing?: boolean;
+    custom_printing_price?: number;
+  };
+  updateTotalPrice: (price: number) => void;
 }
 
 export function CheckoutForm({
@@ -67,6 +77,8 @@ export function CheckoutForm({
   handleFileChange,
   uploadProgress,
   loading,
+  product,
+  updateTotalPrice,
 }: CheckoutFormProps) {
   const updateShippingAddress = (field: keyof ShippingAddress, value: string) => {
     setFormData({
@@ -220,39 +232,46 @@ export function CheckoutForm({
         </RadioGroup>
       </div>
 
-      {/* Custom Design */}
+      {/* Custom Design Section with Price */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Custom Design</h3>
-          <Switch
-            checked={formData.wantCustomDesign}
-            onCheckedChange={(checked) => setFormData({
-              ...formData,
-              wantCustomDesign: checked,
-              customDesignType: checked ? "upload" : null
-            })}
-          />
+          <div className="flex items-center gap-2">
+            {product?.allows_custom_printing && (
+              <span className="text-sm text-gray-600">
+                (+₹{product.custom_printing_price || 0})
+              </span>
+            )}
+            <Switch
+              checked={formData.wantCustomDesign}
+              onCheckedChange={(checked) => {
+                setFormData({
+                  ...formData,
+                  wantCustomDesign: checked,
+                  customDesignType: checked ? "upload" : null,
+                  wantsCustomPrinting: checked // Sync with custom design
+                });
+                // Update price when toggled
+                const customPrintingPrice = checked ? (product?.custom_printing_price || 0) : 0;
+                updateTotalPrice(customPrintingPrice);
+              }}
+              className="data-[state=checked]:bg-black data-[state=checked]:border-black"
+            />
+          </div>
         </div>
 
         {formData.wantCustomDesign && (
-          <div className="space-y-4">
+          <div className="space-y-4 border border-black rounded-lg p-4">
             <RadioGroup
               value={formData.customDesignType || "upload"}
-              onValueChange={updateCustomDesignType}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              onValueChange={(value: "upload" | "link") => updateCustomDesignType(value)}
+              className="flex gap-4"
             >
-              <div className={cn(
-                "flex items-center space-x-2 rounded-lg border p-4",
-                formData.customDesignType === "upload" && "border-rose-500"
-              )}>
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="upload" id="upload" />
                 <Label htmlFor="upload">Upload Design</Label>
               </div>
-              
-              <div className={cn(
-                "flex items-center space-x-2 rounded-lg border p-4",
-                formData.customDesignType === "link" && "border-rose-500"
-              )}>
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="link" id="link" />
                 <Label htmlFor="link">Design Link</Label>
               </div>
@@ -264,17 +283,13 @@ export function CheckoutForm({
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
-                  className="cursor-pointer"
                   disabled={loading}
                 />
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  <AlertCircle className="h-4 w-4" />
-                  Maximum file size: 2MB
-                </p>
-                {uploadProgress > 0 && uploadProgress < 100 && (
+                <p className="text-sm text-gray-500">Maximum file size: 2MB</p>
+                {uploadProgress > 0 && (
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
-                      className="bg-cyan-600 h-2.5 rounded-full transition-all duration-300"
+                      className="bg-black h-2.5 rounded-full"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
