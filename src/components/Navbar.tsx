@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import logo from '../assets/logo.png';
 import { cn, formatIndianPrice } from "@/lib/utils";
@@ -27,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -285,58 +287,31 @@ const Navbar = () => {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className={cn(
-                    "p-1.5 rounded-full transition-colors duration-300",
-                    "hover:bg-primary-light/10",
-                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                  )}>
-                    <User className="h-4 w-4" />
-                  </button>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar_url} alt={user?.full_name} />
+                      <AvatarFallback>
+                        {user?.full_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
                 </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className={cn(
-                      "w-48 p-2",
-                      "bg-white dark:bg-gray-900",
-                      "border border-gray-200 dark:border-gray-800",
-                      "shadow-lg rounded-lg"
-                    )}
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuItem 
+                    className="cursor-pointer" 
+                    onClick={() => navigate('/profile')}
                   >
-                  {isAuthenticated ? (
-                    <>
-                        <DropdownMenuItem 
-                          onClick={() => navigate('/profile')}
-                          className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                        >
-                        <User className="mr-2 h-4 w-4 text-primary-light" />
-                        Profile
-                      </DropdownMenuItem>
-                        {isAdmin && (
-                          <DropdownMenuItem 
-                            onClick={() => navigate('/admin')}
-                            className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                          >
-                        <ShoppingBag className="mr-2 h-4 w-4 text-primary-light" />
-                        Admin Dashboard
-                      </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem 
-                          onClick={handleLogout}
-                          className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                        >
-                        <LogOut className="mr-2 h-4 w-4 text-primary-light" />
-                        Logout
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                      <DropdownMenuItem 
-                        onClick={handleLogin}
-                        className="flex items-center px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                      >
-                      <LogIn className="mr-2 h-4 w-4 text-primary-light" />
-                      Login
-                    </DropdownMenuItem>
-                  )}
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="cursor-pointer" 
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

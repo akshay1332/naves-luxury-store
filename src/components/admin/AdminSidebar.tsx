@@ -29,32 +29,32 @@ export function AdminSidebar() {
     {
       label: "Dashboard",
       href: "/admin",
-      icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <LayoutDashboard className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Users",
       href: "/admin/users",
-      icon: <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <Users className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Orders",
       href: "/admin/orders",
-      icon: <ShoppingCart className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <ShoppingCart className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Analytics",
       href: "/admin/analytics",
-      icon: <BarChart3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <BarChart3 className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Reviews",
       href: "/admin/reviews",
-      icon: <Star className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <Star className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Settings",
       href: "/admin/settings",
-      icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: <Settings className="h-5 w-5 flex-shrink-0" />,
     },
   ];
 
@@ -77,7 +77,7 @@ export function AdminSidebar() {
             link={{
               label: "Logout",
               href: "#",
-              icon: <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+              icon: <LogOut className="text-black h-5 w-5 flex-shrink-0" />,
             }}
             onClick={handleLogout}
           />
@@ -93,11 +93,11 @@ const Logo = () => {
       to="/admin"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6 bg-black rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium text-black dark:text-white whitespace-pre"
+        className="font-medium text-black whitespace-pre"
       >
         Admin Panel
       </motion.span>
@@ -111,7 +111,7 @@ const LogoIcon = () => {
       to="/admin"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6 bg-black rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
     </Link>
   );
 }; 

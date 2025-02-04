@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { UserOptions } from "jspdf-autotable";
+import { cn } from "@/lib/utils";
 
 // Extend jsPDF type to include autoTable
 interface jsPDFWithAutoTable extends jsPDF {
@@ -32,14 +33,14 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      processing: "bg-blue-100 text-blue-800",
-      shipped: "bg-purple-100 text-purple-800",
-      delivered: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800",
-      refunded: "bg-gray-100 text-gray-800",
+      pending: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+      processing: "bg-blue-50 text-blue-700 border border-blue-200",
+      shipped: "bg-purple-50 text-purple-700 border border-purple-200",
+      delivered: "bg-green-50 text-green-700 border border-green-200",
+      cancelled: "bg-red-50 text-red-700 border border-red-200",
+      refunded: "bg-gray-50 text-gray-700 border border-gray-200",
     };
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    return colors[status as keyof typeof colors] || "bg-gray-50 text-gray-700 border border-gray-200";
   };
 
   // Format amount in Indian Rupees
@@ -227,30 +228,35 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Order Information */}
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border">
               <h3 className="font-semibold mb-3">Order Information</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Order ID</span>
+                  <span className="text-gray-600">Order ID</span>
                   <span className="font-medium">{order.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Date</span>
+                  <span className="text-gray-600">Date</span>
                   <span className="font-medium">{format(new Date(order.created_at), 'PPP')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Status</span>
-                  <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
+                  <span className="text-gray-600">Status</span>
+                  <Badge className={cn(
+                    "px-2 py-1 rounded-full text-xs font-medium",
+                    getStatusColor(order.status)
+                  )}>
+                    {order.status}
+                  </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Payment Status</span>
+                  <span className="text-gray-600">Payment Status</span>
                   <Badge variant={order.payment_status === 'paid' ? 'default' : 'destructive'}>
                     {order.payment_status}
                   </Badge>
                 </div>
                 {order.tracking_number && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Tracking Number</span>
+                    <span className="text-gray-600">Tracking Number</span>
                     <span className="font-medium">{order.tracking_number}</span>
                   </div>
                 )}
@@ -258,20 +264,20 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
             </div>
 
             {/* Customer Information */}
-            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border">
               <h3 className="font-semibold mb-3">Customer Information</h3>
               {order.shipping_address && (
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Name</span>
+                    <span className="text-gray-600">Name</span>
                     <span className="font-medium">{order.shipping_address.fullName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Email</span>
+                    <span className="text-gray-600">Email</span>
                     <span className="font-medium">{order.shipping_address.email}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Phone</span>
+                    <span className="text-gray-600">Phone</span>
                     <span className="font-medium">{order.shipping_address.phone}</span>
                   </div>
                 </div>
@@ -279,11 +285,11 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border">
               <h3 className="font-semibold mb-3">Shipping Address</h3>
               {order.shipping_address && (
                 <div className="space-y-2">
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600">
                     {order.shipping_address.address}<br />
                     {order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.zipCode}<br />
                     {order.shipping_address.country}
@@ -294,27 +300,27 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
             {/* Custom Design Information */}
             {order.invoice_data?.custom_design && (
-              <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+              <div className="bg-white p-4 rounded-lg border">
                 <h3 className="font-semibold mb-3">Custom Design</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Type</span>
+                    <span className="text-gray-600">Type</span>
                     <span className="font-medium capitalize">{order.invoice_data.custom_design.type}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">Design URL</span>
+                    <span className="text-gray-600">Design URL</span>
                     <a
                       href={order.invoice_data.custom_design.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
                     >
                       View Design <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
                   {order.invoice_data.custom_design.instructions && (
                     <div className="mt-2">
-                      <span className="text-gray-600 dark:text-gray-400 block mb-1">Instructions:</span>
+                      <span className="text-gray-600 block mb-1">Instructions:</span>
                       <p className="text-sm">{order.invoice_data.custom_design.instructions}</p>
                     </div>
                   )}
@@ -325,7 +331,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
           {/* Order Items */}
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-white p-4 rounded-lg border">
               <h3 className="font-semibold mb-3">Order Items</h3>
       <Table>
         <TableHeader>
@@ -383,15 +389,20 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
             {/* Order History */}
             {order.order_status_history && order.order_status_history.length > 0 && (
-              <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+              <div className="bg-white p-4 rounded-lg border">
                 <h3 className="font-semibold mb-3">Order History</h3>
                 <div className="space-y-3">
                   {order.order_status_history.map((history, index) => (
                     <div key={index} className="flex justify-between items-start">
                       <div>
-                        <Badge className={getStatusColor(history.status)}>{history.status}</Badge>
+                        <Badge className={cn(
+                          "px-2 py-1 rounded-full text-xs font-medium",
+                          getStatusColor(history.status)
+                        )}>
+                          {history.status}
+                        </Badge>
                         {history.notes && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{history.notes}</p>
+                          <p className="text-sm text-gray-600 mt-1">{history.notes}</p>
                         )}
                       </div>
                       <span className="text-sm text-gray-500">

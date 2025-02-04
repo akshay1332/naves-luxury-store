@@ -45,13 +45,11 @@ interface OrderData {
   }[];
 }
 
-const PageContainer = styled(motion.div)<ThemeProps>`
+const PageContainer = styled(motion.div)`
   min-height: calc(100vh - 5rem);
   padding: 2rem;
   margin-top: 5rem;
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.background
-    : themeConfig.light.background};
+  background: #ffffff;
 `;
 
 const ProfileGrid = styled.div`
@@ -66,15 +64,12 @@ const ProfileGrid = styled.div`
   }
 `;
 
-const Card = styled(motion.div)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.surface
-    : themeConfig.light.surface};
+const Card = styled(motion.div)`
+  background: #ffffff;
   border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.shadows.default
-    : themeConfig.light.shadows.default};
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #000000;
 `;
 
 const ProfileHeader = styled(Card)`
@@ -129,19 +124,15 @@ const EditButton = styled(motion.button)<ThemeProps>`
   }
 `;
 
-const Name = styled.h1<ThemeProps>`
-  color: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.text.primary
-    : themeConfig.light.text.primary};
+const Name = styled.h1`
+  color: #000000;
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
 `;
 
-const Email = styled.p<ThemeProps>`
-  color: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.text.secondary
-    : themeConfig.light.text.secondary};
+const Email = styled.p`
+  color: #000000;
   margin-bottom: 1.5rem;
 `;
 
@@ -152,83 +143,67 @@ const StatsGrid = styled.div`
   margin-top: 1.5rem;
 `;
 
-const StatCard = styled(motion.div)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.elevatedSurface
-    : themeConfig.light.elevatedSurface};
+const StatCard = styled(motion.div)`
+  background: #ffffff;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   text-align: center;
-
+  border: 1px solid #000000;
+  
   h3 {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.primary
-      : themeConfig.light.text.primary};
     font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: #000000;
   }
-
+  
   p {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.secondary
-      : themeConfig.light.text.secondary};
+    color: #000000;
     font-size: 0.875rem;
   }
 `;
 
 const Section = styled(Card)`
   h2 {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.primary
-      : themeConfig.light.text.primary};
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #000000;
   }
 `;
 
-const Input = styled.input<ThemeProps>`
+const Input = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.elevatedSurface
-    : themeConfig.light.elevatedSurface};
-  border: 2px solid transparent;
-  border-radius: 0.5rem;
-  color: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.text.primary
-    : themeConfig.light.text.primary};
+  padding: 0.75rem;
   margin-bottom: 1rem;
-  transition: all 0.3s ease;
-
+  border: 1px solid #000000;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #000000;
+  
   &:focus {
     outline: none;
-    border-color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.primaryAccent
-      : themeConfig.light.primaryAccent};
+    border-color: #000000;
+    border-width: 2px;
   }
 `;
 
-const Button = styled(motion.button)<ThemeProps>`
-  padding: 0.75rem 1.5rem;
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.primaryAccent
-    : themeConfig.light.primaryAccent};
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
+const Button = styled(motion.button)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
   font-weight: 500;
-
+  
   &:hover {
-    opacity: 0.9;
+    background: #1a1a1a;
   }
 `;
 
@@ -236,37 +211,34 @@ const OrderGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
-  margin-top: 1rem;
 `;
 
-const OrderCard = styled(motion.div)<ThemeProps>`
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.elevatedSurface
-    : themeConfig.light.elevatedSurface};
+const OrderCard = styled(motion.div)`
+  background: #ffffff;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #000000;
   
   h3 {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.primary
-      : themeConfig.light.text.primary};
-    font-weight: 500;
+    font-weight: 600;
+    color: #000000;
     margin-bottom: 0.5rem;
   }
-
+  
   p {
-    color: ${props => props.$currentTheme === 'dark'
-      ? themeConfig.dark.text.secondary
-      : themeConfig.light.text.secondary};
+    color: #000000;
     font-size: 0.875rem;
+    margin-bottom: 0.25rem;
   }
 `;
 
 const AdminButton = styled(Button)`
   margin-top: 1rem;
-  background: ${props => props.$currentTheme === 'dark'
-    ? themeConfig.dark.secondaryAccent
-    : themeConfig.light.secondaryAccent};
+  background: #000000;
+  
+  &:hover {
+    background: #1a1a1a;
+  }
 `;
 
 const Profile = () => {

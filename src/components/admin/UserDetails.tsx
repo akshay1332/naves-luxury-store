@@ -78,7 +78,7 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
         <DialogHeader className="sticky top-0 bg-white z-10 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />

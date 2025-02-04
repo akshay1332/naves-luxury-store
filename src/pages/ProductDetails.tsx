@@ -71,6 +71,52 @@ interface Product {
   }[];
 }
 
+// Add this new component for pricing display
+const PriceDisplay = ({ price, salePrice, salePercentage }: { 
+  price: number, 
+  salePrice?: number, 
+  salePercentage?: number 
+}) => {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline gap-3">
+        {/* Main Price */}
+        <span className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          {formatIndianPrice(salePrice || price)}
+        </span>
+        
+        {/* Original Price & Discount */}
+        {salePrice && (
+          <>
+            <span className="text-lg text-gray-400 line-through">
+              {formatIndianPrice(price)}
+            </span>
+            <span className="text-sm font-medium px-2 py-1 rounded-full bg-red-50 text-red-500">
+              {salePercentage}% OFF
+            </span>
+          </>
+        )}
+      </div>
+      <p className="text-sm text-gray-500">
+        MRP incl. of all taxes
+      </p>
+    </div>
+  );
+};
+
+// Update the getStatusColor function
+const getStatusColor = (status: string) => {
+  const colors = {
+    pending: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+    processing: "bg-blue-50 text-blue-700 border border-blue-200",
+    shipped: "bg-purple-50 text-purple-700 border border-purple-200",
+    delivered: "bg-green-50 text-green-700 border border-green-200",
+    cancelled: "bg-red-50 text-red-700 border border-red-200",
+    refunded: "bg-gray-50 text-gray-700 border border-gray-200",
+  };
+  return colors[status as keyof typeof colors] || "bg-gray-50 text-gray-700 border border-gray-200";
+};
+
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -270,70 +316,54 @@ const ProductDetails = () => {
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               className="relative"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
             >
-              <div className="aspect-[4/5] rounded-lg overflow-hidden bg-gray-100 relative group">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedImageIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    src={product.images?.[selectedImageIndex] || '/placeholder-product.jpg'}
-                    alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </AnimatePresence>
-
-                {/* Zoom Icon */}
+              <div className="grid grid-cols-2 gap-4">
+                {product.images?.slice(0, 4).map((image, index) => (
+                  <div 
+                    key={index}
+                    className="relative aspect-[3/4] group"
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.title} - ${index + 1}`}
+                      className="w-full h-full object-cover object-center rounded-lg hover:scale-105 transition-transform duration-300"
+                    />
+                    
+                    {/* Zoom on hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 rounded-lg">
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="bg-white rounded-full p-2 shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"></circle>
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                       <line x1="11" y1="8" x2="11" y2="14"></line>
                       <line x1="8" y1="11" x2="14" y2="11"></line>
                     </svg>
+                        </div>
                   </div>
                 </div>
 
                 {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                  {product.is_new_arrival && (
-                    <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                    {index === 0 && product.is_new_arrival && (
+                      <span className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                       NEW
                     </span>
                   )}
-                  {product.sale_percentage > 0 && (
-                    <span className="bg-red-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      SAVE {product.sale_percentage}%
+                    {index === 0 && product.sale_percentage > 0 && (
+                      <span className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {product.sale_percentage}% OFF
                     </span>
                   )}
                 </div>
+                ))}
               </div>
 
-              {/* Thumbnail Navigation */}
-              {product.images && product.images.length > 1 && (
-                <div className="mt-4 grid grid-cols-4 gap-4">
-                  {product.images.map((image, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedImageIndex(i)}
-                      className={`aspect-square rounded-lg overflow-hidden ${
-                        selectedImageIndex === i ? 'ring-2 ring-primary' : ''
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${product.title} - ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
+              {/* Similar Products Label */}
+              <div className="absolute -bottom-6 left-0 right-0 text-center">
+                <span className="inline-block bg-white px-4 py-1 text-sm text-gray-500 shadow-sm rounded-full">
+                  Similar Products
+                </span>
                 </div>
-              )}
             </motion.div>
 
             {/* Product Info */}
@@ -351,37 +381,38 @@ const ProductDetails = () => {
 
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
               
-              {/* Price */}
-              <div className="flex items-baseline gap-4 mb-6">
-                <span className="text-2xl font-bold text-red-500">
-                  {formatIndianPrice(product.price)}
-                </span>
-                {product.sale_percentage > 0 && (
-                  <>
-                    <span className="text-xl text-gray-500 line-through">
-                      {formatIndianPrice(Math.round(product.price / (1 - product.sale_percentage / 100)))}
-                    </span>
-                    <span className="text-red-500 font-semibold">
-                      ({product.sale_percentage}% OFF)
-                    </span>
-                  </>
-                )}
-              </div>
+              {/* Price Display */}
+              <PriceDisplay 
+                price={product.price}
+                salePrice={product.sale_percentage ? Math.round(product.price * (1 - product.sale_percentage / 100)) : undefined}
+                salePercentage={product.sale_percentage}
+              />
 
-              {/* MRP Note */}
-              <p className="text-sm text-gray-500 mb-8">MRP incl. of all taxes</p>
-
-              {/* Offers */}
-              <div className="bg-orange-50 rounded-lg p-4 mb-8">
+              {/* Offers Section with Updated Styling */}
+              <div className="mt-8 rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 p-4">
                 <div className="flex items-start gap-4">
-                  <span className="text-orange-500 font-semibold">₹</span>
-                  <div>
-                    <p className="font-medium">Get it for as low as {formatIndianPrice(999)}</p>
-                    <p className="text-sm text-gray-600">Pick Any 2 Oversized Hoodies {formatIndianPrice(1999)} | Weekend Only Offer</p>
-                    <p className="text-sm text-orange-500 mt-2">Extra {formatIndianPrice(100)} OFF for Prepaid orders</p>
-                    <p className="text-sm mt-2">
-                      <span className="font-medium">Code:</span> Code Applies Automatically
+                  <span className="text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                      <path d="M2 17l10 5 10-5"/>
+                      <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                  </span>
+                  <div className="space-y-1">
+                    <p className="font-medium text-gray-900">
+                      Special Offer Bundle
                     </p>
+                    <p className="text-sm text-gray-600">
+                      Pick Any 2 Oversized Hoodies {formatIndianPrice(1999)}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        WEEKEND SALE
+                      </span>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                        EXTRA ₹100 OFF ON PREPAID
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -399,16 +430,23 @@ const ProductDetails = () => {
                         key={color}
                         onClick={() => setSelectedColor(color)}
                         className={cn(
-                          "w-12 h-12 rounded-full border-2 transition-all hover:scale-110",
+                          "w-12 h-12 rounded-full transition-all hover:scale-110",
+                          "border-2",
                           selectedColor === color
-                            ? "border-primary ring-2 ring-primary ring-offset-2"
-                            : "border-gray-200"
+                            ? "ring-2 ring-primary ring-offset-2 border-primary"
+                            : "border-gray-300 hover:border-gray-400"
                         )}
                         style={{
-                          backgroundColor: color.toLowerCase(),
+                          backgroundColor: 'transparent',
+                          borderColor: color.toLowerCase(),
                         }}
                         title={color}
+                      >
+                        <span 
+                          className="block w-full h-full rounded-full"
+                          style={{ backgroundColor: color.toLowerCase() }}
                       />
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -466,12 +504,12 @@ const ProductDetails = () => {
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Update Add to Cart and Wishlist buttons */}
+              <div className="grid grid-cols-2 gap-4 mt-8">
                 <Button
                   size="lg"
                   onClick={handleAddToCart}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+                  className="w-full bg-gray-900 hover:bg-gray-800 active:scale-[0.98] transition-all duration-200"
                 >
                   ADD TO CART
                 </Button>
@@ -480,13 +518,18 @@ const ProductDetails = () => {
                   variant="outline"
                   onClick={() => setIsWishlist(!isWishlist)}
                   className={cn(
-                    "w-full",
-                    isWishlist && "text-red-500 border-red-500 hover:bg-red-50"
+                    "w-full transition-all duration-200",
+                    isWishlist 
+                      ? "border-red-500 text-red-500 hover:bg-red-50" 
+                      : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
                   )}
                 >
                   <Heart
                     size={20}
-                    className={cn("mr-2 transition-colors", isWishlist && "fill-current")}
+                    className={cn(
+                      "mr-2 transition-colors",
+                      isWishlist && "fill-current"
+                    )}
                   />
                   WISHLIST
                 </Button>

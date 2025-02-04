@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const PRODUCT_CATEGORIES = [
   "Hoodies",
@@ -281,6 +282,21 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       return `${url}?t=${new Date().getTime()}`;
     }
     return url;
+  };
+
+  // Update the status and stock display styles
+  const getStatusBadgeStyles = (status: string) => {
+    return cn(
+      "px-2 py-1 rounded-full text-xs font-medium",
+      "bg-white text-black border border-black"
+    );
+  };
+
+  const getStockBadgeStyles = (stockLevel: number) => {
+    return cn(
+      "px-2 py-1 rounded-full text-xs font-medium",
+      "bg-white text-black border border-black"
+    );
   };
 
   return (
