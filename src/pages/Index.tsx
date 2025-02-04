@@ -15,10 +15,11 @@ export default function Index() {
   return (
     <>
       <SEO 
-        title="Naves Luxury Store - Premium Fashion & Accessories"
-        description="Discover luxury fashion, accessories, and custom designs at Naves Luxury Store. Shop our curated collection of premium clothing and accessories."
+        title="CustomPrint - Premium Fashion & Accessories"
+        description="Discover luxury fashion, accessories, and custom designs at CustomPrint. Shop our curated collection of premium clothing and accessories."
       />
       <main className="min-h-screen">
+
         <Hero />
         
         <div className="container mx-auto px-4 space-y-24 py-16">

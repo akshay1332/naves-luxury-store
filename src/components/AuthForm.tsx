@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 const AuthForm = () => {
   return (
     <div className="max-w-md w-full mx-auto p-8 bg-white/80 backdrop-blur-sm rounded-lg shadow-xl">
-      <h2 className="text-3xl font-serif text-center mb-8 text-primary">Welcome to Label Naves</h2>
+      <h2 className="text-3xl font-serif text-center mb-8 text-primary">Welcome to CustomPrint</h2>
       <div className="space-y-4">
         <Auth
           supabaseClient={supabase}

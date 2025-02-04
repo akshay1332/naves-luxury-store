@@ -34,6 +34,12 @@ export default function Register() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            full_name: '',  // You can add more user metadata here
+          }
+        }
       });
       if (error) throw error;
       toast({

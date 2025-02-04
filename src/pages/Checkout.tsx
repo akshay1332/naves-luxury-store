@@ -276,7 +276,7 @@ const Checkout = () => {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: amountInPaise,
           currency: "INR",
-          name: "Naves Luxury Store",
+          name: "CustomPrint",
           description: "Order Payment",
           order_id: razorpayOrder.id,
           prefill: {

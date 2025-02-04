@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatPrice, formatIndianPrice } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
+import { format, addDays } from "date-fns";
 
 type QuickViewData = {
   material?: string;
@@ -199,6 +200,14 @@ const ProductDetails = () => {
   const activeCoupons = product?.coupons?.filter(
     coupon => coupon.is_active && new Date(coupon.valid_until) > new Date()
   ) || [];
+
+  // Calculate delivery date range
+  const startDate = addDays(new Date(), 3); // Delivery starts 3 days from now
+  const endDate = addDays(new Date(), 7);   // Delivery ends 7 days from now (5 day window)
+
+  // Format dates
+  const formattedStartDate = format(startDate, "MMM dd");
+  const formattedEndDate = format(endDate, "MMM dd");
 
   if (productLoading) {
     return <LuxuryLoader />;
@@ -493,7 +502,7 @@ const ProductDetails = () => {
                   </svg>
                   <div>
                     <p className="font-medium">Estimated Delivery</p>
-                    <p className="text-sm text-gray-500">Jan 31 - Feb 04</p>
+                    <p className="text-sm text-gray-500">{formattedStartDate} - {formattedEndDate}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">

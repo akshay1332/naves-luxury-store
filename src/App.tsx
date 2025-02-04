@@ -37,6 +37,7 @@ import Terms from "@/pages/Terms";
 import Refund from "@/pages/Refund";
 import Cookies from "@/pages/Cookies";
 import NotFound from "@/pages/NotFound";
+import AuthCallback from "@/pages/AuthCallback";
 
 const App = () => (
   <HelmetProvider>
@@ -55,6 +56,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/products" element={<Products />} />
