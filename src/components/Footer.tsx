@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Phone, Mail, MapPin, Linkedin, Heart } from "lucide-react";
+import { Facebook, Instagram, Twitter, Phone, Mail, MapPin, Linkedin, Heart, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
@@ -36,13 +36,18 @@ const Footer = () => {
     },
     {
       icon: Facebook,
-      href: "https://www.facebook.com/people/Customs-Print/",
+      href: "https://www.facebook.com/people/Customs-Print/61572631971693/?rdid=RVPWGDOb86lLuDFg&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F15YVVVdruK%2F",
       label: "Facebook"
     },
     {
       icon: Linkedin,
       href: "https://www.linkedin.com/in/custom-print-436307349/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
       label: "LinkedIn"
+    },
+    {
+      icon: MessageCircle,
+      href: "https://wa.me/+916284249565",
+      label: "WhatsApp"
     }
   ];
 
@@ -189,10 +194,10 @@ const Footer = () => {
           )}
           variants={itemVariants}
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4">
             {/* Copyright */}
             <motion.p 
-              className="flex items-center justify-center gap-2 text-sm"
+              className="flex items-center justify-center gap-2 text-sm text-center"
               variants={itemVariants}
             >
               © {new Date().getFullYear()} Custom Print. Made with 
@@ -209,34 +214,6 @@ const Footer = () => {
                 <Heart size={16} className="text-rose-500" />
               </motion.span>
               in India
-            </motion.p>
-
-            {/* Developer Credits */}
-            <motion.p 
-              className={cn(
-                "text-sm text-center md:text-right",
-                currentTheme === 'dark' ? "text-gray-400" : "text-gray-600"
-              )}
-              variants={itemVariants}
-            >
-              Designed & Developed by{" "}
-              <a 
-                href="https://akshayys.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-rose-500 hover:text-rose-400 transition-colors duration-300 font-medium"
-              >
-                Akshay Pratap Singh
-              </a>
-              {" "}at{" "}
-              <a 
-                href="https://akshayys.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-rose-500 hover:text-rose-400 transition-colors duration-300 font-medium"
-              >
-                ADev Web Agency
-              </a>
             </motion.p>
           </div>
         </motion.div>
