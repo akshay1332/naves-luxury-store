@@ -92,6 +92,14 @@ interface ProductFormData {
   key_highlights?: string[];
   allows_custom_printing: boolean;
   custom_printing_price: number;
+  key_highlights: {
+    fit: string;
+    fabric: string;
+    neck: string;
+    sleeve: string;
+    pattern: string;
+    length: string;
+  };
 }
 
 const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
@@ -135,6 +143,14 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       key_highlights: initialData?.key_highlights || [],
       allows_custom_printing: initialData?.allows_custom_printing || false,
       custom_printing_price: initialData?.custom_printing_price || 0,
+      key_highlights: {
+        fit: initialData?.key_highlights?.fit || "",
+        fabric: initialData?.key_highlights?.fabric || "",
+        neck: initialData?.key_highlights?.neck || "",
+        sleeve: initialData?.key_highlights?.sleeve || "", 
+        pattern: initialData?.key_highlights?.pattern || "",
+        length: initialData?.key_highlights?.length || ""
+      },
     },
   });
 
@@ -190,6 +206,43 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     }
   };
 
+  // Update the convertGoogleDriveLink function to handle multiple Google link formats
+  const convertGoogleDriveLink = (url: string) => {
+    // Handle Google Drive links
+    const driveRegex = {
+      standard: /drive\.google\.com\/file\/d\/(.*?)\/view/,
+      sharing: /drive\.google\.com\/open\?id=(.*?)(?:$|&)/,
+      alternate: /drive\.google\.com\/uc\?id=(.*?)(?:$|&)/
+    };
+
+    // Handle Google Photos links
+    const photosRegex = {
+      standard: /photos\.google\.com\/share\/(.*?)$/,
+      alternate: /photos\.app\.goo\.gl\/(.*?)$/
+    };
+
+    // Check for Google Drive links
+    for (const [key, regex] of Object.entries(driveRegex)) {
+      const match = url.match(regex);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+    }
+
+    // Check for Google Photos links
+    for (const [key, regex] of Object.entries(photosRegex)) {
+      const match = url.match(regex);
+      if (match) {
+        // For Google Photos, we'll try to extract the actual image URL
+        return url.replace(/\=w\d+-h\d+/, '=w1000-h1000');
+      }
+    }
+
+    // If no Google link patterns match, return the original URL
+    return url;
+  };
+
+  // Update the handleAddImageLink function with a simpler approach
   const handleAddImageLink = () => {
     if (!imageLink) {
       toast({
@@ -209,24 +262,13 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       return;
     }
 
-    // Create a new Image object to verify the URL
-    const img = new Image();
-    img.onload = () => {
-      form.setValue('images', [...form.getValues('images'), imageLink]);
-      setImageLink("");
-      toast({
-        title: "Success",
-        description: "Image link added successfully",
-      });
-    };
-    img.onerror = () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Invalid image URL or image not accessible",
-      });
-    };
-    img.src = imageLink;
+    // Add the URL directly without verification
+    form.setValue('images', [...form.getValues('images'), imageLink]);
+    setImageLink("");
+    toast({
+      title: "Success",
+      description: "Image link added. Please verify the image appears correctly in the preview.",
+    });
   };
 
   const handleRemoveImage = (index: number) => {
@@ -265,6 +307,14 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         key_highlights: data.key_highlights || [],
         allows_custom_printing: data.allows_custom_printing || false,
         custom_printing_price: Number(data.custom_printing_price || 0),
+        key_highlights: {
+          fit: data.key_highlights.fit,
+          fabric: data.key_highlights.fabric,
+          neck: data.key_highlights.neck,
+          sleeve: data.key_highlights.sleeve,
+          pattern: data.key_highlights.pattern,
+          length: data.key_highlights.length
+        },
         updated_at: new Date().toISOString()
       };
 
@@ -330,6 +380,59 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     );
   };
 
+  // Create a new component for product details
+  const ProductDetails = ({ form }: { form: any }) => {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Product Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Fit</Label>
+            <Input
+              {...form.register("key_highlights.fit")}
+              placeholder="Enter product fit"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Fabric</Label>
+            <Input
+              {...form.register("key_highlights.fabric")}
+              placeholder="Enter fabric details"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Neck</Label>
+            <Input
+              {...form.register("key_highlights.neck")}
+              placeholder="Enter neck style"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Sleeve</Label>
+            <Input
+              {...form.register("key_highlights.sleeve")}
+              placeholder="Enter sleeve type"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Pattern</Label>
+            <Input
+              {...form.register("key_highlights.pattern")}
+              placeholder="Enter pattern type"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Length</Label>
+            <Input
+              {...form.register("key_highlights.length")}
+              placeholder="Enter length type"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -349,6 +452,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-8">
               <BasicDetails form={form} initialData={initialData} />
+              <ProductDetails form={form} />
               <PricingStock form={form} initialData={initialData} />
               <Features form={form} initialData={initialData} />
             </div>
