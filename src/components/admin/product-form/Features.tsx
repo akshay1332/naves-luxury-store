@@ -109,7 +109,7 @@ export const Features = ({ initialData }: FeaturesProps) => {
                 className="pl-9 bg-gray-50"
                 value={generateCouponCode(
                   document.querySelector<HTMLInputElement>('input[name="title"]')?.value || '',
-                  salePercentage || 0
+                  salePercentage
                 )}
                 placeholder="Coupon code will be generated automatically"
               />
@@ -135,7 +135,7 @@ export const Features = ({ initialData }: FeaturesProps) => {
                     {startDate ? format(startDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={startDate}
@@ -147,6 +147,7 @@ export const Features = ({ initialData }: FeaturesProps) => {
                       input.value = date ? date.toISOString() : '';
                       document.querySelector('form')?.appendChild(input);
                     }}
+                    className="bg-white rounded-md border"
                     initialFocus
                   />
                 </PopoverContent>

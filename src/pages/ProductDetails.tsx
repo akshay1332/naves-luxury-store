@@ -1,14 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LuxuryLoader } from "@/components/LuxuryLoader";
 import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ReviewForm from "@/components/product/ReviewForm";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Truck, ArrowRight, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Json } from "@/integrations/supabase/types";
@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { formatPrice, formatIndianPrice } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
 import { format, addDays } from "date-fns";
+import { Link } from "react-router-dom";
 
 type QuickViewData = {
   material?: string;
@@ -69,6 +70,19 @@ interface Product {
     is_active: boolean;
     min_purchase_amount: number;
   }[];
+  key_highlights?: {
+    material?: string;
+    capacity?: string;
+    lidType?: string;
+    insulation?: string;
+    pattern?: string;
+    finish?: string;
+    fit?: string;
+    fabric?: string;
+    neck?: string;
+    sleeve?: string;
+    length?: string;
+  };
 }
 
 // Add this new component for pricing display
@@ -117,6 +131,120 @@ const getStatusColor = (status: string) => {
   return colors[status as keyof typeof colors] || "bg-gray-50 text-gray-700 border border-gray-200";
 };
 
+// Update the key highlights section to be dynamic
+const KeyHighlights = ({ product }: { product: Product }) => {
+  const isCupOrBottle = product.category?.toLowerCase().includes('cup') || 
+                       product.category?.toLowerCase().includes('bottle');
+
+  if (isCupOrBottle) {
+    return (
+      <div className="grid grid-cols-2 gap-6">
+        {product.key_highlights?.material && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Material</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.material}</p>
+          </div>
+        )}
+        {product.key_highlights?.capacity && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Capacity</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.capacity}</p>
+          </div>
+        )}
+        {product.key_highlights?.lidType && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Lid Type</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.lidType}</p>
+          </div>
+        )}
+        {product.key_highlights?.insulation && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Insulation</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.insulation}</p>
+          </div>
+        )}
+        {product.key_highlights?.pattern && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Pattern</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.pattern}</p>
+          </div>
+        )}
+        {product.key_highlights?.finish && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500">Finish</h4>
+            <p className="text-sm text-gray-900">{product.key_highlights.finish}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {product.key_highlights?.fit && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Fit</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.fit}</p>
+        </div>
+      )}
+      {product.key_highlights?.fabric && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Fabric</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.fabric}</p>
+        </div>
+      )}
+      {product.key_highlights?.neck && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Neck</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.neck}</p>
+        </div>
+      )}
+      {product.key_highlights?.sleeve && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Sleeve</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.sleeve}</p>
+        </div>
+      )}
+      {product.key_highlights?.pattern && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Pattern</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.pattern}</p>
+        </div>
+      )}
+      {product.key_highlights?.length && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-500">Length</h4>
+          <p className="text-sm text-gray-900">{product.key_highlights.length}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Add this new component for a better product status badge
+const ProductStatusBadge = ({ type }: { type: string }) => {
+  const getStatusStyles = () => {
+    switch (type) {
+      case 'NEW':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'SALE':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'TRENDING':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'BESTSELLER':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyles()}`}>
+      {type}
+    </span>
+  );
+};
+
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -140,6 +268,9 @@ const ProductDetails = () => {
         .from("products")
         .select(`
           *,
+          key_highlights,
+          colors,
+          sizes,
           coupons (
             id,
             code,
@@ -255,6 +386,20 @@ const ProductDetails = () => {
   const formattedStartDate = format(startDate, "MMM dd");
   const formattedEndDate = format(endDate, "MMM dd");
 
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleImageNavigation('prev');
+      } else if (e.key === 'ArrowRight') {
+        handleImageNavigation('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [product?.images]);
+
   if (productLoading) {
     return <LuxuryLoader />;
   }
@@ -287,308 +432,270 @@ const ProductDetails = () => {
         ]}
         image={product.images?.[0]}
       />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="min-h-screen bg-white"
-      >
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Breadcrumb */}
+          {/* Breadcrumb with animation */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center gap-2 text-sm text-gray-600 mb-8"
           >
-            <button
-              onClick={() => navigate('/products')}
-              className="hover:text-primary transition-colors"
-            >
-              Products
-            </button>
+            <Link to="/" className="hover:text-primary transition-colors">Home</Link>
             <span>/</span>
-            <span className="text-gray-900">{product.title}</span>
+            <Link to="/products" className="hover:text-primary transition-colors">Products</Link>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">{product.title}</span>
           </motion.div>
 
-          {/* Product Details */}
+          {/* Main Product Section */}
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Image Gallery */}
+            {/* Image Gallery with enhanced animations */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              className="relative"
+              className="space-y-4"
             >
-              <div className="grid grid-cols-2 gap-4">
-                {product.images?.slice(0, 4).map((image, index) => (
-                  <div 
+              {/* Main Image */}
+              <div className="relative aspect-square overflow-hidden rounded-2xl bg-white p-2 border shadow-sm">
+                <motion.img
+                  key={selectedImageIndex}
+                  src={product.images?.[selectedImageIndex]}
+                  alt={product.title}
+                  className="w-full h-full object-cover object-center rounded-xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+                
+                {/* Previous/Next Buttons */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    {/* Previous Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleImageNavigation('prev')}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border shadow-lg flex items-center justify-center text-gray-700 hover:bg-white transition-all"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </motion.button>
+
+                    {/* Next Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleImageNavigation('next')}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border shadow-lg flex items-center justify-center text-gray-700 hover:bg-white transition-all"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </motion.button>
+                  </>
+                )}
+                
+                {/* Image Counter */}
+                <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-sm">
+                  {selectedImageIndex + 1} / {product.images?.length || 0}
+                </div>
+
+                {/* Status Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {product.is_new_arrival && (
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-500 text-white">
+                      NEW
+                    </span>
+                  )}
+                  {product.sale_percentage && (
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-500 text-white">
+                      {product.sale_percentage}% OFF
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Thumbnail Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                {product.images?.map((image, index) => (
+                  <motion.button
                     key={index}
-                    className="relative aspect-[3/4] group"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                      index === selectedImageIndex 
+                        ? 'border-black' 
+                        : 'border-transparent'
+                    }`}
                   >
                     <img
                       src={image}
                       alt={`${product.title} - ${index + 1}`}
-                      className="w-full h-full object-cover object-center rounded-lg hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
-                    
-                    {/* Zoom on hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 rounded-lg">
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="bg-white rounded-full p-2 shadow-lg">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                      <line x1="11" y1="8" x2="11" y2="14"></line>
-                      <line x1="8" y1="11" x2="14" y2="11"></line>
-                    </svg>
-                        </div>
-                  </div>
-                </div>
-
-                {/* Badges */}
-                    {index === 0 && product.is_new_arrival && (
-                      <span className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      NEW
-                    </span>
-                  )}
-                    {index === 0 && product.sale_percentage > 0 && (
-                      <span className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {product.sale_percentage}% OFF
-                    </span>
-                  )}
-                </div>
+                  </motion.button>
                 ))}
               </div>
-
-              {/* Similar Products Label */}
-              <div className="absolute -bottom-6 left-0 right-0 text-center">
-                <span className="inline-block bg-white px-4 py-1 text-sm text-gray-500 shadow-sm rounded-full">
-                  Similar Products
-                </span>
-                </div>
             </motion.div>
 
-            {/* Product Info */}
+            {/* Product Info with enhanced styling */}
             <motion.div
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              className="flex flex-col"
+              className="space-y-6"
             >
-              {/* Tags */}
-              <div className="mb-4">
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  OVERSIZED
-                </span>
+              {/* Product Status Badges */}
+              <div className="flex flex-wrap gap-2">
+                {product.is_new_arrival && <ProductStatusBadge type="NEW" />}
+                {product.sale_percentage && <ProductStatusBadge type="SALE" />}
+                {product.is_trending && <ProductStatusBadge type="TRENDING" />}
+                {product.is_best_seller && <ProductStatusBadge type="BESTSELLER" />}
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
-              
-              {/* Price Display */}
-              <PriceDisplay 
-                price={product.price}
-                salePrice={product.sale_percentage ? Math.round(product.price * (1 - product.sale_percentage / 100)) : undefined}
-                salePercentage={product.sale_percentage}
-              />
+              {/* Title and Price */}
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.title}</h1>
+                <PriceDisplay 
+                  price={product.price}
+                  salePrice={product.sale_percentage ? Math.round(product.price * (1 - product.sale_percentage / 100)) : undefined}
+                  salePercentage={product.sale_percentage}
+                />
+              </div>
 
-              {/* Offers Section with Updated Styling */}
-              <div className="mt-8 rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 p-4">
-                <div className="flex items-start gap-4">
-                  <span className="text-amber-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                      <path d="M2 17l10 5 10-5"/>
-                      <path d="M2 12l10 5 10-5"/>
-                    </svg>
-                  </span>
-                  <div className="space-y-1">
-                    <p className="font-medium text-gray-900">
-                      Special Offer Bundle
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Pick Any 2 Oversized Hoodies {formatIndianPrice(1999)}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                        WEEKEND SALE
-                      </span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                        EXTRA ₹100 OFF ON PREPAID
-                      </span>
-                    </div>
+              {/* Quick Info Cards */}
+              <div className="grid grid-cols-2 gap-4 my-8">
+                <div className="bg-white p-4 rounded-xl border shadow-sm">
+                  <div className="flex items-center gap-2 text-green-600 mb-2">
+                    <Truck className="w-5 h-5" />
+                    <span className="font-medium">Free Delivery</span>
                   </div>
+                  <p className="text-sm text-gray-600">On orders above ₹499</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl border shadow-sm">
+                  <div className="flex items-center gap-2 text-blue-600 mb-2">
+                    <ArrowRight className="w-5 h-5" />
+                    <span className="font-medium">Easy Returns</span>
+                  </div>
+                  <p className="text-sm text-gray-600">7 days return policy</p>
                 </div>
               </div>
 
-              {/* Colors */}
+              {/* Colors Selection */}
               {product.colors && product.colors.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-medium text-gray-900">Color</h3>
-                    <span className="text-sm text-gray-500">{selectedColor || 'Select Color'}</span>
-                  </div>
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Select Color
+                  </label>
                   <div className="flex gap-3">
                     {product.colors.map(color => (
-                      <button
+                      <motion.button
                         key={color}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setSelectedColor(color)}
                         className={cn(
-                          "w-12 h-12 rounded-full transition-all hover:scale-110",
+                          "w-12 h-12 rounded-full transition-all",
                           "border-2",
                           selectedColor === color
-                            ? "ring-2 ring-primary ring-offset-2 border-primary"
-                            : "border-gray-300 hover:border-gray-400"
+                            ? "ring-2 ring-black ring-offset-2"
+                            : "hover:ring-2 hover:ring-gray-300 hover:ring-offset-2"
                         )}
                         style={{
-                          backgroundColor: 'transparent',
-                          borderColor: color.toLowerCase(),
+                          backgroundColor: color.toLowerCase(),
                         }}
-                        title={color}
-                      >
-                        <span 
-                          className="block w-full h-full rounded-full"
-                          style={{ backgroundColor: color.toLowerCase() }}
                       />
-                      </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Size Chart Link */}
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-medium text-gray-900">Select Size</h3>
-                <button className="text-sm text-primary font-medium hover:underline">
-                  Size Chart
-                </button>
-              </div>
-
-              {/* Sizes */}
+              {/* Sizes Selection */}
               {product.sizes && product.sizes.length > 0 && (
-                <div className="mb-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Select Size
+                    </label>
+                    <button className="text-sm text-primary-600 hover:text-primary-500">
+                      Size Guide
+                    </button>
+                  </div>
                   <div className="grid grid-cols-5 gap-2">
                     {product.sizes.map(size => (
-                      <button
+                      <motion.button
                         key={size}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setSelectedSize(size)}
                         className={cn(
-                          "h-12 rounded border-2 flex items-center justify-center text-sm font-medium transition-all hover:border-gray-900",
+                          "py-3 rounded-lg font-medium transition-all",
                           selectedSize === size
-                            ? "border-gray-900 bg-gray-900 text-white"
-                            : "border-gray-200 text-gray-900"
+                            ? "bg-black text-white"
+                            : "bg-white border-2 border-gray-200 hover:border-black"
                         )}
                       >
                         {size}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Quantity */}
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Quantity</h3>
+              {/* Add to Cart Section */}
+              <div className="space-y-4 pt-6 border-t">
                 <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                    className="w-10 h-10 rounded border-2 border-gray-200 flex items-center justify-center text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:border-gray-900 transition-colors"
-                  >
-                    -
-                  </button>
-                  <span className="text-lg font-medium text-gray-900">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= (product.stock_quantity || 1)}
-                    className="w-10 h-10 rounded border-2 border-gray-200 flex items-center justify-center text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:border-gray-900 transition-colors"
-                  >
-                    +
-                  </button>
+                  <div className="flex items-center border rounded-lg">
+                    <button
+                      onClick={() => handleQuantityChange(-1)}
+                      disabled={quantity <= 1}
+                      className="p-3 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-12 text-center font-medium">{quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange(1)}
+                      disabled={quantity >= (product.stock_quantity || 1)}
+                      className="p-3 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {product.stock_quantity} items available
+                  </span>
                 </div>
-              </div>
 
-              {/* Update Add to Cart and Wishlist buttons */}
-              <div className="grid grid-cols-2 gap-4 mt-8">
-                <Button
-                  size="lg"
-                  onClick={handleAddToCart}
-                  className="w-full bg-gray-900 hover:bg-gray-800 active:scale-[0.98] transition-all duration-200"
-                >
-                  ADD TO CART
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setIsWishlist(!isWishlist)}
-                  className={cn(
-                    "w-full transition-all duration-200",
-                    isWishlist 
-                      ? "border-red-500 text-red-500 hover:bg-red-50" 
-                      : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
-                  )}
-                >
-                  <Heart
-                    size={20}
+                <div className="flex gap-4">
+                  <Button
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-black hover:bg-black/90"
+                    size="lg"
+                  >
+                    Add to Cart
+                  </Button>
+                  <Button
+                    onClick={() => setIsWishlist(!isWishlist)}
+                    variant="outline"
+                    size="lg"
                     className={cn(
-                      "mr-2 transition-colors",
-                      isWishlist && "fill-current"
+                      "flex-1",
+                      isWishlist && "bg-red-50 border-red-200 text-red-600"
                     )}
-                  />
-                  WISHLIST
-                </Button>
-              </div>
-
-              {/* Delivery Info */}
-              <div className="mt-8 space-y-4">
-                <div className="flex items-center gap-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                    <line x1="8" y1="21" x2="16" y2="21"></line>
-                    <line x1="12" y1="17" x2="12" y2="21"></line>
-                  </svg>
-                  <div>
-                    <p className="font-medium">Estimated Delivery</p>
-                    <p className="text-sm text-gray-500">{formattedStartDate} - {formattedEndDate}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                  <div>
-                    <p className="font-medium">Free Shipping & Returns</p>
-                    <p className="text-sm text-gray-500">On all orders over ₹499, 7 day Easy Returns</p>
-                  </div>
+                  >
+                    <Heart
+                      className={cn(
+                        "w-5 h-5 mr-2",
+                        isWishlist && "fill-red-600"
+                      )}
+                    />
+                    Wishlist
+                  </Button>
                 </div>
               </div>
 
               {/* Key Highlights */}
-              <div className="mt-8 border-t border-gray-200 pt-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Key Highlights</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Fit</h4>
-                    <p className="text-sm text-gray-900">Oversized Fit</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Fabric</h4>
-                    <p className="text-sm text-gray-900">300 GSM Cotton</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Neck</h4>
-                    <p className="text-sm text-gray-900">Hooded Round Neck</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Sleeve</h4>
-                    <p className="text-sm text-gray-900">Regular Sleeve</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Pattern</h4>
-                    <p className="text-sm text-gray-900">Printed</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Length</h4>
-                    <p className="text-sm text-gray-900">Regular</p>
-                  </div>
-                </div>
+              <div className="pt-8">
+                <h3 className="text-lg font-medium mb-4">Key Highlights</h3>
+                <KeyHighlights product={product} />
               </div>
             </motion.div>
           </div>
@@ -666,7 +773,7 @@ const ProductDetails = () => {
             </Card>
           )}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 };

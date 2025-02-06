@@ -28,4 +28,6 @@ export interface Product {
   key_highlights?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+  delivery_charges: number;
+  free_delivery_above: number;
 }

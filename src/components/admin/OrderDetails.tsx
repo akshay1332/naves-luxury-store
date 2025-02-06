@@ -204,8 +204,8 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
     doc.setFontSize(8);
     doc.setTextColor(128, 128, 128);
     doc.text("Thank you for shopping with CustomPrint", doc.internal.pageSize.width / 2, pageHeight - 30, { align: "center" });
-    doc.text("For any queries, please contact support@customprint.com", doc.internal.pageSize.width / 2, pageHeight - 25, { align: "center" });
-    doc.text("www.customprint.com", doc.internal.pageSize.width / 2, pageHeight - 20, { align: "center" });
+    doc.text("For any queries, please contact support@customprint.co.in", doc.internal.pageSize.width / 2, pageHeight - 25, { align: "center" });
+    doc.text("www.customprint.co.in", doc.internal.pageSize.width / 2, pageHeight - 20, { align: "center" });
 
     // Save the PDF
     doc.save(`CustomPrint-Invoice-${order.id}.pdf`);

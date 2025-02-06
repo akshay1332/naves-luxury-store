@@ -27,6 +27,8 @@ interface CartItem {
     price: number;
     images: string[];
     sale_percentage?: number;
+    delivery_charges?: number;
+    free_delivery_above?: number;
   };
 }
 
@@ -119,18 +121,23 @@ export default function Cart() {
     }
   };
 
-  const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => {
-      const price = item.product.sale_percentage
-        ? item.product.price * (1 - item.product.sale_percentage / 100)
-        : item.product.price;
-      return total + price * item.quantity;
+  const calculateDeliveryCharges = (items: CartItem[]) => {
+    let totalAmount = items.reduce((sum, item) => 
+      sum + (item.product.price * item.quantity), 0);
+
+    // If any item has free delivery above the total amount, no delivery charge for that item
+    return items.reduce((total, item) => {
+      if (totalAmount >= (item.product.free_delivery_above || 499)) {
+        return total;
+      }
+      return total + (item.product.delivery_charges || 0);
     }, 0);
   };
 
-  const subtotal = calculateSubtotal();
-  const shipping = subtotal > 499 ? 0 : 49;
-  const total = subtotal + shipping;
+  const subtotal = cartItems.reduce((sum, item) => 
+    sum + (item.product.price * item.quantity), 0);
+  const deliveryCharges = calculateDeliveryCharges(cartItems);
+  const total = subtotal + deliveryCharges;
 
   if (loading) {
     return (
@@ -253,28 +260,31 @@ export default function Cart() {
               <Card className="p-6 sticky top-4">
                 <h2 className="text-xl font-bold mb-6">Order Summary</h2>
                 <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal</span>
                     <span>{formatIndianPrice(subtotal)}</span>
                   </div>
-                  {shipping > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping</span>
-                      <span>{formatIndianPrice(shipping)}</span>
-                    </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery Charges</span>
+                    <span>
+                      {deliveryCharges > 0 
+                        ? formatIndianPrice(deliveryCharges)
+                        : 'FREE'}
+                    </span>
+                  </div>
+                  
+                  {deliveryCharges > 0 && (
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <Truck className="h-4 w-4" />
+                      <span>Free delivery on orders above ₹499</span>
+                    </p>
                   )}
-                  {shipping > 0 && (
-                    <div className="text-sm text-gray-500 flex items-center gap-1">
-                      <Tag className="h-4 w-4" />
-                      <span>Free shipping on orders above {formatIndianPrice(499)}</span>
-                    </div>
-                  )}
+
                   <div className="border-t pt-4">
-                    <div className="flex justify-between items-center font-bold text-lg">
+                    <div className="flex justify-between font-bold text-lg">
                       <span>Total</span>
-                      <span className="text-cyan-600">
-                        {formatIndianPrice(total)}
-                      </span>
+                      <span>{formatIndianPrice(total)}</span>
                     </div>
                   </div>
                   <Button

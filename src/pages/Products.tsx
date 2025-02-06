@@ -71,12 +71,12 @@ interface Product {
 
 const PRODUCT_CATEGORIES = [
   "All",
-  "Hoodies",
+  "Oversized T-shirts",
   "T-Shirts",
-  "Sweatshirts",
-  "Oversized",
-  "Limited Edition",
-  "New Arrivals"
+  "Bottles",
+  "Cup",
+  "Cargo Pants",
+  "Cap"
 ];
 
 const SORT_OPTIONS = [

@@ -89,17 +89,26 @@ interface ProductFormData {
   sale_start_date?: string;
   sale_end_date?: string;
   video_url?: string;
-  key_highlights?: string[];
+  key_highlights: {
+    fit?: string;
+    fabric?: string;
+    neck?: string;
+    sleeve?: string;
+    pattern?: string;
+    length?: string;
+    material?: string;
+    capacity?: string;
+    microwaveSafe?: string;
+    dishwasher?: string;
+    lidType?: string;
+    insulation?: string;
+    finish?: string;
+    dimensions?: string;
+  };
   allows_custom_printing: boolean;
   custom_printing_price: number;
-  key_highlights: {
-    fit: string;
-    fabric: string;
-    neck: string;
-    sleeve: string;
-    pattern: string;
-    length: string;
-  };
+  delivery_charges: number;
+  free_delivery_above: number;
 }
 
 const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
@@ -140,17 +149,26 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       sale_start_date: initialData?.sale_start_date || "",
       sale_end_date: initialData?.sale_end_date || "",
       video_url: initialData?.video_url || "",
-      key_highlights: initialData?.key_highlights || [],
-      allows_custom_printing: initialData?.allows_custom_printing || false,
-      custom_printing_price: initialData?.custom_printing_price || 0,
       key_highlights: {
         fit: initialData?.key_highlights?.fit || "",
         fabric: initialData?.key_highlights?.fabric || "",
         neck: initialData?.key_highlights?.neck || "",
-        sleeve: initialData?.key_highlights?.sleeve || "", 
+        sleeve: initialData?.key_highlights?.sleeve || "",
         pattern: initialData?.key_highlights?.pattern || "",
-        length: initialData?.key_highlights?.length || ""
+        length: initialData?.key_highlights?.length || "",
+        material: initialData?.key_highlights?.material || "",
+        capacity: initialData?.key_highlights?.capacity || "",
+        microwaveSafe: initialData?.key_highlights?.microwaveSafe || "",
+        dishwasher: initialData?.key_highlights?.dishwasher || "",
+        lidType: initialData?.key_highlights?.lidType || "",
+        insulation: initialData?.key_highlights?.insulation || "",
+        finish: initialData?.key_highlights?.finish || "",
+        dimensions: initialData?.key_highlights?.dimensions || "",
       },
+      allows_custom_printing: initialData?.allows_custom_printing || false,
+      custom_printing_price: initialData?.custom_printing_price || 0,
+      delivery_charges: initialData?.delivery_charges || 0,
+      free_delivery_above: initialData?.free_delivery_above || 499,
     },
   });
 
@@ -292,8 +310,8 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         category: data.category.trim(),
         gender: data.gender.trim(),
         stock_quantity: Number(data.stock_quantity),
-        colors: data.colors || [],
-        sizes: data.sizes || [],
+        colors: selectedColors,
+        sizes: selectedSizes,
         images: data.images || [],
         is_featured: data.is_featured || false,
         is_best_seller: data.is_best_seller || false,
@@ -307,14 +325,8 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         key_highlights: data.key_highlights || [],
         allows_custom_printing: data.allows_custom_printing || false,
         custom_printing_price: Number(data.custom_printing_price || 0),
-        key_highlights: {
-          fit: data.key_highlights.fit,
-          fabric: data.key_highlights.fabric,
-          neck: data.key_highlights.neck,
-          sleeve: data.key_highlights.sleeve,
-          pattern: data.key_highlights.pattern,
-          length: data.key_highlights.length
-        },
+        delivery_charges: Number(data.delivery_charges || 0),
+        free_delivery_above: Number(data.free_delivery_above || 499),
         updated_at: new Date().toISOString()
       };
 
@@ -380,8 +392,129 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     );
   };
 
-  // Create a new component for product details
+  // Update the ProductDetails component
   const ProductDetails = ({ form }: { form: any }) => {
+    const category = form.watch("category")?.toLowerCase();
+    const isCup = category?.includes('cup');
+    const isBottle = category?.includes('bottle');
+
+    if (isCup) {
+      return (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Product Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Material</Label>
+              <Input
+                {...form.register("key_highlights.material")}
+                placeholder="Enter material type"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Capacity</Label>
+              <Input
+                {...form.register("key_highlights.capacity")}
+                placeholder="Enter capacity"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Dimensions</Label>
+              <Input
+                {...form.register("key_highlights.dimensions")}
+                placeholder="Enter dimensions (e.g., 8cm x 10cm)"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Microwave Safe</Label>
+              <Input
+                {...form.register("key_highlights.microwaveSafe")}
+                placeholder="Enter microwave safety details"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Dishwasher</Label>
+              <Input
+                {...form.register("key_highlights.dishwasher")}
+                placeholder="Enter dishwasher safety details"
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isBottle) {
+      return (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Product Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Material</Label>
+              <Input
+                {...form.register("key_highlights.material")}
+                placeholder="Enter material type"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Capacity</Label>
+              <Input
+                {...form.register("key_highlights.capacity")}
+                placeholder="Enter capacity"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Dimensions</Label>
+              <Input
+                {...form.register("key_highlights.dimensions")}
+                placeholder="Enter dimensions (e.g., 7cm x 25cm)"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Lid Type</Label>
+              <Input
+                {...form.register("key_highlights.lidType")}
+                placeholder="Enter lid type"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Insulation</Label>
+              <Input
+                {...form.register("key_highlights.insulation")}
+                placeholder="Enter insulation type"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Pattern</Label>
+              <Input
+                {...form.register("key_highlights.pattern")}
+                placeholder="Enter pattern type"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Finish</Label>
+              <Input
+                {...form.register("key_highlights.finish")}
+                placeholder="Enter finish type"
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default clothing fields
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Product Details</h3>
@@ -391,6 +524,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.fit")}
               placeholder="Enter product fit"
+              className="bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -398,6 +532,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.fabric")}
               placeholder="Enter fabric details"
+              className="bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -405,6 +540,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.neck")}
               placeholder="Enter neck style"
+              className="bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -412,6 +548,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.sleeve")}
               placeholder="Enter sleeve type"
+              className="bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -419,6 +556,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.pattern")}
               placeholder="Enter pattern type"
+              className="bg-white"
             />
           </div>
           <div className="space-y-2">
@@ -426,7 +564,116 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
             <Input
               {...form.register("key_highlights.length")}
               placeholder="Enter length type"
+              className="bg-white"
             />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Add these components for size and color selection
+  const SizesSection = () => {
+    const handleSizeToggle = (size: string) => {
+      setSelectedSizes(prev => 
+        prev.includes(size) 
+          ? prev.filter(s => s !== size)
+          : [...prev, size]
+      );
+      // Update form data
+      form.setValue('sizes', selectedSizes.includes(size) 
+        ? selectedSizes.filter(s => s !== size)
+        : [...selectedSizes, size]
+      );
+    };
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Available Sizes</h3>
+        <div className="flex flex-wrap gap-2">
+          {DEFAULT_SIZES.map(size => (
+            <Button
+              key={size}
+              type="button"
+              variant={selectedSizes.includes(size) ? "default" : "outline"}
+              onClick={() => handleSizeToggle(size)}
+              className="w-12 h-12"
+            >
+              {size}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const ColorsSection = () => {
+    const handleColorToggle = (color: string) => {
+      setSelectedColors(prev => 
+        prev.includes(color) 
+          ? prev.filter(c => c !== color)
+          : [...prev, color]
+      );
+      // Update form data
+      form.setValue('colors', selectedColors.includes(color) 
+        ? selectedColors.filter(c => c !== color)
+        : [...selectedColors, color]
+      );
+    };
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Available Colors</h3>
+        <div className="flex flex-wrap gap-3">
+          {DEFAULT_COLORS.map(color => (
+            <button
+              key={color.name}
+              type="button"
+              onClick={() => handleColorToggle(color.name)}
+              className={cn(
+                "w-10 h-10 rounded-full border-2 transition-all",
+                selectedColors.includes(color.name)
+                  ? "ring-2 ring-primary ring-offset-2 scale-110"
+                  : "hover:scale-110"
+              )}
+              style={{ backgroundColor: color.value }}
+              title={color.name}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Add this new component for delivery settings
+  const DeliverySettings = ({ form }: { form: any }) => {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Delivery Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Delivery Charges (₹)</Label>
+            <Input
+              type="number"
+              {...form.register("delivery_charges")}
+              placeholder="Enter delivery charges"
+              className="bg-white"
+            />
+            <p className="text-sm text-gray-500">
+              Standard delivery charges for this product
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label>Free Delivery Above (₹)</Label>
+            <Input
+              type="number"
+              {...form.register("free_delivery_above")}
+              placeholder="Enter minimum amount for free delivery"
+              className="bg-white"
+            />
+            <p className="text-sm text-gray-500">
+              Order amount above which delivery will be free
+            </p>
           </div>
         </div>
       </div>
@@ -454,7 +701,12 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
               <BasicDetails form={form} initialData={initialData} />
               <ProductDetails form={form} />
               <PricingStock form={form} initialData={initialData} />
+              <DeliverySettings form={form} />
               <Features form={form} initialData={initialData} />
+              
+              {/* Add Size and Color sections */}
+              <SizesSection />
+              <ColorsSection />
             </div>
             
             <div className="space-y-8">

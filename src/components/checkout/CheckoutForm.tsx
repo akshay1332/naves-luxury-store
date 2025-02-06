@@ -13,25 +13,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle } from "lucide-react";
+import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle, CheckCircle, Image as ImageIcon, FileText, File, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 
+// Update the Indian states list with all 28 states and 8 union territories
 const indianStates = [
   "Andhra Pradesh",
-  "Delhi",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
   "Gujarat",
   "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
   "Karnataka",
   "Kerala",
   "Madhya Pradesh",
   "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
   "Punjab",
   "Rajasthan",
+  "Sikkim",
   "Tamil Nadu",
   "Telangana",
+  "Tripura",
   "Uttar Pradesh",
-  "West Bengal"
+  "Uttarakhand",
+  "West Bengal",
+  // Union Territories
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
 ] as const;
 
 interface ShippingAddress {
@@ -50,9 +75,11 @@ interface CheckoutFormData {
   wantCustomDesign: boolean;
   customDesignType: "upload" | "link" | null;
   customDesignFile?: File | null;
+  customDesignFileType?: 'image' | 'document' | null;
   customDesignLink?: string;
   specialInstructions?: string;
   wantsCustomPrinting: boolean;
+  customDesignPreview?: string | null;
 }
 
 interface CheckoutFormProps {
@@ -71,6 +98,64 @@ interface CheckoutFormProps {
   updateTotalPrice: (price: number) => void;
 }
 
+// Add this type for accepted file types
+const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx,image/*";
+
+// Add file type validation
+const ACCEPTED_MIMES = {
+  'image': ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  'document': ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+};
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Add file validation function
+const validateFile = (file: File) => {
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: "File size exceeds 5MB limit"
+    };
+  }
+
+  // Check file type
+  const isImage = ACCEPTED_MIMES.image.includes(file.type);
+  const isDocument = ACCEPTED_MIMES.document.includes(file.type);
+
+  if (!isImage && !isDocument) {
+    return {
+      valid: false,
+      error: "Invalid file type. Please upload an image, PDF, or DOC file"
+    };
+  }
+
+  return {
+    valid: true,
+    type: isImage ? 'image' : 'document'
+  };
+};
+
+// Add these helper functions at the top
+const getFileCategory = (fileType: string) => {
+  if (ACCEPTED_MIMES.image.includes(fileType)) return 'images';
+  if (ACCEPTED_MIMES.document.includes(fileType)) return 'documents';
+  return 'others';
+};
+
+const getFileIcon = (fileType: string) => {
+  if (ACCEPTED_MIMES.image.includes(fileType)) {
+    return <ImageIcon className="h-5 w-5" />;
+  }
+  if (fileType === 'application/pdf') {
+    return <FileText className="h-5 w-5 text-red-500" />;
+  }
+  if (ACCEPTED_MIMES.document.includes(fileType)) {
+    return <File className="h-5 w-5 text-blue-500" />;
+  }
+  return <FileIcon className="h-5 w-5" />;
+};
+
 export function CheckoutForm({
   formData,
   setFormData,
@@ -80,6 +165,8 @@ export function CheckoutForm({
   product,
   updateTotalPrice,
 }: CheckoutFormProps) {
+  const { toast } = useToast();
+
   const updateShippingAddress = (field: keyof ShippingAddress, value: string) => {
     setFormData({
       ...formData,
@@ -102,8 +189,102 @@ export function CheckoutForm({
       ...formData,
       customDesignType: value,
       customDesignFile: null,
+      customDesignFileType: null,
       customDesignLink: ""
     });
+  };
+
+  // Update file handling
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateFile(file);
+    
+    if (!validation.valid) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: validation.error
+      });
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      // Create a preview URL for images
+      const previewUrl = validation.type === 'image' 
+        ? URL.createObjectURL(file)
+        : null;
+
+      // Update form with file info
+      setFormData({
+        ...formData,
+        customDesignFile: file,
+        customDesignFileType: validation.type as 'image' | 'document',
+        customDesignPreview: previewUrl
+      });
+
+      // Call the parent handler
+      handleFileChange(e);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process the file"
+      });
+      e.target.value = '';
+    }
+  };
+
+  // Update the file preview section
+  const FilePreview = ({ file, previewUrl }: { file: File, previewUrl: string | null }) => {
+    const fileSize = (file.size / (1024 * 1024)).toFixed(2); // Convert to MB
+    
+    return (
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-start gap-4">
+          {previewUrl ? (
+            // Image preview
+            <div className="relative w-20 h-20 rounded-lg overflow-hidden border">
+              <img 
+                src={previewUrl} 
+                alt="Preview" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            // Document icon
+            <div className="w-20 h-20 rounded-lg border bg-white flex items-center justify-center">
+              {getFileIcon(file.type)}
+            </div>
+          )}
+          
+          <div className="flex-1">
+            <h4 className="font-medium text-gray-900 flex items-center gap-2">
+              {file.name}
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </h4>
+            <div className="mt-1 text-sm text-gray-500 space-y-1">
+              <p>Type: {file.type}</p>
+              <p>Size: {fileSize} MB</p>
+            </div>
+            <button
+              onClick={() => {
+                if (previewUrl) {
+                  window.open(previewUrl, '_blank');
+                }
+              }}
+              className="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              disabled={!previewUrl}
+            >
+              <Eye className="h-4 w-4" />
+              {previewUrl ? 'Preview' : 'No preview available'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -171,12 +352,16 @@ export function CheckoutForm({
               value={formData.shippingAddress.state}
               onValueChange={(value) => updateShippingAddress("state", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white">
                 <SelectValue placeholder="Select state" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white max-h-[300px]">
                 {indianStates.map((state) => (
-                  <SelectItem key={state} value={state}>
+                  <SelectItem 
+                    key={state} 
+                    value={state}
+                    className="hover:bg-gray-100"
+                  >
                     {state}
                   </SelectItem>
                 ))}
@@ -232,7 +417,7 @@ export function CheckoutForm({
         </RadioGroup>
       </div>
 
-      {/* Custom Design Section with Price */}
+      {/* Updated Custom Design Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Custom Design</h3>
@@ -249,9 +434,8 @@ export function CheckoutForm({
                   ...formData,
                   wantCustomDesign: checked,
                   customDesignType: checked ? "upload" : null,
-                  wantsCustomPrinting: checked // Sync with custom design
+                  wantsCustomPrinting: checked
                 });
-                // Update price when toggled
                 const customPrintingPrice = checked ? (product?.custom_printing_price || 0) : 0;
                 updateTotalPrice(customPrintingPrice);
               }}
@@ -262,69 +446,54 @@ export function CheckoutForm({
 
         {formData.wantCustomDesign && (
           <div className="space-y-4 border border-black rounded-lg p-4">
-            <RadioGroup
-              value={formData.customDesignType || "upload"}
-              onValueChange={(value: "upload" | "link") => updateCustomDesignType(value)}
-              className="flex gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="upload" id="upload" />
-                <Label htmlFor="upload">Upload Design</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="link" id="link" />
-                <Label htmlFor="link">Design Link</Label>
-              </div>
-            </RadioGroup>
-
-            {formData.customDesignType === "upload" && (
-              <div className="space-y-2">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  disabled={loading}
-                />
-                <p className="text-sm text-gray-500">Maximum file size: 2MB</p>
-                {uploadProgress > 0 && (
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-black h-2.5 rounded-full"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {formData.customDesignType === "link" && (
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <LinkIcon className="h-4 w-4 text-gray-500" />
                 <Input
                   type="url"
-                  placeholder="Enter design link"
+                  placeholder="Enter design link (Google Drive, Dropbox, etc.)"
                   value={formData.customDesignLink}
                   onChange={(e) => setFormData({
                     ...formData,
                     customDesignLink: e.target.value
                   })}
                   disabled={loading}
+                  className="bg-white"
                 />
               </div>
-            )}
+              <p className="text-sm text-gray-500">
+                Supported links: Google Drive, Dropbox, or any direct file link
+              </p>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="instructions">Special Instructions</Label>
               <Textarea
                 id="instructions"
-                placeholder="Any specific instructions for your custom design..."
+                placeholder="Any specific instructions for your design..."
                 value={formData.specialInstructions}
                 onChange={(e) => setFormData({
                   ...formData,
                   specialInstructions: e.target.value
                 })}
                 disabled={loading}
+                className="bg-white"
               />
+            </div>
+
+            {/* File Requirements Info */}
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
+                <span className="font-medium">Link Requirements:</span>
+              </div>
+              <ul className="text-sm text-gray-600 space-y-1 ml-6 list-disc">
+                <li>Make sure the link is accessible and not private</li>
+                <li>Supported file types: Images (JPG, PNG), PDF, DOC files</li>
+                <li>File should be clear and readable</li>
+                <li>For vector files, convert text to outlines</li>
+                <li>Include all necessary fonts and assets</li>
+              </ul>
             </div>
           </div>
         )}

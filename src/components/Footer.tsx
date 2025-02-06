@@ -30,14 +30,14 @@ const Footer = () => {
 
   const socialLinks = [
     {
-      icon: Instagram,
-      href: "https://www.instagram.com/the.customprint",
-      label: "Instagram"
-    },
-    {
       icon: Facebook,
       href: "https://www.facebook.com/people/Customs-Print/61572631971693/?rdid=RVPWGDOb86lLuDFg&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F15YVVVdruK%2F",
       label: "Facebook"
+    },
+    {
+      icon: Instagram,
+      href: "https://www.instagram.com/the.customprint",
+      label: "Instagram"
     },
     {
       icon: Linkedin,
@@ -91,23 +91,31 @@ const Footer = () => {
                 <span className="text-sm">Jalandhar, Punjab, India</span>
               </div>
             </div>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col gap-4 pt-4">
               {socialLinks.map((social) => (
                 <motion.a
                   key={social.label}
                   href={social.href}
-                target="_blank"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
+                    "flex items-center gap-3 transition-colors duration-300",
+                    currentTheme === 'dark'
+                      ? "text-gray-300 hover:text-rose-500"
+                      : "text-gray-600 hover:text-rose-500"
+                  )}
+                  whileHover={{ x: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className={cn(
                     "p-2 rounded-full transition-colors duration-300",
                     currentTheme === 'dark'
                       ? "bg-gray-800 hover:bg-gray-700"
                       : "bg-gray-100 hover:bg-gray-200"
-                  )}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                  <social.icon size={20} className="text-rose-500" />
+                  )}>
+                    <social.icon size={20} className="text-rose-500" />
+                  </div>
+                  <span className="text-sm font-medium">{social.label}</span>
                 </motion.a>
               ))}
             </div>

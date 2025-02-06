@@ -272,11 +272,12 @@ export function CouponManager({ initialData, onSuccess }: CouponManagerProps) {
                       {formData.valid_from ? format(new Date(formData.valid_from), "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 bg-white" align="start">
                     <Calendar
                       mode="single"
                       selected={formData.valid_from ? new Date(formData.valid_from) : undefined}
                       onSelect={(date) => setFormData(prev => ({ ...prev, valid_from: date?.toISOString() || new Date().toISOString() }))}
+                      className="bg-white rounded-md border"
                       initialFocus
                     />
                   </PopoverContent>
@@ -298,11 +299,12 @@ export function CouponManager({ initialData, onSuccess }: CouponManagerProps) {
                       {formData.valid_until ? format(new Date(formData.valid_until), "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 bg-white" align="start">
                     <Calendar
                       mode="single"
                       selected={formData.valid_until ? new Date(formData.valid_until) : undefined}
                       onSelect={(date) => setFormData(prev => ({ ...prev, valid_until: date?.toISOString() || new Date().toISOString() }))}
+                      className="bg-white rounded-md border"
                       initialFocus
                     />
                   </PopoverContent>

@@ -18,13 +18,7 @@ const Contact = () => {
           'printing service support',
           'custom clothing help',
           'custom print location',
-          'printing service contact',
-          'custom apparel support',
-          'business hours custom print',
-          'custom print phone number',
-          'custom print email',
-          'printing service inquiry',
-          'custom clothing consultation'
+          'printing service contact'
         ]}
       />
       <div className="min-h-screen bg-white">
@@ -40,48 +34,34 @@ const Contact = () => {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-4xl md:text-6xl text-white font-montserrat font-bold"
+              className="text-4xl md:text-5xl font-bold text-white text-center"
             >
               Contact Us
             </motion.h1>
           </div>
         </section>
 
-        {/* Contact Form Section */}
-        <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-12">
+        {/* Contact Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="bg-secondary-dark text-white p-8 rounded-lg"
+              transition={{ duration: 0.6 }}
+              className="bg-gray-900 text-white p-8 rounded-lg space-y-6"
             >
-              <h2 className="text-3xl font-montserrat font-bold mb-6 text-rose-500">Get in Touch</h2>
-              <p className="text-gray-300 mb-8">
-                Have questions about our custom printing services? We're here to help! Fill out the form, and our team will get back to you shortly.
-              </p>
-              
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Visit Our Store</h3>
                   <p className="text-gray-300">Custom Print Studio</p>
-                  <p className="text-gray-300">42, Fashion Hub, Sector 18</p>
-                  <p className="text-gray-300">Noida, Uttar Pradesh 201301</p>
+                  <p className="text-gray-300">Jalandhar, Punjab, 144411</p>
                 </div>
                 
                 <div>
                   <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Contact Information</h3>
                   <p className="text-gray-300">Email: support@customprint.co.in</p>
-                  <p className="text-gray-300">Phone: +91 98765 43210</p>
-                  <p className="text-gray-300">Hours: Mon-Sat, 10:00 AM - 7:00 PM</p>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Follow Us</h3>
-                  <p className="text-gray-300">Instagram: @customprint.in</p>
-                  <p className="text-gray-300">Facebook: @customprintindia</p>
-                  <p className="text-gray-300">Twitter: @customprint_in</p>
+                  <p className="text-gray-300">Phone: +91 6284249565</p>
+                  <p className="text-gray-300">Hours: Monday-Friday, 10:00AM – 05:00PM</p>
                 </div>
               </div>
             </motion.div>

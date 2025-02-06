@@ -104,14 +104,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
         </div>
       </Link>
-      <div className="absolute bottom-0 left-0 right-0 flex translate-y-full items-center justify-center gap-2 bg-black bg-opacity-75 p-4 text-white transition-transform duration-300 group-hover:translate-y-0">
-        <Button variant="secondary" size="sm" className="flex-1">
-          Quick View
-        </Button>
-        <Button size="sm" className="flex-1">
-          Add to Cart
-        </Button>
-      </div>
+    
     </motion.div>
   );
 }
