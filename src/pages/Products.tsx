@@ -132,7 +132,7 @@ const Products = () => {
         .select("*");
       
       if (selectedCategory !== 'All') {
-        query = query.eq('category', selectedCategory);
+        query = query.ilike('category', selectedCategory);
       }
       
       const { data, error } = await query;
@@ -168,7 +168,12 @@ const Products = () => {
   });
 
   const handleCategoryChange = (category: string) => {
-    setSearchParams({ ...Object.fromEntries(searchParams), category });
+    const normalizedCategory = category === 'All' ? 'All' : category.trim();
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('category', normalizedCategory);
+      return newParams;
+    });
   };
 
   const handleSortChange = (sort: string) => {

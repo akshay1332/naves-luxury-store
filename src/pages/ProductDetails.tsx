@@ -401,6 +401,15 @@ const ProductDetails = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [product?.images]);
 
+  // Add this new function to handle category click
+  const handleCategoryClick = (category: string | null) => {
+    if (category) {
+      // Normalize the category before navigation
+      const normalizedCategory = category.trim();
+      navigate(`/products?category=${encodeURIComponent(normalizedCategory)}`);
+    }
+  };
+
   if (productLoading) {
     return <LuxuryLoader />;
   }
@@ -426,6 +435,24 @@ const ProductDetails = () => {
             <LuxuryLoader />
           ) : (
             <div className="space-y-8">
+              {/* Breadcrumb Navigation */}
+              <nav className="flex items-center space-x-2 text-sm text-gray-500">
+                <Link to="/products" className="hover:text-rose-500">Products</Link>
+                <span>/</span>
+                {product?.category && (
+                  <>
+                    <button
+                      onClick={() => handleCategoryClick(product.category)}
+                      className="hover:text-rose-500 cursor-pointer capitalize"
+                    >
+                      {product.category}
+                    </button>
+                    <span>/</span>
+                  </>
+                )}
+                <span className="text-gray-900">{product?.title}</span>
+              </nav>
+
               {/* Product Main Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Image Gallery */}
@@ -476,7 +503,20 @@ const ProductDetails = () => {
                 >
                   {/* Title and Price */}
                   <div className="space-y-4">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">{product.title}</h1>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                      {product?.title}
+                    </h1>
+                    
+                    {/* Add category badge */}
+                    {product?.category && (
+                      <button
+                        onClick={() => handleCategoryClick(product.category)}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 hover:bg-rose-100 hover:text-rose-800 transition-colors duration-200"
+                      >
+                        {product.category}
+                      </button>
+                    )}
+
                     <PriceDisplay
                       price={product.price}
                       salePrice={product.sale_percentage ? Math.round(product.price * (1 - product.sale_percentage / 100)) : undefined}
