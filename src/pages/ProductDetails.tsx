@@ -461,13 +461,45 @@ const ProductDetails = () => {
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-4"
                 >
-                  {/* Main Image */}
-                  <div className="relative aspect-square overflow-hidden rounded-2xl">
+                  {/* Main Image with Navigation Arrows */}
+                  <div className="relative aspect-square overflow-hidden rounded-2xl group">
                     <img
                       src={product.images?.[selectedImageIndex]}
                       alt={product.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                    
+                    {/* Navigation Arrows */}
+                    <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="rounded-full bg-white/80 hover:bg-white shadow-lg"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleImageNavigation('prev');
+                        }}
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                      
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="rounded-full bg-white/80 hover:bg-white shadow-lg"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleImageNavigation('next');
+                        }}
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </Button>
+                    </div>
+
+                    {/* Image Counter */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                      {selectedImageIndex + 1} / {product.images?.length}
+                    </div>
                   </div>
 
                   {/* Thumbnail Gallery */}
@@ -482,13 +514,18 @@ const ProductDetails = () => {
                           "relative aspect-square rounded-lg overflow-hidden",
                           selectedImageIndex === index 
                             ? "ring-2 ring-rose-500"
-                            : "ring-transparent hover:ring-gray-300"
+                            : "ring-1 ring-gray-200 hover:ring-gray-300"
                         )}
                       >
                         <img
                           src={image}
                           alt={`${product.title} - View ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className={cn(
+                            "w-full h-full object-cover transition-opacity",
+                            selectedImageIndex === index 
+                              ? "opacity-100"
+                              : "opacity-70 hover:opacity-100"
+                          )}
                         />
                       </motion.button>
                     ))}
@@ -564,12 +601,20 @@ const ProductDetails = () => {
 
                   {/* Quantity Selection */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Quantity</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium">Quantity</h3>
+                      <span className="text-sm text-gray-500">
+                        {product.stock_quantity 
+                          ? `${product.stock_quantity} items available` 
+                          : 'Out of stock'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-4">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={!product.stock_quantity || quantity <= 1}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -577,11 +622,17 @@ const ProductDetails = () => {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => setQuantity(quantity + 1)}
+                        onClick={() => setQuantity(Math.min(product.stock_quantity || 0, quantity + 1))}
+                        disabled={!product.stock_quantity || quantity >= (product.stock_quantity || 0)}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                    {quantity === (product.stock_quantity || 0) && (
+                      <p className="text-sm text-rose-500">
+                        Maximum available quantity selected
+                      </p>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
@@ -589,10 +640,15 @@ const ProductDetails = () => {
                     <Button
                       className="flex-1 h-12 text-base"
                       onClick={handleAddToCart}
-                      disabled={isAddingToCart}
+                      disabled={isAddingToCart || !product.stock_quantity}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />
-                      Add to Cart
+                      {!product.stock_quantity 
+                        ? 'Out of Stock' 
+                        : isAddingToCart 
+                          ? 'Adding...' 
+                          : 'Add to Cart'
+                      }
                     </Button>
                     <Button
                       variant="outline"
