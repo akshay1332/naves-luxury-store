@@ -38,6 +38,7 @@ import Refund from "@/pages/Refund";
 import Cookies from "@/pages/Cookies";
 import NotFound from "@/pages/NotFound";
 import AuthCallback from "@/pages/AuthCallback";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const App = () => (
   <HelmetProvider>
@@ -47,6 +48,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <div className="flex flex-col min-h-screen">
               <div className="fixed top-4 right-4 z-50">
                 <ThemeToggle />

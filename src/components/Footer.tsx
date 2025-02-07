@@ -87,20 +87,20 @@ const Footer = () => {
                 <span className="text-sm">Jalandhar, Punjab, India</span>
               </div>
             </div>
-            <div className="flex flex-col gap-4 pt-4">
+            <div className="flex items-center gap-4 pt-4">
               {socialLinks.map((social) => (
                 <motion.a
-                  key={social.label}
+                  key={social.href}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    "flex items-center gap-3 transition-colors duration-300",
+                    "transition-colors duration-300",
                     currentTheme === 'dark'
                       ? "text-gray-300 hover:text-rose-500"
                       : "text-gray-600 hover:text-rose-500"
                   )}
-                  whileHover={{ x: 5 }}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className={cn(
@@ -111,7 +111,6 @@ const Footer = () => {
                   )}>
                     <social.icon size={20} className="text-rose-500" />
                   </div>
-                  <span className="text-sm font-medium">{social.label}</span>
                 </motion.a>
               ))}
             </div>
