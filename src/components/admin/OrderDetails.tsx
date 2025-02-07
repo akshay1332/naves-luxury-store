@@ -510,25 +510,13 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                     </TableRow>
                   )}
 
-                  {order.invoice_data?.custom_printing?.price > 0 && (
-                    <TableRow className="bg-gray-50">
-                      <TableCell className="text-right font-medium">
-                        Custom Printing Charges
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ₹{order.invoice_data.custom_printing.price.toLocaleString('en-IN')}
-                      </TableCell>
-                    </TableRow>
-                  )}
-
                   <TableRow className="bg-gray-100 border-t-2 border-gray-200">
                     <TableCell className="text-right font-bold text-lg">
                       Total Amount
                     </TableCell>
                     <TableCell className="text-right font-bold text-lg">
                       ₹{((order.total_amount || 0) - 
-                         (order.discount_amount || 0) + 
-                         (order.invoice_data?.custom_printing?.price || 0)
+                         (order.discount_amount || 0)
                         ).toLocaleString('en-IN')}
                     </TableCell>
                   </TableRow>
