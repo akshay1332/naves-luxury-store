@@ -71,14 +71,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <div className="absolute right-2 top-2 flex flex-col gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             <Button
               size="icon"
-              variant="secondary"
+              variant="outline"
               className="h-8 w-8 rounded-full"
             >
               <Heart className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
-              variant="secondary"
+              variant="outline"
               className="h-8 w-8 rounded-full"
             >
               <ShoppingCart className="h-4 w-4" />
@@ -104,7 +104,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
         </div>
       </Link>
-    
     </motion.div>
   );
 }
