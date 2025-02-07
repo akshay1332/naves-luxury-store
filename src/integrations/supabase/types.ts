@@ -311,7 +311,9 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          custom_printing_price: number | null
           id: string
+          includes_custom_printing: boolean | null
           order_id: string
           price_at_time: number
           product_id: string
@@ -321,7 +323,9 @@ export type Database = {
         Insert: {
           color?: string | null
           created_at?: string
+          custom_printing_price?: number | null
           id?: string
+          includes_custom_printing?: boolean | null
           order_id: string
           price_at_time: number
           product_id: string
@@ -331,7 +335,9 @@ export type Database = {
         Update: {
           color?: string | null
           created_at?: string
+          custom_printing_price?: number | null
           id?: string
+          includes_custom_printing?: boolean | null
           order_id?: string
           price_at_time?: number
           product_id?: string
@@ -596,10 +602,14 @@ export type Database = {
       }
       products: {
         Row: {
+          allows_custom_printing: boolean | null
           category: string | null
           colors: string[] | null
           created_at: string
+          custom_printing_price: number | null
+          delivery_charges: number | null
           description: string | null
+          free_delivery_above: number | null
           gender: string | null
           id: string
           images: string[] | null
@@ -622,10 +632,14 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          allows_custom_printing?: boolean | null
           category?: string | null
           colors?: string[] | null
           created_at?: string
+          custom_printing_price?: number | null
+          delivery_charges?: number | null
           description?: string | null
+          free_delivery_above?: number | null
           gender?: string | null
           id?: string
           images?: string[] | null
@@ -648,10 +662,14 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          allows_custom_printing?: boolean | null
           category?: string | null
           colors?: string[] | null
           created_at?: string
+          custom_printing_price?: number | null
+          delivery_charges?: number | null
           description?: string | null
+          free_delivery_above?: number | null
           gender?: string | null
           id?: string
           images?: string[] | null

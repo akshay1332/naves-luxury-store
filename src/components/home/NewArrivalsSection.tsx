@@ -5,8 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export function NewArrivalsSection() {
+  const navigate = useNavigate();
+  
   const { data: products, isLoading, error } = useQuery({
     queryKey: ["new-arrivals"],
     queryFn: async () => {
@@ -82,7 +85,11 @@ export function NewArrivalsSection() {
         </motion.div>
 
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => navigate('/products?category=All')}
+          >
             View All New Arrivals
           </Button>
         </div>
