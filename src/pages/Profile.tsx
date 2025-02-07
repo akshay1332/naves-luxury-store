@@ -399,10 +399,13 @@ const Profile = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+      .replace('₹', '₹ ');
   };
 
   if (loading) return <LuxuryLoader />;
@@ -590,7 +593,7 @@ const Profile = () => {
                         ` + ${order.order_items.length - 1} more items`}
                     </p>
                     <p>Status: {order.status}</p>
-                    <p>{formatCurrency(order.total_amount)}</p>
+                    <p className="text-lg font-semibold">{formatCurrency(order.total_amount)}</p>
                     <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
                   </OrderCard>
                 ))

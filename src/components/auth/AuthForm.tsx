@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { theme as themeConfig } from '@/styles/theme';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface ThemeProps {
   $currentTheme: 'light' | 'dark';
@@ -151,6 +151,7 @@ export const AuthForm = () => {
   const [error, setError] = useState('');
   const { theme: currentTheme } = useTheme();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -288,12 +289,24 @@ export const AuthForm = () => {
           </InputIcon>
           <Input
             $currentTheme={currentTheme}
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff size={20} className="text-gray-400 hover:text-gray-600" />
+            ) : (
+              <Eye size={20} className="text-gray-400 hover:text-gray-600" />
+            )}
+          </button>
         </InputGroup>
 
         {error && (

@@ -31,23 +31,19 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: Facebook,
-      href: "https://www.facebook.com/people/Customs-Print/61572631971693/?rdid=RVPWGDOb86lLuDFg&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F15YVVVdruK%2F",
-      label: "Facebook"
+      href: "https://www.facebook.com/people/Customs-Print/61572631971693/?rdid=RVPWGDOb86lLuDFg&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F15YVVVdruK%2F"
     },
     {
       icon: Instagram,
       href: "https://www.instagram.com/the.customprint",
-      label: "Instagram"
     },
     {
       icon: Linkedin,
       href: "https://www.linkedin.com/in/custom-print-436307349/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
-      label: "LinkedIn"
     },
     {
       icon: MessageCircle,
       href: "https://wa.me/+916284249565",
-      label: "WhatsApp"
     }
   ];
 

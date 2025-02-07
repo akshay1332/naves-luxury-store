@@ -44,6 +44,19 @@ interface Product {
   custom_printing_price?: number;
 }
 
+interface CartItem {
+  quantity: number;
+  products: {
+    id: string;
+    title: string;
+    price: number;
+    sale_percentage?: number;
+    delivery_charges?: number;
+    free_delivery_above?: number;
+    images: string[];
+  }
+}
+
 const Checkout = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -73,6 +86,7 @@ const Checkout = () => {
   });
   const [product, setProduct] = useState<Product | null>(null);
   const [customPrintingPrice, setCustomPrintingPrice] = useState(0);
+  const [deliveryCharges, setDeliveryCharges] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -106,7 +120,9 @@ const Checkout = () => {
           sale_percentage,
           images,
           allows_custom_printing,
-          custom_printing_price
+          custom_printing_price,
+          delivery_charges,
+          free_delivery_above
         )
       `)
       .eq('user_id', user.id);
@@ -123,6 +139,7 @@ const Checkout = () => {
       custom_printing_price: firstProduct.custom_printing_price
     });
 
+    // Calculate subtotal
     const total = cartItems.reduce((sum, item) => {
       const price = item.products?.price || 0;
       const salePercentage = item.products?.sale_percentage || 0;
@@ -131,6 +148,21 @@ const Checkout = () => {
     }, 0);
 
     setSubtotal(total);
+
+    // Calculate delivery charges
+    const totalDeliveryCharges = cartItems.reduce((charges, item) => {
+      const itemTotal = item.quantity * (item.products?.price || 0);
+      const freeDeliveryAbove = item.products?.free_delivery_above || 499;
+      const deliveryCharge = item.products?.delivery_charges || 0;
+
+      // If item total is above free delivery threshold, no delivery charge
+      if (itemTotal >= freeDeliveryAbove) {
+        return charges;
+      }
+      return charges + deliveryCharge;
+    }, 0);
+
+    setDeliveryCharges(totalDeliveryCharges);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,8 +220,7 @@ const Checkout = () => {
 
   // Calculate total with all components
   const calculateTotal = () => {
-    const shippingCost = subtotal > 499 ? 0 : 49;
-    return subtotal + customPrintingPrice - discountAmount + shippingCost;
+    return subtotal + customPrintingPrice - discountAmount + deliveryCharges;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -421,22 +452,27 @@ const Checkout = () => {
                     </div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Shipping</span>
-                    {subtotal > 499 ? (
+                    <span className="text-gray-600">Delivery Charges</span>
+                    {deliveryCharges === 0 ? (
                       <div className="flex items-center gap-1 text-green-600">
                         <Truck className="h-4 w-4" />
                         <span>Free</span>
                       </div>
                     ) : (
-                      <span>{formatIndianPrice(49)}</span>
+                      <span>{formatIndianPrice(deliveryCharges)}</span>
                     )}
                   </div>
-                  {subtotal <= 499 && (
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      Free shipping on orders above {formatIndianPrice(499)}
-                    </p>
+
+                  {deliveryCharges > 0 && (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-sm text-blue-700 flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        <span>Some items in your cart have delivery charges. 
+                        Increase your item quantity to qualify for free delivery.</span>
+                      </p>
+                    </div>
                   )}
+
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center font-bold text-lg">
                       <span>Total</span>
@@ -444,6 +480,9 @@ const Checkout = () => {
                         {formatIndianPrice(calculateTotal())}
                       </span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Delivery charges are calculated per item based on order value
+                    </p>
                   </div>
                   <Button
                     className="w-full"

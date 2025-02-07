@@ -14,7 +14,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name?: string;
-  phone?: string;
+  phone_number?: string;
   shipping_addresses?: {
     address: string;
     city: string;
@@ -29,6 +29,10 @@ interface UserProfile {
     total_amount: number;
     status: string;
   }[];
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
 }
 
 export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
@@ -45,10 +49,21 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
     try {
       setLoading(true);
       
-      // Fetch user profile
+      // Fetch user profile with specific fields
       const { data: userData, error: userError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          id,
+          email,
+          full_name,
+          phone_number,
+          address,
+          city,
+          state,
+          country,
+          created_at,
+          updated_at
+        `)
         .eq('id', id)
         .single();
 
@@ -72,6 +87,17 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add formatCurrency function
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+      .replace('₹', '₹ '); // Add space after rupee symbol
   };
 
   if (!open) return null;
@@ -98,15 +124,15 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
-                  <span>{userProfile.full_name || 'N/A'}</span>
+                  <span>{userProfile?.full_name || 'Not provided'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-500" />
-                  <span className="break-all">{userProfile.email}</span>
+                  <span className="break-all">{userProfile?.email}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-500" />
-                  <span>{userProfile.phone || 'N/A'}</span>
+                  <span>{userProfile?.phone_number || 'Not provided'}</span>
                 </div>
               </div>
             </div>
@@ -130,7 +156,7 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
               </div>
             )}
 
-            {/* Order History */}
+            {/* Order History - Updated with Indian currency */}
             {userProfile.orders && userProfile.orders.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Order History</h3>
@@ -155,8 +181,8 @@ export function UserDetails({ userId, open, onOpenChange }: UserDetailsProps) {
                             <td className="py-2">
                               <span className="capitalize">{order.status}</span>
                             </td>
-                            <td className="py-2 text-right">
-                              ${order.total_amount.toFixed(2)}
+                            <td className="py-2 text-right font-medium">
+                              {formatCurrency(order.total_amount)}
                             </td>
                           </tr>
                         ))}

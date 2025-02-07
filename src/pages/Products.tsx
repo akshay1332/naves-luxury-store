@@ -562,126 +562,18 @@ const Products = () => {
                 transition={{ delay: 0.4 }}
                 className={`grid gap-6 ${
                   selectedView === 'grid'
-                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                     : selectedView === 'compact'
-                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
                     : 'grid-cols-1'
                 }`}
               >
-                {products?.map((product, index) => (
-                  <motion.div
+                {products?.map((product) => (
+                  <ProductCard
                     key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{
-                      y: -8,
-                      transition: { duration: 0.3 },
-                    }}
-                    onClick={() => handleProductClick(product.id)}
-                    onHoverStart={() => {
-                      if (product.images && product.images.length > 1) {
-                        setHoveredImageIndex(prev => ({
-                          ...prev,
-                          [product.id]: 1
-                        }));
-                      }
-                    }}
-                    onHoverEnd={() => {
-                      setHoveredImageIndex(prev => ({
-                        ...prev,
-                        [product.id]: 0
-                      }));
-                    }}
-                    className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${
-                      selectedView === 'list' ? 'flex gap-6' : ''
-                    }`}
-                  >
-                    <div className={`relative ${selectedView === 'list' ? 'w-1/3' : 'w-full'}`}>
-                      <AnimatePresence mode="wait">
-                        <motion.img
-                          key={hoveredImageIndex[product.id] || 0}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          src={product.images?.[hoveredImageIndex[product.id] || 0] || '/placeholder-product.jpg'}
-                          alt={product.title}
-                          className="w-full h-[300px] object-cover"
-                        />
-                      </AnimatePresence>
-                      {product.is_new_arrival && (
-                        <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          NEW
-                        </div>
-                      )}
-                      {product.sale_percentage && product.sale_percentage > 0 && (
-                        <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          SAVE {product.sale_percentage}%
-                        </div>
-                      )}
-                    </div>
-                    <div className={`p-4 ${selectedView === 'list' ? 'w-2/3' : ''}`}>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
-                      <p className="text-gray-600 mb-3">{product.description}</p>
-                      {/* Colors */}
-                      {product.colors && product.colors.length > 0 && (
-                        <div className="flex gap-1 mb-3">
-                          {product.colors.map(color => (
-                            <div
-                              key={color}
-                              className="w-4 h-4 rounded-full border border-gray-200"
-                              style={{ backgroundColor: COLORS.find(c => c.name === color)?.value }}
-                              title={color}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      {/* Sizes */}
-                      {product.sizes && product.sizes.length > 0 && (
-                        <div className="flex gap-1 mb-3">
-                          {product.sizes.map(size => (
-                            <div
-                              key={size}
-                              className="text-xs bg-gray-100 px-2 py-1 rounded"
-                            >
-                              {size}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-red-500">
-                            {formatIndianPrice(product.price)}
-                          </span>
-                          {product.sale_percentage && product.sale_percentage > 0 && (
-                            <>
-                              <span className="text-sm text-gray-500 line-through">
-                                {formatIndianPrice(Math.round(product.price / (1 - product.sale_percentage / 100)))}
-                              </span>
-                              <span className="text-red-500 text-sm font-semibold">
-                                ({product.sale_percentage}% OFF)
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => handleAddToCart(e, product.id)}
-                          className="relative bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-                        >
-                          Add to Cart
-                          {cartCounts[product.id] && cartCounts[product.id] > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">
-                              {cartCounts[product.id]}
-                            </span>
-                          )}
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
+                    product={product}
+                    onAddToCart={(productId) => handleAddToCart(new Event('click') as any, productId)}
+                  />
                 ))}
               </motion.div>
 
