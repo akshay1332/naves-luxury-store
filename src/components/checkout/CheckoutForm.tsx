@@ -562,30 +562,127 @@ export function CheckoutForm({
           onValueChange={updatePaymentMethod}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          <div className={cn(
-            "flex items-center space-x-2 rounded-lg border p-4",
-            formData.paymentMethod === "card" && "border-rose-500"
-          )}>
-            <RadioGroupItem value="card" id="card" />
-            <Label htmlFor="card">Credit/Debit Card</Label>
-          </div>
+          <Label
+            htmlFor="card"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
+              formData.paymentMethod === "card" 
+                ? "border-rose-500 bg-rose-50" 
+                : "border-gray-200 bg-white"
+            )}
+          >
+            <RadioGroupItem value="card" id="card" className="sr-only" />
+            <div className="flex flex-col items-center gap-2">
+              <CreditCard className={cn(
+                "h-6 w-6 transition-colors",
+                formData.paymentMethod === "card" ? "text-rose-500" : "text-gray-600"
+              )} />
+              <span className={cn(
+                "font-medium transition-colors",
+                formData.paymentMethod === "card" ? "text-rose-700" : "text-gray-900"
+              )}>Credit/Debit Card</span>
+              <span className="text-xs text-gray-500">All major cards accepted</span>
+            </div>
+          </Label>
           
-          <div className={cn(
-            "flex items-center space-x-2 rounded-lg border p-4",
-            formData.paymentMethod === "upi" && "border-rose-500"
-          )}>
-            <RadioGroupItem value="upi" id="upi" />
-            <Label htmlFor="upi">UPI</Label>
-          </div>
+          <Label
+            htmlFor="upi"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
+              formData.paymentMethod === "upi" 
+                ? "border-rose-500 bg-rose-50" 
+                : "border-gray-200 bg-white"
+            )}
+          >
+            <RadioGroupItem value="upi" id="upi" className="sr-only" />
+            <div className="flex flex-col items-center gap-2">
+              <svg 
+                viewBox="0 0 24 24" 
+                className={cn(
+                  "h-6 w-6 transition-colors",
+                  formData.paymentMethod === "upi" ? "text-rose-500" : "text-gray-600"
+                )}
+                fill="none" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className={cn(
+                "font-medium transition-colors",
+                formData.paymentMethod === "upi" ? "text-rose-700" : "text-gray-900"
+              )}>UPI</span>
+              <span className="text-xs text-gray-500">Google Pay, PhonePe, etc.</span>
+            </div>
+          </Label>
           
-          <div className={cn(
-            "flex items-center space-x-2 rounded-lg border p-4",
-            formData.paymentMethod === "cod" && "border-rose-500"
-          )}>
-            <RadioGroupItem value="cod" id="cod" />
-            <Label htmlFor="cod">Cash on Delivery</Label>
-          </div>
+          <Label
+            htmlFor="cod"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
+              formData.paymentMethod === "cod" 
+                ? "border-rose-500 bg-rose-50" 
+                : "border-gray-200 bg-white"
+            )}
+          >
+            <RadioGroupItem value="cod" id="cod" className="sr-only" />
+            <div className="flex flex-col items-center gap-2">
+              <Truck className={cn(
+                "h-6 w-6 transition-colors",
+                formData.paymentMethod === "cod" ? "text-rose-500" : "text-gray-600"
+              )} />
+              <span className={cn(
+                "font-medium transition-colors",
+                formData.paymentMethod === "cod" ? "text-rose-700" : "text-gray-900"
+              )}>Cash on Delivery</span>
+              <span className="text-xs text-gray-500">Pay when you receive</span>
+            </div>
+          </Label>
         </RadioGroup>
+
+        {/* Payment Method Info */}
+        <AnimatePresence mode="wait">
+          {formData.paymentMethod === "card" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-gray-50 p-4 rounded-lg mt-4"
+            >
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
+                Your card will be charged only after order confirmation
+              </p>
+            </motion.div>
+          )}
+          
+          {formData.paymentMethod === "upi" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-gray-50 p-4 rounded-lg mt-4"
+            >
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
+                You'll be redirected to your UPI app for payment
+              </p>
+            </motion.div>
+          )}
+
+          {formData.paymentMethod === "cod" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-gray-50 p-4 rounded-lg mt-4"
+            >
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
+                Pay in cash when your order is delivered
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Custom Printing and Design Section */}

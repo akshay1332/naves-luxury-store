@@ -8,7 +8,7 @@ import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ReviewForm from "@/components/product/ReviewForm";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Truck, ArrowRight, Minus, Plus, Ruler } from "lucide-react";
+import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Truck, ArrowRight, Minus, Plus, Ruler, Box, Container, CircleDot, Thermometer, Palette, Paintbrush, Shirt, Scissors, ArrowUpDown, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Json } from "@/integrations/supabase/types";
@@ -91,6 +91,7 @@ interface Product {
     neck?: string;
     sleeve?: string;
     length?: string;
+    dimensions?: string;
   };
   free_delivery_above?: number;
   delivery_charges?: number;
@@ -142,92 +143,81 @@ const getStatusColor = (status: string) => {
   return colors[status as keyof typeof colors] || "bg-gray-50 text-gray-700 border border-gray-200";
 };
 
-// Update the key highlights section to be dynamic
+// Update the KeyFeatureCard component to use black instead of rose
+const KeyFeatureCard = ({ icon: Icon, title, value }: { icon: any, title: string, value: string }) => {
+  return (
+    <div className="flex items-start gap-3 p-4 bg-white rounded-lg border hover:border-black hover:shadow-sm transition-all duration-200">
+      <div className="p-2 bg-gray-100 rounded-lg">
+        <Icon className="h-5 w-5 text-black" />
+      </div>
+      <div>
+        <h4 className="text-sm font-medium text-gray-500">{title}</h4>
+        <p className="text-base text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
+};
+
+// Update the KeyHighlights component
 const KeyHighlights = ({ product }: { product: Product }) => {
+  const {
+    material,
+    capacity,
+    lidType,
+    insulation,
+    pattern,
+    finish,
+    fit,
+    fabric,
+    neck,
+    sleeve,
+    length,
+    dimensions
+  } = product.key_highlights || {};
+
   const isCupOrBottle = product.category?.toLowerCase().includes('cup') || 
                        product.category?.toLowerCase().includes('bottle');
 
-  if (isCupOrBottle) {
-    return (
-      <div className="grid grid-cols-2 gap-6">
-        {product.key_highlights?.material && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Material</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.material}</p>
-          </div>
-        )}
-        {product.key_highlights?.capacity && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Capacity</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.capacity}</p>
-          </div>
-        )}
-        {product.key_highlights?.lidType && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Lid Type</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.lidType}</p>
-          </div>
-        )}
-        {product.key_highlights?.insulation && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Insulation</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.insulation}</p>
-          </div>
-        )}
-        {product.key_highlights?.pattern && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Pattern</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.pattern}</p>
-          </div>
-        )}
-        {product.key_highlights?.finish && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Finish</h4>
-            <p className="text-sm text-gray-900">{product.key_highlights.finish}</p>
-          </div>
-        )}
-      </div>
-    );
-  }
+  const features = isCupOrBottle ? [
+    { icon: Box, title: 'Material', value: material },
+    { icon: Container, title: 'Capacity', value: capacity },
+    { icon: CircleDot, title: 'Lid Type', value: lidType },
+    { icon: Thermometer, title: 'Insulation', value: insulation },
+    { icon: Palette, title: 'Pattern', value: pattern },
+    { icon: Paintbrush, title: 'Finish', value: finish },
+    { icon: Ruler, title: 'Dimensions', value: dimensions }
+  ] : [
+    { icon: Shirt, title: 'Fit', value: fit },
+    { icon: Scissors, title: 'Fabric', value: fabric },
+    { icon: CircleDot, title: 'Neck', value: neck },
+    { icon: Ruler, title: 'Sleeve', value: sleeve },
+    { icon: Palette, title: 'Pattern', value: pattern },
+    { icon: ArrowUpDown, title: 'Length', value: length }
+  ];
+
+  const validFeatures = features.filter(feature => feature.value);
+
+  if (validFeatures.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {product.key_highlights?.fit && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Fit</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.fit}</p>
+    <div className="mt-12 bg-gray-50 rounded-2xl p-6 sm:p-8">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <CircleCheck className="h-5 w-5 text-black" />
+          <h2 className="text-2xl font-bold text-black">Key Features</h2>
         </div>
-      )}
-      {product.key_highlights?.fabric && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Fabric</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.fabric}</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {validFeatures.map((feature, index) => (
+            <KeyFeatureCard
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              value={feature.value}
+            />
+          ))}
         </div>
-      )}
-      {product.key_highlights?.neck && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Neck</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.neck}</p>
-        </div>
-      )}
-      {product.key_highlights?.sleeve && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Sleeve</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.sleeve}</p>
-        </div>
-      )}
-      {product.key_highlights?.pattern && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Pattern</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.pattern}</p>
-        </div>
-      )}
-      {product.key_highlights?.length && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Length</h4>
-          <p className="text-sm text-gray-900">{product.key_highlights.length}</p>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -504,20 +494,20 @@ const ProductDetails = () => {
             <div className="space-y-8">
               {/* Breadcrumb Navigation */}
               <nav className="flex items-center space-x-2 text-sm text-gray-500">
-                <Link to="/products" className="hover:text-rose-500">Products</Link>
+                <Link to="/products" className="hover:text-black">Products</Link>
                 <span>/</span>
                 {product?.category && (
                   <>
                     <button
                       onClick={() => handleCategoryClick(product.category)}
-                      className="hover:text-rose-500 cursor-pointer capitalize"
+                      className="hover:text-black cursor-pointer capitalize"
                     >
                       {product.category}
                     </button>
                     <span>/</span>
                   </>
                 )}
-                <span className="text-gray-900">{product?.title}</span>
+                <span className="text-black">{product?.title}</span>
               </nav>
 
               {/* Product Main Section */}
@@ -607,15 +597,15 @@ const ProductDetails = () => {
                 >
                   {/* Title and Price */}
                   <div className="space-y-4">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black">
                       {product?.title}
                     </h1>
                     
-                    {/* Add category badge */}
+                    {/* Category badge */}
                     {product?.category && (
                       <button
                         onClick={() => handleCategoryClick(product.category)}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 hover:bg-rose-100 hover:text-rose-800 transition-colors duration-200"
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-black hover:bg-black hover:text-white transition-colors duration-200"
                       >
                         {product.category}
                       </button>
@@ -628,8 +618,13 @@ const ProductDetails = () => {
                     />
                   </div>
 
+                  {/* Product Description */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
+                  </div>
+
                   {/* Size Selection */}
-                  <div className="space-y-6">
+                  <div className="space-y-6 border-t border-gray-200 pt-6">
                     <div className="flex items-center justify-between">
                       <Label className="text-base">Select Size</Label>
                       {product.size_chart_image && (
@@ -645,7 +640,7 @@ const ProductDetails = () => {
                           onClick={() => setSelectedSize(size)}
                           className={cn(
                             "h-12",
-                            selectedSize === size && "border-black bg-black text-white"
+                            selectedSize === size && "border-black bg-black text-white hover:bg-black hover:text-white"
                           )}
                         >
                           {size}
@@ -656,15 +651,18 @@ const ProductDetails = () => {
 
                   {/* Color Selection */}
                   {product.colors && product.colors.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Select Color</h3>
+                    <div className="space-y-4 border-t border-gray-200 pt-6">
+                      <h3 className="text-lg font-medium text-black">Select Color</h3>
                       <div className="flex flex-wrap gap-2">
                         {product.colors.map((color) => (
                           <Button
                             key={color}
                             variant={selectedColor === color ? "default" : "outline"}
                             onClick={() => setSelectedColor(color)}
-                            className="px-4 py-2"
+                            className={cn(
+                              "px-4 py-2",
+                              selectedColor === color && "border-black bg-black text-white hover:bg-black hover:text-white"
+                            )}
                           >
                             {color}
                           </Button>
@@ -758,11 +756,8 @@ const ProductDetails = () => {
                 </motion.div>
               </div>
 
-              {/* Product Description */}
-              <div className="mt-12 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6">Product Description</h2>
-                <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
-              </div>
+              {/* Key Highlights Section */}
+              <KeyHighlights product={product} />
 
               {/* Reviews Section */}
               <motion.div
