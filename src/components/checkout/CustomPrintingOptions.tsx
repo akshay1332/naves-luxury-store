@@ -43,9 +43,9 @@ export function CustomPrintingOptions({
     switch (selectedSize) {
       case 'Small':
         return [
-          { id: 'left_chest', label: 'Left Chest', price: printingOptions.small_locations.left_chest },
-          { id: 'center_chest', label: 'Center Chest', price: printingOptions.small_locations.center_chest },
-          { id: 'right_chest', label: 'Right Chest', price: printingOptions.small_locations.right_chest },
+          { id: 'left_chest', label: 'Left Side', price: printingOptions.small_locations.left_chest },
+          { id: 'center_chest', label: 'Center Side', price: printingOptions.small_locations.center_chest },
+          { id: 'right_chest', label: 'Right Side', price: printingOptions.small_locations.right_chest },
           { id: 'back', label: 'Back', price: printingOptions.small_locations.back },
         ];
       case 'Medium':
