@@ -316,6 +316,9 @@ export type Database = {
           includes_custom_printing: boolean | null
           order_id: string
           price_at_time: number
+          printing_locations: string[] | null
+          printing_price: number | null
+          printing_size: string | null
           product_id: string
           quantity: number
           size: string | null
@@ -328,6 +331,9 @@ export type Database = {
           includes_custom_printing?: boolean | null
           order_id: string
           price_at_time: number
+          printing_locations?: string[] | null
+          printing_price?: number | null
+          printing_size?: string | null
           product_id: string
           quantity: number
           size?: string | null
@@ -340,6 +346,9 @@ export type Database = {
           includes_custom_printing?: boolean | null
           order_id?: string
           price_at_time?: number
+          printing_locations?: string[] | null
+          printing_price?: number | null
+          printing_size?: string | null
           product_id?: string
           quantity?: number
           size?: string | null
@@ -606,6 +615,7 @@ export type Database = {
           category: string | null
           colors: string[] | null
           created_at: string
+          custom_printing_options: Json | null
           custom_printing_price: number | null
           delivery_charges: number | null
           description: string | null
@@ -619,10 +629,12 @@ export type Database = {
           is_trending: boolean | null
           key_highlights: Json | null
           price: number
+          printing_guide: Json | null
           quick_view_data: Json | null
           sale_end_date: string | null
           sale_percentage: number | null
           sale_start_date: string | null
+          size_chart_image: string | null
           size_guide_info: Json | null
           sizes: string[] | null
           stock_quantity: number | null
@@ -636,6 +648,7 @@ export type Database = {
           category?: string | null
           colors?: string[] | null
           created_at?: string
+          custom_printing_options?: Json | null
           custom_printing_price?: number | null
           delivery_charges?: number | null
           description?: string | null
@@ -649,10 +662,12 @@ export type Database = {
           is_trending?: boolean | null
           key_highlights?: Json | null
           price: number
+          printing_guide?: Json | null
           quick_view_data?: Json | null
           sale_end_date?: string | null
           sale_percentage?: number | null
           sale_start_date?: string | null
+          size_chart_image?: string | null
           size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
@@ -666,6 +681,7 @@ export type Database = {
           category?: string | null
           colors?: string[] | null
           created_at?: string
+          custom_printing_options?: Json | null
           custom_printing_price?: number | null
           delivery_charges?: number | null
           description?: string | null
@@ -679,10 +695,12 @@ export type Database = {
           is_trending?: boolean | null
           key_highlights?: Json | null
           price?: number
+          printing_guide?: Json | null
           quick_view_data?: Json | null
           sale_end_date?: string | null
           sale_percentage?: number | null
           sale_start_date?: string | null
+          size_chart_image?: string | null
           size_guide_info?: Json | null
           sizes?: string[] | null
           stock_quantity?: number | null
