@@ -17,6 +17,7 @@ interface BasicDetailsProps {
     category: string;
     gender: string;
     style_category: string;
+    size_chart_image?: string;
   };
   form: any;
 }
@@ -86,6 +87,17 @@ export const BasicDetails = ({ initialData, form }: BasicDetailsProps) => {
               className="border-black text-black"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="size_chart_image" className="text-black">Size Chart Image URL</Label>
+          <Input
+            id="size_chart_image"
+            {...form.register("size_chart_image")}
+            placeholder="Enter size chart image URL"
+            className="border-black text-black"
+          />
+          <p className="text-sm text-gray-500">Add a URL for the product's size chart image</p>
         </div>
       </div>
     </Card>

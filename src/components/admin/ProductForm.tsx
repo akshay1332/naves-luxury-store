@@ -81,6 +81,7 @@ interface ProductFormData {
   is_best_seller: boolean;
   is_new_arrival: boolean;
   style_category: string;
+  size_chart_image?: string;
   quick_view_data: {
     features: string[];
     care_instructions: string[];
@@ -109,6 +110,30 @@ interface ProductFormData {
   custom_printing_price: number;
   delivery_charges: number;
   free_delivery_above: number;
+  custom_printing_options: {
+    small_locations: {
+      left_chest: number;
+      center_chest: number;
+      right_chest: number;
+      back: number;
+    };
+    medium_locations: {
+      front: number;
+      back: number;
+      both: number;
+    };
+    large_locations: {
+      full_front: number;
+      full_back: number;
+      both: number;
+    };
+    across_chest: number;
+  };
+  printing_guide: {
+    image_url: string;
+    description: string;
+    updated_at?: string;
+  };
 }
 
 const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
@@ -141,6 +166,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       is_best_seller: initialData?.is_best_seller || false,
       is_new_arrival: initialData?.is_new_arrival || false,
       style_category: initialData?.style_category || "",
+      size_chart_image: initialData?.size_chart_image || "",
       quick_view_data: {
         features: initialData?.quick_view_data?.features || [],
         care_instructions: initialData?.quick_view_data?.care_instructions || []
@@ -169,6 +195,29 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       custom_printing_price: initialData?.custom_printing_price || 0,
       delivery_charges: initialData?.delivery_charges || 0,
       free_delivery_above: initialData?.free_delivery_above || 499,
+      custom_printing_options: {
+        small_locations: {
+          left_chest: initialData?.custom_printing_options?.small_locations?.left_chest || 0,
+          center_chest: initialData?.custom_printing_options?.small_locations?.center_chest || 0,
+          right_chest: initialData?.custom_printing_options?.small_locations?.right_chest || 0,
+          back: initialData?.custom_printing_options?.small_locations?.back || 0,
+        },
+        medium_locations: {
+          front: initialData?.custom_printing_options?.medium_locations?.front || 0,
+          back: initialData?.custom_printing_options?.medium_locations?.back || 0,
+          both: initialData?.custom_printing_options?.medium_locations?.both || 0,
+        },
+        large_locations: {
+          full_front: initialData?.custom_printing_options?.large_locations?.full_front || 0,
+          full_back: initialData?.custom_printing_options?.large_locations?.full_back || 0,
+          both: initialData?.custom_printing_options?.large_locations?.both || 0,
+        },
+        across_chest: initialData?.custom_printing_options?.across_chest || 0,
+      },
+      printing_guide: {
+        image_url: initialData?.printing_guide?.image_url || "",
+        description: initialData?.printing_guide?.description || "",
+      },
     },
   });
 
@@ -303,6 +352,33 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         care_instructions: data.quick_view_data?.care_instructions || []
       };
 
+      // Format the custom printing options
+      const custom_printing_options = {
+        small_locations: {
+          left_chest: Number(data.custom_printing_options?.small_locations?.left_chest || 0),
+          center_chest: Number(data.custom_printing_options?.small_locations?.center_chest || 0),
+          right_chest: Number(data.custom_printing_options?.small_locations?.right_chest || 0),
+          back: Number(data.custom_printing_options?.small_locations?.back || 0),
+        },
+        medium_locations: {
+          front: Number(data.custom_printing_options?.medium_locations?.front || 0),
+          back: Number(data.custom_printing_options?.medium_locations?.back || 0),
+          both: Number(data.custom_printing_options?.medium_locations?.both || 0),
+        },
+        large_locations: {
+          full_front: Number(data.custom_printing_options?.large_locations?.full_front || 0),
+          full_back: Number(data.custom_printing_options?.large_locations?.full_back || 0),
+          both: Number(data.custom_printing_options?.large_locations?.both || 0),
+        },
+        across_chest: Number(data.custom_printing_options?.across_chest || 0),
+      };
+
+      // Format key highlights to ensure all values are strings
+      const key_highlights = Object.entries(data.key_highlights || {}).reduce((acc, [key, value]) => ({
+        ...acc,
+        [key]: String(value || '')
+      }), {});
+
       const productData = {
         title: data.title.trim(),
         description: data.description.trim(),
@@ -313,20 +389,27 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
         colors: selectedColors,
         sizes: selectedSizes,
         images: data.images || [],
-        is_featured: data.is_featured || false,
-        is_best_seller: data.is_best_seller || false,
-        is_new_arrival: data.is_new_arrival || false,
+        is_featured: Boolean(data.is_featured),
+        is_best_seller: Boolean(data.is_best_seller),
+        is_new_arrival: Boolean(data.is_new_arrival),
         style_category: data.style_category.trim(),
-        quick_view_data, // Use the safely constructed object
+        size_chart_image: data.size_chart_image || "",
+        quick_view_data,
         sale_percentage: Number(data.sale_percentage || 0),
         sale_start_date: data.sale_start_date || null,
         sale_end_date: data.sale_end_date || null,
         video_url: data.video_url?.trim() || null,
-        key_highlights: data.key_highlights || [],
-        allows_custom_printing: data.allows_custom_printing || false,
+        key_highlights,
+        allows_custom_printing: Boolean(data.allows_custom_printing),
         custom_printing_price: Number(data.custom_printing_price || 0),
         delivery_charges: Number(data.delivery_charges || 0),
         free_delivery_above: Number(data.free_delivery_above || 499),
+        custom_printing_options,
+        printing_guide: {
+          image_url: data.printing_guide.image_url || "",
+          description: data.printing_guide.description || "",
+          updated_at: new Date().toISOString()
+        },
         updated_at: new Date().toISOString()
       };
 
@@ -336,7 +419,10 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
           .update(productData)
           .eq('id', initialData.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw new Error(error.message);
+        }
 
         toast({
           title: "Success",
@@ -347,7 +433,10 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
           .from('products')
           .insert([productData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw new Error(error.message);
+        }
 
         toast({
           title: "Success",
@@ -361,7 +450,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to save product",
+        description: error.message || "Failed to save product. Please check all fields and try again.",
       });
     } finally {
       setLoading(false);
@@ -680,6 +769,165 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
     );
   };
 
+  // Add this new component for custom printing options
+  const CustomPrintingSettings = ({ form }: { form: any }) => {
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">Custom Printing Options</h3>
+        
+        {/* Small Locations */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Small Size Locations</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Left Chest (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.small_locations.left_chest")}
+                placeholder="Price for left chest"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Center Chest (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.small_locations.center_chest")}
+                placeholder="Price for center chest"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Right Chest (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.small_locations.right_chest")}
+                placeholder="Price for right chest"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Back (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.small_locations.back")}
+                placeholder="Price for back"
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Medium Locations */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Medium Size Locations</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Front (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.medium_locations.front")}
+                placeholder="Price for front"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Back (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.medium_locations.back")}
+                placeholder="Price for back"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Both (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.medium_locations.both")}
+                placeholder="Price for both sides"
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Large Locations */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Large Size Locations</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Full Front (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.large_locations.full_front")}
+                placeholder="Price for full front"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Full Back (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.large_locations.full_back")}
+                placeholder="Price for full back"
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Both (₹)</Label>
+              <Input
+                type="number"
+                {...form.register("custom_printing_options.large_locations.both")}
+                placeholder="Price for both sides"
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Across Chest */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Additional Options</h4>
+          <div className="space-y-2">
+            <Label>Across Chest (₹)</Label>
+            <Input
+              type="number"
+              {...form.register("custom_printing_options.across_chest")}
+              placeholder="Price for across chest"
+              className="bg-white"
+            />
+          </div>
+        </div>
+
+        {/* Printing Guide */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Printing Guide</h4>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Guide Image URL</Label>
+              <Input
+                type="url"
+                {...form.register("printing_guide.image_url")}
+                placeholder="Enter image URL for printing guide"
+                className="bg-white"
+              />
+              <p className="text-sm text-gray-500">Enter a direct URL to the printing guide image</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Guide Description</Label>
+              <Textarea
+                {...form.register("printing_guide.description")}
+                placeholder="Enter printing guide instructions"
+                className="bg-white min-h-[100px]"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -703,6 +951,7 @@ const ProductForm = ({ initialData, onSuccess }: ProductFormProps) => {
               <PricingStock form={form} initialData={initialData} />
               <DeliverySettings form={form} />
               <Features form={form} initialData={initialData} />
+              <CustomPrintingSettings form={form} />
               
               {/* Add Size and Color sections */}
               <SizesSection />

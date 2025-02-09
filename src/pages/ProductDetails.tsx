@@ -8,7 +8,7 @@ import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ReviewForm from "@/components/product/ReviewForm";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Truck, ArrowRight, Minus, Plus } from "lucide-react";
+import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Truck, ArrowRight, Minus, Plus, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Json } from "@/integrations/supabase/types";
@@ -18,6 +18,14 @@ import { formatPrice, formatIndianPrice } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
 import { format, addDays } from "date-fns";
 import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 type QuickViewData = {
   material?: string;
@@ -62,6 +70,7 @@ interface Product {
   sale_start_date: string | null;
   sale_end_date: string | null;
   style_category: string | null;
+  size_chart_image?: string | null;
   coupons?: {
     id: string;
     code: string;
@@ -244,6 +253,64 @@ const ProductStatusBadge = ({ type }: { type: string }) => {
     <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyles()}`}>
       {type}
     </span>
+  );
+};
+
+// Add this new component for size chart dialog
+const SizeChartDialog = ({ imageUrl }: { imageUrl: string }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleImageLoad = () => {
+    setIsLoading(false);
+    setError(null);
+  };
+
+  const handleImageError = () => {
+    setIsLoading(false);
+    setError("Failed to load size chart image");
+  };
+
+  if (!imageUrl) return null;
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="gap-2 text-white bg-gray-900 hover:bg-gray-800 border-gray-800"
+          aria-label="View size chart"
+        >
+          <Ruler className="h-4 w-4" />
+          Size Chart
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Size Chart</DialogTitle>
+        </DialogHeader>
+        <div className="mt-4 aspect-auto w-full overflow-hidden rounded-lg bg-gray-50">
+          {isLoading && (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center justify-center h-64 text-red-500">
+              <p>{error}</p>
+            </div>
+          )}
+          <img
+            src={imageUrl}
+            alt="Product size chart"
+            className="w-full h-full object-contain"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            style={{ display: isLoading || error ? 'none' : 'block' }}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -562,23 +629,30 @@ const ProductDetails = () => {
                   </div>
 
                   {/* Size Selection */}
-                  {product.sizes && product.sizes.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Select Size</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {product.sizes.map((size) => (
-                          <Button
-                            key={size}
-                            variant={selectedSize === size ? "default" : "outline"}
-                            onClick={() => setSelectedSize(size)}
-                            className="w-14 h-14"
-                          >
-                            {size}
-                          </Button>
-                        ))}
-                      </div>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base">Select Size</Label>
+                      {product.size_chart_image && (
+                        <SizeChartDialog imageUrl={product.size_chart_image} />
+                      )}
                     </div>
-                  )}
+                    <div className="grid grid-cols-4 gap-2">
+                      {product.sizes.map((size) => (
+                        <Button
+                          key={size}
+                          type="button"
+                          variant={selectedSize === size ? "default" : "outline"}
+                          onClick={() => setSelectedSize(size)}
+                          className={cn(
+                            "h-12",
+                            selectedSize === size && "border-black bg-black text-white"
+                          )}
+                        >
+                          {size}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Color Selection */}
                   {product.colors && product.colors.length > 0 && (

@@ -13,10 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle, CheckCircle, Image as ImageIcon, FileText, File, Eye } from "lucide-react";
+import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle, CheckCircle, Image as ImageIcon, FileText, File as FileIcon, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { CustomPrintingOptions } from "./CustomPrintingOptions";
 
 // Update the Indian states list with all 28 states and 8 union territories
 const indianStates = [
@@ -69,6 +70,40 @@ interface ShippingAddress {
   zipCode: string;
 }
 
+interface CustomPrintingOptionsType {
+  small_locations: {
+    left_chest: number;
+    center_chest: number;
+    right_chest: number;
+    back: number;
+  };
+  medium_locations: {
+    front: number;
+    back: number;
+    both: number;
+  };
+  large_locations: {
+    full_front: number;
+    full_back: number;
+    both: number;
+  };
+  across_chest: number;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  allows_custom_printing?: boolean;
+  custom_printing_price?: number;
+  custom_printing_options?: CustomPrintingOptionsType;
+  printing_guide?: {
+    image_url: string;
+    description: string;
+    updated_at?: string;
+  };
+}
+
 interface CheckoutFormData {
   shippingAddress: ShippingAddress;
   paymentMethod: "card" | "upi" | "cod";
@@ -80,6 +115,8 @@ interface CheckoutFormData {
   specialInstructions?: string;
   wantsCustomPrinting: boolean;
   customDesignPreview?: string | null;
+  printingSize: 'Small' | 'Medium' | 'Large' | 'Across Chest' | null;
+  printingLocations: string[];
 }
 
 interface CheckoutFormProps {
@@ -88,14 +125,8 @@ interface CheckoutFormProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploadProgress: number;
   loading?: boolean;
-  product?: {
-    id: string;
-    title: string;
-    price: number;
-    allows_custom_printing?: boolean;
-    custom_printing_price?: number;
-  };
-  updateTotalPrice: (price: number) => void;
+  product?: Product;
+  updateTotalPrice: (price: number, productPrice: number) => void;
 }
 
 // Add this type for accepted file types
@@ -151,7 +182,7 @@ const getFileIcon = (fileType: string) => {
     return <FileText className="h-5 w-5 text-red-500" />;
   }
   if (ACCEPTED_MIMES.document.includes(fileType)) {
-    return <File className="h-5 w-5 text-blue-500" />;
+    return <FileIcon className="h-5 w-5 text-blue-500" />;
   }
   return <FileIcon className="h-5 w-5" />;
 };
@@ -287,6 +318,146 @@ export function CheckoutForm({
     );
   };
 
+  const calculatePrintingPrice = React.useCallback(() => {
+    if (!formData.wantsCustomPrinting || !product?.custom_printing_options) return 0;
+
+    let totalPrice = 0;
+    const options = product.custom_printing_options;
+
+    if (formData.printingSize === 'Small' && formData.printingLocations[0]) {
+      const location = formData.printingLocations[0] as keyof typeof options.small_locations;
+      totalPrice = options.small_locations[location];
+    } else if (formData.printingSize === 'Medium' && formData.printingLocations[0]) {
+      const location = formData.printingLocations[0] as keyof typeof options.medium_locations;
+      totalPrice = options.medium_locations[location];
+    } else if (formData.printingSize === 'Large' && formData.printingLocations[0]) {
+      const location = formData.printingLocations[0] as keyof typeof options.large_locations;
+      totalPrice = options.large_locations[location];
+    } else if (formData.printingSize === 'Across Chest') {
+      totalPrice = options.across_chest;
+    }
+
+    return totalPrice;
+  }, [formData.printingSize, formData.printingLocations, formData.wantsCustomPrinting, product]);
+
+  React.useEffect(() => {
+    const price = calculatePrintingPrice();
+    updateTotalPrice(price, product?.price || 0);
+  }, [calculatePrintingPrice, updateTotalPrice, product?.price]);
+
+  // Consolidate custom printing and design sections
+  const renderCustomPrintingAndDesign = () => {
+    if (!product?.allows_custom_printing) return null;
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Custom Printing & Design</h3>
+          <Switch
+            id="custom-printing"
+            checked={formData.wantsCustomPrinting}
+            onCheckedChange={(checked) => {
+              setFormData({
+                ...formData,
+                wantsCustomPrinting: checked,
+                wantCustomDesign: checked,
+                customDesignType: checked ? "link" : null,
+                printingSize: null,
+                printingLocations: [],
+                customDesignLink: "",
+                specialInstructions: ""
+              });
+            }}
+          />
+        </div>
+
+        {formData.wantsCustomPrinting && (
+          <div className="space-y-6 border rounded-lg p-4">
+            {/* Design Link Input */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 text-gray-500" />
+                <Input
+                  type="url"
+                  placeholder="Enter design link (Google Drive, Dropbox, etc.)"
+                  value={formData.customDesignLink}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    customDesignLink: e.target.value
+                  })}
+                  disabled={loading}
+                  className="bg-white"
+                />
+              </div>
+              <p className="text-sm text-gray-500">
+                Supported links: Google Drive, Dropbox, or any direct file link
+              </p>
+            </div>
+
+            {/* Special Instructions */}
+            <div className="space-y-2">
+              <Label htmlFor="instructions">Special Instructions</Label>
+              <Textarea
+                id="instructions"
+                placeholder="Any specific instructions for your design..."
+                value={formData.specialInstructions}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  specialInstructions: e.target.value
+                })}
+                disabled={loading}
+                className="bg-white"
+              />
+            </div>
+
+            {/* Custom Printing Options */}
+            <CustomPrintingOptions
+              selectedSize={formData.printingSize}
+              selectedLocations={formData.printingLocations}
+              onSizeChange={(size) => {
+                setFormData({
+                  ...formData,
+                  printingSize: size,
+                  printingLocations: []
+                });
+              }}
+              onLocationChange={(locations) => {
+                setFormData({
+                  ...formData,
+                  printingLocations: locations
+                });
+              }}
+              printingOptions={product.custom_printing_options}
+            />
+
+            {/* Printing Guide */}
+            {product.printing_guide && (
+              <div className="mt-6 space-y-4">
+                <h4 className="font-medium">Printing Guide</h4>
+                {product.printing_guide.image_url && (
+                  <div className="aspect-video relative rounded-lg overflow-hidden border">
+                    <img 
+                      src={product.printing_guide.image_url} 
+                      alt="Printing Guide" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+                {product.printing_guide.description && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {product.printing_guide.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <form className="space-y-8">
       {/* Shipping Information */}
@@ -417,87 +588,8 @@ export function CheckoutForm({
         </RadioGroup>
       </div>
 
-      {/* Updated Custom Design Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Custom Design</h3>
-          <div className="flex items-center gap-2">
-            {product?.allows_custom_printing && (
-              <span className="text-sm text-gray-600">
-                (+₹{product.custom_printing_price || 0})
-              </span>
-            )}
-            <Switch
-              checked={formData.wantCustomDesign}
-              onCheckedChange={(checked) => {
-                setFormData({
-                  ...formData,
-                  wantCustomDesign: checked,
-                  customDesignType: checked ? "upload" : null,
-                  wantsCustomPrinting: checked
-                });
-                const customPrintingPrice = checked ? (product?.custom_printing_price || 0) : 0;
-                updateTotalPrice(customPrintingPrice);
-              }}
-              className="data-[state=checked]:bg-black data-[state=checked]:border-black"
-            />
-          </div>
-        </div>
-
-        {formData.wantCustomDesign && (
-          <div className="space-y-4 border border-black rounded-lg p-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <LinkIcon className="h-4 w-4 text-gray-500" />
-                <Input
-                  type="url"
-                  placeholder="Enter design link (Google Drive, Dropbox, etc.)"
-                  value={formData.customDesignLink}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    customDesignLink: e.target.value
-                  })}
-                  disabled={loading}
-                  className="bg-white"
-                />
-              </div>
-              <p className="text-sm text-gray-500">
-                Supported links: Google Drive, Dropbox, or any direct file link
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="instructions">Special Instructions</Label>
-              <Textarea
-                id="instructions"
-                placeholder="Any specific instructions for your design..."
-                value={formData.specialInstructions}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  specialInstructions: e.target.value
-                })}
-                disabled={loading}
-                className="bg-white"
-              />
-            </div>
-
-            {/* File Requirements Info */}
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">Link Requirements:</span>
-              </div>
-              <ul className="text-sm text-gray-600 space-y-1 ml-6 list-disc">
-                <li>Make sure the link is accessible and not private</li>
-                <li>Supported file types: Images (JPG, PNG), PDF, DOC files</li>
-                <li>File should be clear and readable</li>
-                <li>For vector files, convert text to outlines</li>
-                <li>Include all necessary fonts and assets</li>
-              </ul>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Custom Printing and Design Section */}
+      {renderCustomPrintingAndDesign()}
     </form>
   );
 } 

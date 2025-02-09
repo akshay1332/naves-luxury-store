@@ -28,6 +28,8 @@ interface CheckoutFormData {
   customDesignLink?: string;
   specialInstructions?: string;
   wantsCustomPrinting: boolean;
+  printingSize: 'Small' | 'Medium' | 'Large' | 'Across Chest' | null;
+  printingLocations: string[];
 }
 
 interface RazorpayResponse {
@@ -41,21 +43,35 @@ interface Product {
   title: string;
   price: number;
   allows_custom_printing?: boolean;
-  custom_printing_price?: number;
+  custom_printing_options?: {
+    small_locations: {
+      left_chest: number;
+      center_chest: number;
+      right_chest: number;
+      back: number;
+    };
+    medium_locations: {
+      front: number;
+      back: number;
+      both: number;
+    };
+    large_locations: {
+      full_front: number;
+      full_back: number;
+      both: number;
+    };
+    across_chest: number;
+  };
+  printing_guide?: {
+    image_url: string;
+    description: string;
+    updated_at?: string;
+  };
 }
 
-interface CartItem {
-  quantity: number;
-  products: {
-    id: string;
-    title: string;
-    price: number;
-    sale_percentage?: number;
-    delivery_charges?: number;
-    free_delivery_above?: number;
-    images: string[];
-  }
-}
+type CartItemType = Database['public']['Tables']['cart_items']['Row'] & {
+  products: Database['public']['Tables']['products']['Row'];
+};
 
 const Checkout = () => {
   const { user } = useAuth();
@@ -83,6 +99,8 @@ const Checkout = () => {
     customDesignLink: "",
     specialInstructions: "",
     wantsCustomPrinting: false,
+    printingSize: null,
+    printingLocations: [],
   });
   const [product, setProduct] = useState<Product | null>(null);
   const [customPrintingPrice, setCustomPrintingPrice] = useState(0);
@@ -109,10 +127,12 @@ const Checkout = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: cartItems } = await supabase
+    const { data: cartItems, error } = await supabase
       .from('cart_items')
       .select(`
         quantity,
+        size,
+        color,
         products (
           id,
           title,
@@ -120,49 +140,56 @@ const Checkout = () => {
           sale_percentage,
           images,
           allows_custom_printing,
-          custom_printing_price,
+          custom_printing_options,
+          printing_guide,
           delivery_charges,
           free_delivery_above
         )
       `)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .returns<CartItemType[]>();
 
-    if (!cartItems || cartItems.length === 0) return;
+    if (error || !cartItems || cartItems.length === 0) {
+      console.error('Error fetching cart items:', error);
+      return;
+    }
 
     // Set the first product's details (assuming single product checkout)
     const firstProduct = cartItems[0].products;
-    setProduct({
-      id: firstProduct.id,
-      title: firstProduct.title,
-      price: firstProduct.price,
-      allows_custom_printing: firstProduct.allows_custom_printing,
-      custom_printing_price: firstProduct.custom_printing_price
-    });
+    if (firstProduct) {
+      setProduct({
+        id: firstProduct.id,
+        title: firstProduct.title,
+        price: firstProduct.price,
+        allows_custom_printing: firstProduct.allows_custom_printing,
+        custom_printing_options: firstProduct.custom_printing_options,
+        printing_guide: firstProduct.printing_guide
+      });
 
-    // Calculate subtotal
-    const total = cartItems.reduce((sum, item) => {
-      const price = item.products?.price || 0;
-      const salePercentage = item.products?.sale_percentage || 0;
-      const discountedPrice = price * (1 - salePercentage / 100);
-      return sum + (item.quantity * discountedPrice);
-    }, 0);
+      // Calculate subtotal
+      const total = cartItems.reduce((sum, item) => {
+        const price = item.products?.price || 0;
+        const salePercentage = item.products?.sale_percentage || 0;
+        const discountedPrice = price * (1 - salePercentage / 100);
+        return sum + (item.quantity * discountedPrice);
+      }, 0);
 
-    setSubtotal(total);
+      setSubtotal(total);
 
-    // Calculate delivery charges
-    const totalDeliveryCharges = cartItems.reduce((charges, item) => {
-      const itemTotal = item.quantity * (item.products?.price || 0);
-      const freeDeliveryAbove = item.products?.free_delivery_above || 499;
-      const deliveryCharge = item.products?.delivery_charges || 0;
+      // Calculate delivery charges
+      const totalDeliveryCharges = cartItems.reduce((charges, item) => {
+        const itemTotal = item.quantity * (item.products?.price || 0);
+        const freeDeliveryAbove = item.products?.free_delivery_above || 499;
+        const deliveryCharge = item.products?.delivery_charges || 0;
 
-      // If item total is above free delivery threshold, no delivery charge
-      if (itemTotal >= freeDeliveryAbove) {
-        return charges;
-      }
-      return charges + deliveryCharge;
-    }, 0);
+        if (itemTotal >= freeDeliveryAbove) {
+          return charges;
+        }
+        return charges + deliveryCharge;
+      }, 0);
 
-    setDeliveryCharges(totalDeliveryCharges);
+      setDeliveryCharges(totalDeliveryCharges);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,7 +307,10 @@ const Checkout = () => {
           items: orderItems,
           payment_method: formData.paymentMethod,
           custom_printing: formData.wantsCustomPrinting ? {
-            price: customPrintingPrice
+            price: customPrintingPrice,
+            size: formData.printingSize,
+            locations: formData.printingLocations,
+            options: product?.custom_printing_options || {}
           } : null,
           ...(formData.wantCustomDesign && {
             custom_design: {

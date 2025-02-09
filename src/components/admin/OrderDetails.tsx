@@ -2,13 +2,15 @@ import React from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { ExternalLink, Download } from "lucide-react";
+import { ExternalLink, Download, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { UserOptions } from "jspdf-autotable";
 import { cn } from "@/lib/utils";
 import styled from "styled-components";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Extend jsPDF type to include autoTable
 interface jsPDFWithAutoTable extends jsPDF {
@@ -43,6 +45,27 @@ interface Order {
     items: OrderItem[];
     custom_printing?: {
       price: number;
+      size?: 'Small' | 'Medium' | 'Large' | 'Across Chest';
+      locations?: string[];
+      options?: {
+        small_locations?: {
+          left_chest: number;
+          center_chest: number;
+          right_chest: number;
+          back: number;
+        };
+        medium_locations?: {
+          front: number;
+          back: number;
+          both: number;
+        };
+        large_locations?: {
+          full_front: number;
+          full_back: number;
+          both: number;
+        };
+        across_chest?: number;
+      };
     };
     custom_design?: {
       type: string;
@@ -266,18 +289,56 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
       summaryY += 10;
     }
 
-    if (order.invoice_data?.custom_printing?.price > 0) {
-      doc.text("Custom Printing:", summaryX, summaryY);
-      doc.text(
-        formatIndianPrice(order.invoice_data.custom_printing.price),
-        summaryX + summaryWidth,
-        summaryY,
-        { align: "right" }
-      );
+    // Add Custom Printing Details in a better format
+    if (order.invoice_data?.custom_printing) {
+      const customPrinting = order.invoice_data.custom_printing;
+      
+      // Add a section for Custom Printing Details
+      summaryY += 5;
+      doc.setFont("helvetica", "bold");
+      doc.text("Custom Printing Details", 20, summaryY);
       summaryY += 10;
+      
+      // Print Size
+      doc.setFont("helvetica", "normal");
+      doc.text(`Print Size: ${customPrinting.size}`, 30, summaryY);
+      summaryY += 10;
+
+      // Print Locations
+      if (customPrinting.locations && customPrinting.locations.length > 0) {
+        doc.text("Print Locations:", 30, summaryY);
+        summaryY += 7;
+
+        customPrinting.locations.forEach(location => {
+          let locationPrice = 0;
+          const options = customPrinting.options;
+          const size = customPrinting.size;
+          
+          if (size === 'Small' && options?.small_locations) {
+            locationPrice = options.small_locations[location as keyof typeof options.small_locations] || 0;
+          } else if (size === 'Medium' && options?.medium_locations) {
+            locationPrice = options.medium_locations[location as keyof typeof options.medium_locations] || 0;
+          } else if (size === 'Large' && options?.large_locations) {
+            locationPrice = options.large_locations[location as keyof typeof options.large_locations] || 0;
+          } else if (size === 'Across Chest' && options?.across_chest) {
+            locationPrice = options.across_chest;
+          }
+
+          const locationText = location.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+          ).join(' ');
+
+          doc.text(`• ${locationText}: ${formatIndianPrice(locationPrice)}`, 35, summaryY);
+          summaryY += 7;
+        });
+      }
+      
+      // Add some spacing before discount
+      summaryY += 5;
     }
 
     if (order.discount_amount > 0) {
+      doc.setFont("helvetica", "normal");
       doc.text("Discount:", summaryX, summaryY);
       doc.setTextColor(255, 0, 0);
       doc.text(
@@ -296,14 +357,40 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
     doc.text("Total Amount:", summaryX, summaryY);
     doc.text(
       formatIndianPrice(
-        (order.total_amount || 0) +
-        (order.invoice_data?.custom_printing?.price || 0) -
+        (order.total_amount || 0) -
         (order.discount_amount || 0)
       ),
       summaryX + summaryWidth,
       summaryY,
       { align: "right" }
     );
+
+    // Add Custom Design Details if present
+    if (order.invoice_data?.custom_design) {
+      summaryY += 20;
+      doc.setFont("helvetica", "bold");
+      doc.text("Custom Design Details", 20, summaryY);
+      summaryY += 10;
+      
+      doc.setFont("helvetica", "normal");
+      doc.text(`Design Type: ${order.invoice_data.custom_design.type}`, 30, summaryY);
+      summaryY += 7;
+      
+      doc.text(`Design URL: ${order.invoice_data.custom_design.url}`, 30, summaryY);
+      
+      if (order.invoice_data.custom_design.instructions) {
+        summaryY += 10;
+        doc.text("Special Instructions:", 30, summaryY);
+        summaryY += 7;
+        
+        // Word wrap for instructions
+        const splitInstructions = doc.splitTextToSize(
+          order.invoice_data.custom_design.instructions,
+          150
+        );
+        doc.text(splitInstructions, 35, summaryY);
+      }
+    }
 
     // Footer
     const pageHeight = doc.internal.pageSize.height;
@@ -419,14 +506,91 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
             </div>
 
             {/* Custom Design Information */}
-            {order.invoice_data?.custom_design && (
+            {(order.invoice_data?.custom_printing || order.invoice_data?.custom_design) && (
               <div className="bg-white p-4 rounded-lg border">
-                <h3 className="font-semibold mb-3">Custom Design</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Type</span>
-                    <span className="font-medium capitalize">{order.invoice_data.custom_design.type}</span>
+                <h3 className="font-semibold mb-3">Custom Printing & Design</h3>
+                <div className="space-y-4">
+                  {/* Custom Printing Details */}
+                  {order.invoice_data?.custom_printing && (
+                    <div className="space-y-4">
+                      {/* Print Size and Total Price */}
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Badge variant="default" className="bg-blue-100 text-blue-700 border-none mb-2">
+                              Print Size
+                            </Badge>
+                            <div className="text-lg font-semibold text-blue-700">
+                              {order.invoice_data.custom_printing.size}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="default" className="bg-blue-100 text-blue-700 border-none mb-2">
+                              Total Price
+                            </Badge>
+                            <div className="text-lg font-semibold text-blue-700">
+                              ₹{order.invoice_data.custom_printing.price.toLocaleString('en-IN')}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Print Locations */}
+                      {order.invoice_data.custom_printing.locations && 
+                       order.invoice_data.custom_printing.locations.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-900">Selected Print Locations</h4>
+                          <div className="grid gap-3">
+                            {order.invoice_data.custom_printing.locations.map((location, index) => {
+                              let locationPrice = 0;
+                              const options = order.invoice_data.custom_printing?.options;
+                              const size = order.invoice_data.custom_printing?.size;
+                              
+                              if (size === 'Small' && options?.small_locations) {
+                                locationPrice = options.small_locations[location as keyof typeof options.small_locations] || 0;
+                              } else if (size === 'Medium' && options?.medium_locations) {
+                                locationPrice = options.medium_locations[location as keyof typeof options.medium_locations] || 0;
+                              } else if (size === 'Large' && options?.large_locations) {
+                                locationPrice = options.large_locations[location as keyof typeof options.large_locations] || 0;
+                              } else if (size === 'Across Chest' && options?.across_chest) {
+                                locationPrice = options.across_chest;
+                              }
+
+                              return (
+                                <div 
+                                  key={index}
+                                  className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-100"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                                    <span className="font-medium text-purple-900 capitalize">
+                                      {location.split('_').map(word => 
+                                        word.charAt(0).toUpperCase() + word.slice(1)
+                                      ).join(' ')}
+                                    </span>
+                                  </div>
+                                  <span className="text-purple-700 font-medium">
+                                    ₹{locationPrice.toLocaleString('en-IN')}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Custom Design Details */}
+                  {order.invoice_data?.custom_design && (
+                    <div className="space-y-3 border-t pt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Design Type</span>
+                        <Badge className="bg-purple-50 text-purple-700 border border-purple-200 capitalize">
+                          {order.invoice_data.custom_design.type}
+                        </Badge>
                   </div>
+                      
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Design URL</span>
                     <a
@@ -438,10 +602,15 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                       View Design <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
+
                   {order.invoice_data.custom_design.instructions && (
                     <div className="mt-2">
-                      <span className="text-gray-600 block mb-1">Instructions:</span>
-                      <p className="text-sm">{order.invoice_data.custom_design.instructions}</p>
+                          <span className="text-gray-600 block mb-1">Special Instructions:</span>
+                          <div className="p-3 bg-gray-50 rounded-md text-sm">
+                            {order.invoice_data.custom_design.instructions}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -456,8 +625,9 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHeader className="w-[60%]">Order Details</TableHeader>
-                    <TableHeader className="text-right">Amount</TableHeader>
+                    <TableHeader className="w-[40%]">Product Details</TableHeader>
+                    <TableHeader className="w-[35%]">Specifications</TableHeader>
+                    <TableHeader className="text-right w-[25%]">Amount</TableHeader>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -474,16 +644,80 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                               {item.products?.title}
                               <span className="text-gray-500 ml-2">× {itemQuantity}</span>
                             </div>
-                            <div className="text-sm text-gray-500 space-x-2">
-                              {item.size && <span>Size: {item.size}</span>}
-                              {item.color && <span>• Color: {item.color}</span>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-2">
+                            {/* Product Specifications */}
+                            <div className="flex flex-wrap gap-2">
+                              {item.size && (
+                                <Badge variant="default" className="bg-gray-50 border border-gray-200">
+                                  Size: {item.size}
+                                </Badge>
+                              )}
+                              {item.color && (
+                                <Badge variant="default" className="bg-gray-50 border border-gray-200">
+                                  Color: {item.color}
+                                </Badge>
+                              )}
                             </div>
+                            
+                            {/* Custom Printing Details */}
+                            {order.invoice_data?.custom_printing && (
+                              <div className="mt-2 space-y-2">
+                                {/* Print Size */}
+                                {order.invoice_data.custom_printing.size && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge className="bg-blue-50 text-blue-700 border border-blue-200">
+                                      Print Size: {order.invoice_data.custom_printing.size}
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Print Locations */}
+                                {order.invoice_data.custom_printing.locations && 
+                                 order.invoice_data.custom_printing.locations.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {order.invoice_data.custom_printing.locations.map((location, idx) => {
+                                      // Get the price for this location based on size
+                                      let locationPrice = 0;
+                                      const options = order.invoice_data.custom_printing?.options;
+                                      const size = order.invoice_data.custom_printing?.size;
+                                      
+                                      if (size === 'Small' && options?.small_locations) {
+                                        locationPrice = options.small_locations[location as keyof typeof options.small_locations] || 0;
+                                      } else if (size === 'Medium' && options?.medium_locations) {
+                                        locationPrice = options.medium_locations[location as keyof typeof options.medium_locations] || 0;
+                                      } else if (size === 'Large' && options?.large_locations) {
+                                        locationPrice = options.large_locations[location as keyof typeof options.large_locations] || 0;
+                                      } else if (size === 'Across Chest' && options?.across_chest) {
+                                        locationPrice = options.across_chest;
+                                      }
+
+                                      return (
+                                        <Badge 
+                                          key={idx}
+                                          className="bg-purple-50 text-purple-700 border border-purple-200"
+                                        >
+                                          {location.split('_').map(word => 
+                                            word.charAt(0).toUpperCase() + word.slice(1)
+                                          ).join(' ')}
+                                          {locationPrice > 0 && ` • ₹${locationPrice.toLocaleString('en-IN')}`}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
+                          <div className="space-y-1">
                           <span className="font-medium text-gray-900">
                             ₹{itemTotal.toLocaleString('en-IN')}
                           </span>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -491,7 +725,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
                   {/* Summary Section */}
                   <TableRow className="bg-gray-50">
-                    <TableCell className="text-right font-medium">
+                    <TableCell colSpan={2} className="text-right font-medium">
                       Subtotal
                     </TableCell>
                     <TableCell className="text-right font-medium">
@@ -501,7 +735,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
 
                   {order.discount_amount > 0 && (
                     <TableRow className="bg-gray-50">
-                      <TableCell className="text-right font-medium text-green-600">
+                      <TableCell colSpan={2} className="text-right font-medium text-green-600">
                         Discount Applied
                       </TableCell>
                       <TableCell className="text-right font-medium text-green-600">
@@ -511,7 +745,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                   )}
 
                   <TableRow className="bg-gray-100 border-t-2 border-gray-200">
-                    <TableCell className="text-right font-bold text-lg">
+                    <TableCell colSpan={2} className="text-right font-bold text-lg">
                       Total Amount
                     </TableCell>
                     <TableCell className="text-right font-bold text-lg">
