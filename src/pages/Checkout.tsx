@@ -71,6 +71,7 @@ interface Product {
 
 type CartItemType = Database['public']['Tables']['cart_items']['Row'] & {
   products: Database['public']['Tables']['products']['Row'];
+  quantity: number;
 };
 
 const Checkout = () => {
@@ -105,6 +106,7 @@ const Checkout = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [customPrintingPrice, setCustomPrintingPrice] = useState(0);
   const [deliveryCharges, setDeliveryCharges] = useState(0);
+  const [cartQuantity, setCartQuantity] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -153,6 +155,10 @@ const Checkout = () => {
       console.error('Error fetching cart items:', error);
       return;
     }
+
+    // Calculate total quantity
+    const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    setCartQuantity(totalQuantity);
 
     // Set the first product's details (assuming single product checkout)
     const firstProduct = cartItems[0].products;
@@ -247,7 +253,8 @@ const Checkout = () => {
 
   // Calculate total with all components
   const calculateTotal = () => {
-    return subtotal + customPrintingPrice - discountAmount + deliveryCharges;
+    const totalBeforeDiscount = subtotal + customPrintingPrice + deliveryCharges;
+    return totalBeforeDiscount - discountAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -301,13 +308,15 @@ const Checkout = () => {
       const orderData = {
         user_id: user?.id,
         status: 'pending',
-        total_amount: total,
+        total_amount: calculateTotal(),
         shipping_address: formData.shippingAddress,
         invoice_data: {
           items: orderItems,
           payment_method: formData.paymentMethod,
           custom_printing: formData.wantsCustomPrinting ? {
             price: customPrintingPrice,
+            price_per_item: customPrintingPrice / cartQuantity,
+            quantity: cartQuantity,
             size: formData.printingSize,
             locations: formData.printingLocations,
             options: product?.custom_printing_options || {}
@@ -432,8 +441,10 @@ const Checkout = () => {
     }
   };
 
-  const updateTotalPrice = (price: number) => {
-    setCustomPrintingPrice(price);
+  const updateTotalPrice = (basePrice: number) => {
+    // basePrice is the per-item cost, multiply by quantity for total
+    const totalPrintingPrice = basePrice * cartQuantity;
+    setCustomPrintingPrice(totalPrintingPrice);
   };
 
   return (
@@ -457,6 +468,7 @@ const Checkout = () => {
                 loading={loading}
                 product={product || undefined}
                 updateTotalPrice={updateTotalPrice}
+                cartQuantity={cartQuantity}
               />
             </div>
 
@@ -465,22 +477,36 @@ const Checkout = () => {
               <Card className="p-6 sticky top-4">
                 <h2 className="text-xl font-bold mb-6">Order Summary</h2>
                 <div className="space-y-4">
+                  {/* Product Subtotal */}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-600">Products Subtotal</span>
                     <span>{formatIndianPrice(subtotal)}</span>
                   </div>
+
+                  {/* Custom Printing Charges - Detailed Breakdown */}
                   {customPrintingPrice > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Custom Printing</span>
-                      <span>{formatIndianPrice(customPrintingPrice)}</span>
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                      <div className="flex justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-gray-600">Printing Cost (per item)</span>
+                          <span className="text-xs text-gray-500">Base printing charge</span>
+                        </div>
+                        <span className="font-medium">₹{(customPrintingPrice/cartQuantity).toFixed(2)}</span>
+                      </div>
+
+                      <div className="flex justify-between border-t border-gray-200 pt-2">
+                        <div className="flex flex-col">
+                          <span className="text-gray-600">Total Printing Cost</span>
+                          <span className="text-xs text-gray-500">
+                            (₹{(customPrintingPrice/cartQuantity).toFixed(2)} × {cartQuantity} items)
+                          </span>
+                        </div>
+                        <span className="text-cyan-600 font-medium">{formatIndianPrice(customPrintingPrice)}</span>
+                      </div>
                     </div>
                   )}
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
-                      <span>-{formatIndianPrice(discountAmount)}</span>
-                    </div>
-                  )}
+
+                  {/* Delivery Charges */}
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivery Charges</span>
                     {deliveryCharges === 0 ? (
@@ -493,27 +519,38 @@ const Checkout = () => {
                     )}
                   </div>
 
-                  {deliveryCharges > 0 && (
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-sm text-blue-700 flex items-center gap-2">
-                        <Truck className="h-4 w-4" />
-                        <span>Some items in your cart have delivery charges. 
-                        Increase your item quantity to qualify for free delivery.</span>
-                      </p>
+                  {/* Subtotal before discount */}
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Subtotal (inc. printing)</span>
+                      <span className="font-medium">{formatIndianPrice(subtotal + customPrintingPrice + deliveryCharges)}</span>
+                    </div>
+                  </div>
+
+                  {/* Discount */}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount Applied</span>
+                      <span>-{formatIndianPrice(discountAmount)}</span>
                     </div>
                   )}
 
-                  <div className="border-t pt-4">
+                  {/* Final Total */}
+                  <div className="border-t border-gray-300 pt-4">
                     <div className="flex justify-between items-center font-bold text-lg">
-                      <span>Total</span>
-                      <span className="text-cyan-600">
-                        {formatIndianPrice(calculateTotal())}
-                      </span>
+                      <span>Total Amount</span>
+                      <div className="text-right">
+                        <span className="text-cyan-600">{formatIndianPrice(calculateTotal())}</span>
+                        {customPrintingPrice > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Includes printing charges: {formatIndianPrice(customPrintingPrice)}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Delivery charges are calculated per item based on order value
-                    </p>
                   </div>
+
+                  {/* Place Order Button */}
                   <Button
                     className="w-full"
                     size="lg"
