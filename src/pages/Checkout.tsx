@@ -11,6 +11,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { loadRazorpayScript, createRazorpayOrder, initializeRazorpayPayment } from "@/lib/razorpay";
 import { formatIndianPrice } from "@/lib/utils";
 import { CouponSelector } from "@/components/checkout/CouponSelector";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CheckoutFormData {
   shippingAddress: {
@@ -116,6 +120,8 @@ const Checkout = () => {
   const [cartQuantity, setCartQuantity] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [customPrintingLocations, setCustomPrintingLocations] = useState<string[]>([]);
+  const [printingSize, setPrintingSize] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -144,7 +150,18 @@ const Checkout = () => {
         .from('cart_items')
         .select(`
           *,
-          products (*)
+          products (
+            id,
+            title,
+            price,
+            images,
+            delivery_charges,
+            free_delivery_above,
+            sale_percentage,
+            allows_custom_printing,
+            custom_printing_options,
+            printing_guide
+          )
         `)
         .eq('user_id', user.id);
 
@@ -156,6 +173,12 @@ const Checkout = () => {
       }
 
       setCartItems(items);
+
+      // Set the first product for custom printing options
+      // Assuming all items in cart are from same product
+      if (items[0]?.products) {
+        setProduct(items[0].products);
+      }
 
       // Calculate total quantity and subtotal
       const total = items.reduce((sum, item) => {
@@ -458,6 +481,25 @@ const Checkout = () => {
     } else {
       setDiscountAmount(0);
     }
+  };
+
+  const updatePrintingPrice = (locations: string[], size: string | null) => {
+    if (!product || !size) return;
+
+    let totalPrice = 0;
+    const options = product.custom_printing_options;
+
+    locations.forEach(location => {
+      if (size === "small") {
+        totalPrice += options.small_locations[location as keyof typeof options.small_locations] || 0;
+      } else if (size === "medium") {
+        totalPrice += options.medium_locations[location as keyof typeof options.medium_locations] || 0;
+      } else if (size === "large") {
+        totalPrice += options.large_locations[location as keyof typeof options.large_locations] || 0;
+      }
+    });
+
+    setCustomPrintingPrice(totalPrice * cartQuantity);
   };
 
   return (
