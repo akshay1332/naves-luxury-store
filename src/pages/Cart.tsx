@@ -100,7 +100,7 @@ export default function Cart() {
   };
 
   const calculateTotals = (items: CartItem[]) => {
-    // Calculate subtotal with sale prices
+    // Calculate subtotal
     const total = items.reduce((sum, item) => {
       const basePrice = item.products.price;
       const salePercentage = item.products.sale_percentage || 0;
@@ -110,19 +110,13 @@ export default function Cart() {
     setSubtotal(total);
 
     // Calculate delivery charges
-    let maxDeliveryCharge = 0;
-    let maxFreeDeliveryThreshold = 0;
-
-    items.forEach(item => {
-      maxDeliveryCharge = Math.max(maxDeliveryCharge, item.products.delivery_charges);
-      maxFreeDeliveryThreshold = Math.max(maxFreeDeliveryThreshold, item.products.free_delivery_above);
-    });
-
-    // If subtotal is above the highest free delivery threshold, delivery is free
+    const maxDeliveryCharge = Math.max(...items.map(item => item.products.delivery_charges));
+    const maxFreeDeliveryThreshold = Math.max(...items.map(item => item.products.free_delivery_above));
     setDeliveryCharges(total >= maxFreeDeliveryThreshold ? 0 : maxDeliveryCharge);
 
-    // Recalculate coupon discount if a coupon is applied
+    // Recalculate coupon discount if applicable
     if (appliedCoupon) {
+      // Calculate discount based on subtotal only
       const newDiscount = Math.min(
         (total * appliedCoupon.discount_percentage) / 100,
         appliedCoupon.max_discount_amount

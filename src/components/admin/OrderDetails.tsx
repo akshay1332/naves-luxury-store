@@ -83,6 +83,15 @@ interface Order {
     notes?: string;
     created_at: string;
   }>;
+  applied_coupon_id?: string;
+  coupon_code?: string;
+  coupon_details?: {
+    code: string;
+    discount_percentage: number;
+    max_discount_amount: number;
+  };
+  original_amount?: number; // Amount before discount
+  discount_amount: number; // Amount of discount applied
 }
 
 interface OrderDetailsProps {
@@ -337,29 +346,46 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
       summaryY += 5;
     }
 
-    if (order.discount_amount > 0) {
+    // Add discount information if coupon was applied
+    if (order.applied_coupon_id) {
       doc.setFont("helvetica", "normal");
-      doc.text("Discount:", summaryX, summaryY);
-      doc.setTextColor(255, 0, 0);
+      doc.text("Original Amount:", summaryX, summaryY);
+      doc.text(
+        formatIndianPrice(order.original_amount || order.total_amount),
+        summaryX + summaryWidth,
+        summaryY,
+        { align: "right" }
+      );
+      summaryY += 10;
+
+      doc.setTextColor(0, 128, 0); // Green color for discount
+      doc.text(`Coupon Applied (${order.coupon_code})`, summaryX, summaryY);
       doc.text(
         `-${formatIndianPrice(order.discount_amount)}`,
         summaryX + summaryWidth,
         summaryY,
         { align: "right" }
       );
+      
+      if (order.coupon_details) {
+        summaryY += 5;
+        doc.setFontSize(8);
+        doc.text(
+          `${order.coupon_details.discount_percentage}% off - Saved ${formatIndianPrice(order.discount_amount)}`,
+          summaryX,
+          summaryY
+        );
+        doc.setFontSize(10);
+      }
       summaryY += 10;
     }
 
     // Final total
-    summaryY += 5;
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
-    doc.text("Total Amount:", summaryX, summaryY);
+    doc.text("Final Amount:", summaryX, summaryY);
     doc.text(
-      formatIndianPrice(
-        (order.total_amount || 0) -
-        (order.discount_amount || 0)
-      ),
+      formatIndianPrice(order.total_amount),
       summaryX + summaryWidth,
       summaryY,
       { align: "right" }
@@ -726,32 +752,44 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                   {/* Summary Section */}
                   <TableRow className="bg-gray-50">
                     <TableCell colSpan={2} className="text-right font-medium">
-                      Subtotal
+                      Subtotal (After discount)
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ₹{order.total_amount?.toLocaleString('en-IN') || 0}
+                      ₹{(order.original_amount || order.total_amount)?.toLocaleString('en-IN')}
                     </TableCell>
                   </TableRow>
 
-                  {order.discount_amount > 0 && (
-                    <TableRow className="bg-gray-50">
-                      <TableCell colSpan={2} className="text-right font-medium text-green-600">
-                        Discount Applied
-                      </TableCell>
-                      <TableCell className="text-right font-medium text-green-600">
-                        -₹{order.discount_amount.toLocaleString('en-IN')}
-                      </TableCell>
-                    </TableRow>
+                  {/* Show applied coupon with discount details */}
+                  {order.applied_coupon_id && (
+                    <>
+                      <TableRow className="bg-gray-50">
+                        <TableCell colSpan={2} className="text-right font-medium text-green-600">
+                          <div className="flex justify-end items-center gap-2">
+                            <span>Applied Coupon: {order.coupon_code}</span>
+                            {order.coupon_details && (
+                              <Badge variant="outline" className="text-green-600">
+                                {order.coupon_details.discount_percentage}% off
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-sm text-green-600">
+                            Saved ₹{order.discount_amount?.toLocaleString('en-IN')}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-green-600">
+                          -₹{order.discount_amount?.toLocaleString('en-IN')}
+                        </TableCell>
+                      </TableRow>
+                    </>
                   )}
 
+                  {/* Final Total */}
                   <TableRow className="bg-gray-100 border-t-2 border-gray-200">
                     <TableCell colSpan={2} className="text-right font-bold text-lg">
-                      Total Amount
+                      Final Amount
                     </TableCell>
                     <TableCell className="text-right font-bold text-lg">
-                      ₹{((order.total_amount || 0) - 
-                         (order.discount_amount || 0)
-                        ).toLocaleString('en-IN')}
+                      ₹{order.total_amount?.toLocaleString('en-IN')}
                     </TableCell>
                   </TableRow>
                 </TableBody>

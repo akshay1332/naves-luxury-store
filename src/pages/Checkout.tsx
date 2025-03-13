@@ -265,8 +265,9 @@ const Checkout = () => {
 
   // Calculate total with all components
   const calculateTotal = () => {
-    const totalBeforeDiscount = subtotal + customPrintingPrice + deliveryCharges;
-    return totalBeforeDiscount - discountAmount;
+    const baseTotal = subtotal + customPrintingPrice + deliveryCharges;
+    // Only subtract discount once
+    return baseTotal - discountAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -468,7 +469,10 @@ const Checkout = () => {
 
   const handleApplyCoupon = (coupon: Coupon | null) => {
     setAppliedCoupon(coupon);
+    setAppliedCouponId(coupon?.id || null);
+    
     if (coupon) {
+      // Calculate discount based on subtotal only (not including printing or delivery)
       const discount = Math.min(
         (subtotal * coupon.discount_percentage) / 100,
         coupon.max_discount_amount
@@ -545,70 +549,37 @@ const Checkout = () => {
                     <span>{formatIndianPrice(subtotal)}</span>
                   </div>
 
-                  {/* Custom Printing Charges - Detailed Breakdown */}
+                  {/* Custom Printing Charges if any */}
                   {customPrintingPrice > 0 && (
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                      <div className="flex justify-between">
-                        <div className="flex flex-col">
-                          <span className="text-gray-600">Printing Cost (per item)</span>
-                          <span className="text-xs text-gray-500">Base printing charge</span>
-                        </div>
-                        <span className="font-medium">₹{(customPrintingPrice/cartQuantity).toFixed(2)}</span>
-                      </div>
-
-                      <div className="flex justify-between border-t border-gray-200 pt-2">
-                        <div className="flex flex-col">
-                          <span className="text-gray-600">Total Printing Cost</span>
-                          <span className="text-xs text-gray-500">
-                            (₹{(customPrintingPrice/cartQuantity).toFixed(2)} × {cartQuantity} items)
-                          </span>
-                        </div>
-                        <span className="text-cyan-600 font-medium">{formatIndianPrice(customPrintingPrice)}</span>
-                      </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Custom Printing</span>
+                      <span>{formatIndianPrice(customPrintingPrice)}</span>
                     </div>
                   )}
 
                   {/* Delivery Charges */}
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between">
                     <span className="text-gray-600">Delivery Charges</span>
                     {deliveryCharges === 0 ? (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <Truck className="h-4 w-4" />
-                        <span>Free</span>
-                      </div>
+                      <span className="text-green-600">Free</span>
                     ) : (
                       <span>{formatIndianPrice(deliveryCharges)}</span>
                     )}
                   </div>
 
-                  {/* Subtotal before discount */}
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal (inc. printing)</span>
-                      <span className="font-medium">{formatIndianPrice(subtotal + customPrintingPrice + deliveryCharges)}</span>
-                    </div>
-                  </div>
-
-                  {/* Discount */}
+                  {/* Discount - only show if there is a discount */}
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Discount Applied</span>
+                      <span>Discount ({appliedCoupon?.code})</span>
                       <span>-{formatIndianPrice(discountAmount)}</span>
                     </div>
                   )}
 
                   {/* Final Total */}
-                  <div className="border-t border-gray-300 pt-4">
+                  <div className="border-t pt-4">
                     <div className="flex justify-between items-center font-bold text-lg">
                       <span>Total Amount</span>
-                      <div className="text-right">
-                        <span className="text-cyan-600">{formatIndianPrice(calculateTotal())}</span>
-                        {customPrintingPrice > 0 && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Includes printing charges: {formatIndianPrice(customPrintingPrice)}
-                          </div>
-                        )}
-                      </div>
+                      <span>{formatIndianPrice(calculateTotal())}</span>
                     </div>
                   </div>
 
