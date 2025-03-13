@@ -13,11 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle, CheckCircle, Image as ImageIcon, FileText, File as FileIcon, Eye } from "lucide-react";
+import { Truck, CreditCard, Upload, Link as LinkIcon, AlertCircle, CheckCircle, Image as ImageIcon, FileText, File as FileIcon, Eye, Smartphone, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { CustomPrintingOptions } from "./CustomPrintingOptions";
+import { Button } from "@/components/ui/button";
 
 // Update the Indian states list with all 28 states and 8 union territories
 const indianStates = [
@@ -593,87 +594,67 @@ export function CheckoutForm({
       {/* Payment Method */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Payment Method</h3>
-        <RadioGroup
-          value={formData.paymentMethod}
-          onValueChange={updatePaymentMethod}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          <Label
-            htmlFor="card"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Button
+            type="button"
+            onClick={() => updatePaymentMethod('card')}
             className={cn(
-              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
-              formData.paymentMethod === "card" 
-                ? "border-rose-500 bg-rose-50" 
-                : "border-gray-200 bg-white"
+              "flex items-center justify-center gap-2 h-20 border-2 bg-white",
+              formData.paymentMethod === 'card'
+                ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100"
+                : "border-gray-200 hover:border-green-500 hover:bg-green-50"
             )}
           >
-            <RadioGroupItem value="card" id="card" className="sr-only" />
-            <div className="flex flex-col items-center gap-2">
-              <CreditCard className={cn(
-                "h-6 w-6 transition-colors",
-                formData.paymentMethod === "card" ? "text-rose-500" : "text-gray-600"
-              )} />
-              <span className={cn(
-                "font-medium transition-colors",
-                formData.paymentMethod === "card" ? "text-rose-700" : "text-gray-900"
-              )}>Credit/Debit Card</span>
-              <span className="text-xs text-gray-500">All major cards accepted</span>
+            <CreditCard className={cn(
+              "h-6 w-6",
+              formData.paymentMethod === 'card' ? "text-green-600" : "text-gray-500"
+            )} />
+            <div className="text-left">
+              <div className="font-medium">Card</div>
+              <div className="text-xs text-gray-500">Credit/Debit Card</div>
             </div>
-          </Label>
-          
-          <Label
-            htmlFor="upi"
+          </Button>
+
+          <Button
+            type="button"
+            onClick={() => updatePaymentMethod('upi')}
             className={cn(
-              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
-              formData.paymentMethod === "upi" 
-                ? "border-rose-500 bg-rose-50" 
-                : "border-gray-200 bg-white"
+              "flex items-center justify-center gap-2 h-20 border-2 bg-white",
+              formData.paymentMethod === 'upi'
+                ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100"
+                : "border-gray-200 hover:border-green-500 hover:bg-green-50"
             )}
           >
-            <RadioGroupItem value="upi" id="upi" className="sr-only" />
-            <div className="flex flex-col items-center gap-2">
-              <svg 
-                viewBox="0 0 24 24" 
-                className={cn(
-                  "h-6 w-6 transition-colors",
-                  formData.paymentMethod === "upi" ? "text-rose-500" : "text-gray-600"
-                )}
-                fill="none" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className={cn(
-                "font-medium transition-colors",
-                formData.paymentMethod === "upi" ? "text-rose-700" : "text-gray-900"
-              )}>UPI</span>
-              <span className="text-xs text-gray-500">Google Pay, PhonePe, etc.</span>
+            <Smartphone className={cn(
+              "h-6 w-6",
+              formData.paymentMethod === 'upi' ? "text-green-600" : "text-gray-500"
+            )} />
+            <div className="text-left">
+              <div className="font-medium">UPI</div>
+              <div className="text-xs text-gray-500">Google Pay/PhonePe</div>
             </div>
-          </Label>
-          
-          <Label
-            htmlFor="cod"
+          </Button>
+
+          <Button
+            type="button"
+            onClick={() => updatePaymentMethod('cod')}
             className={cn(
-              "flex flex-col items-center justify-between rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:border-rose-200 hover:bg-rose-50",
-              formData.paymentMethod === "cod" 
-                ? "border-rose-500 bg-rose-50" 
-                : "border-gray-200 bg-white"
+              "flex items-center justify-center gap-2 h-20 border-2 bg-white",
+              formData.paymentMethod === 'cod'
+                ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100"
+                : "border-gray-200 hover:border-green-500 hover:bg-green-50"
             )}
           >
-            <RadioGroupItem value="cod" id="cod" className="sr-only" />
-            <div className="flex flex-col items-center gap-2">
-              <Truck className={cn(
-                "h-6 w-6 transition-colors",
-                formData.paymentMethod === "cod" ? "text-rose-500" : "text-gray-600"
-              )} />
-              <span className={cn(
-                "font-medium transition-colors",
-                formData.paymentMethod === "cod" ? "text-rose-700" : "text-gray-900"
-              )}>Cash on Delivery</span>
-              <span className="text-xs text-gray-500">Pay when you receive</span>
+            <Banknote className={cn(
+              "h-6 w-6",
+              formData.paymentMethod === 'cod' ? "text-green-600" : "text-gray-500"
+            )} />
+            <div className="text-left">
+              <div className="font-medium">Cash on Delivery</div>
+              <div className="text-xs text-gray-500">Pay when you receive</div>
             </div>
-          </Label>
-        </RadioGroup>
+          </Button>
+        </div>
 
         {/* Payment Method Info */}
         <AnimatePresence mode="wait">
