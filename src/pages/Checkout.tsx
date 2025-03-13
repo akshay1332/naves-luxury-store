@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { loadRazorpayScript, createRazorpayOrder, initializeRazorpayPayment } from "@/lib/razorpay";
 import { formatIndianPrice } from "@/lib/utils";
+import { CouponSelector } from "@/components/checkout/CouponSelector";
 
 interface CheckoutFormData {
   shippingAddress: {
@@ -74,6 +75,12 @@ type CartItemType = Database['public']['Tables']['cart_items']['Row'] & {
   quantity: number;
 };
 
+type CartItem = {
+  product_id: string;
+  quantity: number;
+  products: Product;
+};
+
 const Checkout = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -107,6 +114,8 @@ const Checkout = () => {
   const [customPrintingPrice, setCustomPrintingPrice] = useState(0);
   const [deliveryCharges, setDeliveryCharges] = useState(0);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -126,75 +135,55 @@ const Checkout = () => {
   };
 
   const calculateSubtotal = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data: cartItems, error } = await supabase
-      .from('cart_items')
-      .select(`
-        quantity,
-        size,
-        color,
-        products (
-          id,
-          title,
-          price,
-          sale_percentage,
-          images,
-          allows_custom_printing,
-          custom_printing_options,
-          printing_guide,
-          delivery_charges,
-          free_delivery_above
-        )
-      `)
-      .eq('user_id', user.id)
-      .returns<CartItemType[]>();
+      // Get cart items with product details
+      const { data: items, error } = await supabase
+        .from('cart_items')
+        .select(`
+          *,
+          products (*)
+        `)
+        .eq('user_id', user.id);
 
-    if (error || !cartItems || cartItems.length === 0) {
-      console.error('Error fetching cart items:', error);
-      return;
-    }
+      if (error) throw error;
 
-    // Calculate total quantity
-    const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    setCartQuantity(totalQuantity);
+      if (!items || items.length === 0) {
+        navigate('/cart');
+        return;
+      }
 
-    // Set the first product's details (assuming single product checkout)
-    const firstProduct = cartItems[0].products;
-    if (firstProduct) {
-      setProduct({
-        id: firstProduct.id,
-        title: firstProduct.title,
-        price: firstProduct.price,
-        allows_custom_printing: firstProduct.allows_custom_printing,
-        custom_printing_options: firstProduct.custom_printing_options,
-        printing_guide: firstProduct.printing_guide
-      });
+      setCartItems(items);
 
-      // Calculate subtotal
-      const total = cartItems.reduce((sum, item) => {
+      // Calculate total quantity and subtotal
+      const total = items.reduce((sum, item) => {
         const price = item.products?.price || 0;
-        const salePercentage = item.products?.sale_percentage || 0;
-        const discountedPrice = price * (1 - salePercentage / 100);
-        return sum + (item.quantity * discountedPrice);
+        const quantity = item.quantity || 0;
+        return sum + (price * quantity);
       }, 0);
 
       setSubtotal(total);
+      setCartQuantity(items.reduce((sum, item) => sum + (item.quantity || 0), 0));
 
       // Calculate delivery charges
-      const totalDeliveryCharges = cartItems.reduce((charges, item) => {
-        const itemTotal = item.quantity * (item.products?.price || 0);
-        const freeDeliveryAbove = item.products?.free_delivery_above || 499;
-        const deliveryCharge = item.products?.delivery_charges || 0;
-
-        if (itemTotal >= freeDeliveryAbove) {
-          return charges;
+      const firstProduct = items[0]?.products;
+      if (firstProduct) {
+        if (total >= (firstProduct.free_delivery_above || 0)) {
+          setDeliveryCharges(0);
+        } else {
+          setDeliveryCharges(firstProduct.delivery_charges || 0);
         }
-        return charges + deliveryCharge;
-      }, 0);
+      }
 
-      setDeliveryCharges(totalDeliveryCharges);
+    } catch (error) {
+      console.error('Error calculating subtotal:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load cart items",
+      });
     }
   };
 
@@ -447,6 +436,30 @@ const Checkout = () => {
     setCustomPrintingPrice(totalPrintingPrice);
   };
 
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    const discountAmount = (subtotal * appliedCoupon.discount_percentage) / 100;
+    return Math.min(discountAmount, appliedCoupon.max_discount_amount);
+  };
+
+  const handleApplyCoupon = (coupon: Coupon | null) => {
+    setAppliedCoupon(coupon);
+    if (coupon) {
+      const discount = Math.min(
+        (subtotal * coupon.discount_percentage) / 100,
+        coupon.max_discount_amount
+      );
+      setDiscountAmount(discount);
+      toast({
+        title: "Coupon Applied",
+        description: `Saved ₹${discount.toFixed(2)} with coupon ${coupon.code}`,
+      });
+    } else {
+      setDiscountAmount(0);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -469,6 +482,13 @@ const Checkout = () => {
                 product={product || undefined}
                 updateTotalPrice={updateTotalPrice}
                 cartQuantity={cartQuantity}
+              />
+
+              <CouponSelector
+                productIds={cartItems.map(item => item.product_id)}
+                subtotal={subtotal}
+                onApplyCoupon={handleApplyCoupon}
+                appliedCoupon={appliedCoupon}
               />
             </div>
 

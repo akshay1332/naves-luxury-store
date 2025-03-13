@@ -1,6 +1,7 @@
 import React from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { cn } from "@/lib/utils";
+import { Tag } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

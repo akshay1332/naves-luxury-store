@@ -14,22 +14,35 @@ import {
   ShoppingCart,
   Tag,
   Truck,
+  Percent,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { formatIndianPrice } from "@/lib/utils";
+import { CouponSelector } from "@/components/checkout/CouponSelector";
 
 interface CartItem {
   id: string;
   quantity: number;
-  product: {
+  product_id: string;
+  products: {
     id: string;
     title: string;
     price: number;
     images: string[];
+    delivery_charges: number;
+    free_delivery_above: number;
     sale_percentage?: number;
-    delivery_charges?: number;
-    free_delivery_above?: number;
+    category: string;
   };
+}
+
+interface Coupon {
+  id: string;
+  code: string;
+  description: string;
+  discount_percentage: number;
+  min_purchase_amount: number;
+  max_discount_amount: number;
 }
 
 export default function Cart() {
@@ -38,6 +51,10 @@ export default function Cart() {
   const { toast } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subtotal, setSubtotal] = useState(0);
+  const [deliveryCharges, setDeliveryCharges] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -50,11 +67,26 @@ export default function Cart() {
       setLoading(true);
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, product:products(*)")
+        .select(`
+          id,
+          quantity,
+          product_id,
+          products (
+            id,
+            title,
+            price,
+            images,
+            delivery_charges,
+            free_delivery_above,
+            sale_percentage,
+            category
+          )
+        `)
         .eq("user_id", user?.id);
 
       if (error) throw error;
       setCartItems(data || []);
+      calculateTotals(data || []);
     } catch (error) {
       console.error("Error fetching cart items:", error);
       toast({
@@ -67,6 +99,38 @@ export default function Cart() {
     }
   };
 
+  const calculateTotals = (items: CartItem[]) => {
+    // Calculate subtotal with sale prices
+    const total = items.reduce((sum, item) => {
+      const basePrice = item.products.price;
+      const salePercentage = item.products.sale_percentage || 0;
+      const finalPrice = basePrice * (1 - salePercentage / 100);
+      return sum + (finalPrice * item.quantity);
+    }, 0);
+    setSubtotal(total);
+
+    // Calculate delivery charges
+    let maxDeliveryCharge = 0;
+    let maxFreeDeliveryThreshold = 0;
+
+    items.forEach(item => {
+      maxDeliveryCharge = Math.max(maxDeliveryCharge, item.products.delivery_charges);
+      maxFreeDeliveryThreshold = Math.max(maxFreeDeliveryThreshold, item.products.free_delivery_above);
+    });
+
+    // If subtotal is above the highest free delivery threshold, delivery is free
+    setDeliveryCharges(total >= maxFreeDeliveryThreshold ? 0 : maxDeliveryCharge);
+
+    // Recalculate coupon discount if a coupon is applied
+    if (appliedCoupon) {
+      const newDiscount = Math.min(
+        (total * appliedCoupon.discount_percentage) / 100,
+        appliedCoupon.max_discount_amount
+      );
+      setDiscountAmount(newDiscount);
+    }
+  };
+
   const updateQuantity = async (itemId: string, delta: number) => {
     const item = cartItems.find((item) => item.id === itemId);
     if (!item) return;
@@ -74,21 +138,30 @@ export default function Cart() {
     const newQuantity = item.quantity + delta;
     if (newQuantity < 1) return;
 
+    // Optimistically update UI
+    const updatedItems = cartItems.map((item) =>
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    );
+    setCartItems(updatedItems);
+    calculateTotals(updatedItems);
+
     try {
       const { error } = await supabase
         .from("cart_items")
         .update({ quantity: newQuantity })
         .eq("id", itemId);
 
-      if (error) throw error;
-
-      setCartItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
-      );
+      if (error) {
+        throw error;
+      }
     } catch (error) {
       console.error("Error updating quantity:", error);
+      // Revert changes on error
+      setCartItems((prev) => prev.map((item) =>
+        item.id === itemId ? { ...item, quantity: item.quantity - delta } : item
+      ));
+      calculateTotals(cartItems);
+      
       toast({
         variant: "destructive",
         title: "Error",
@@ -98,6 +171,12 @@ export default function Cart() {
   };
 
   const removeItem = async (itemId: string) => {
+    // Optimistically remove item
+    const removedItem = cartItems.find(item => item.id === itemId);
+    const updatedItems = cartItems.filter(item => item.id !== itemId);
+    setCartItems(updatedItems);
+    calculateTotals(updatedItems);
+
     try {
       const { error } = await supabase
         .from("cart_items")
@@ -106,13 +185,18 @@ export default function Cart() {
 
       if (error) throw error;
 
-      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
       toast({
         title: "Item removed",
         description: "Item has been removed from your cart",
       });
     } catch (error) {
       console.error("Error removing item:", error);
+      // Revert changes on error
+      if (removedItem) {
+        setCartItems(prev => [...prev, removedItem]);
+        calculateTotals([...updatedItems, removedItem]);
+      }
+      
       toast({
         variant: "destructive",
         title: "Error",
@@ -121,23 +205,250 @@ export default function Cart() {
     }
   };
 
-  const calculateDeliveryCharges = (items: CartItem[]) => {
-    let totalAmount = items.reduce((sum, item) => 
-      sum + (item.product.price * item.quantity), 0);
-
-    // If any item has free delivery above the total amount, no delivery charge for that item
-    return items.reduce((total, item) => {
-      if (totalAmount >= (item.product.free_delivery_above || 499)) {
-        return total;
-      }
-      return total + (item.product.delivery_charges || 0);
-    }, 0);
+  const handleApplyCoupon = (coupon: Coupon | null) => {
+    setAppliedCoupon(coupon);
+    if (coupon) {
+      const discount = Math.min(
+        (subtotal * coupon.discount_percentage) / 100,
+        coupon.max_discount_amount
+      );
+      setDiscountAmount(discount);
+      toast({
+        title: "Coupon Applied",
+        description: `Saved ₹${discount.toFixed(2)} with coupon ${coupon.code}`,
+      });
+    } else {
+      setDiscountAmount(0);
+    }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => 
-    sum + (item.product.price * item.quantity), 0);
-  const deliveryCharges = calculateDeliveryCharges(cartItems);
-  const total = subtotal + deliveryCharges;
+  const calculateTotal = () => {
+    return subtotal + deliveryCharges - discountAmount;
+  };
+
+  const calculateItemTotal = (item: CartItem) => {
+    const basePrice = item.products.price;
+    const quantity = item.quantity;
+    const salePercentage = item.products.sale_percentage || 0;
+    const discountedPrice = basePrice * (1 - salePercentage / 100);
+    return discountedPrice * quantity;
+  };
+
+  const OrderSummary = ({ 
+    cartItems, 
+    subtotal, 
+    deliveryCharges, 
+    appliedCoupon, 
+    discountAmount 
+  }: { 
+    cartItems: CartItem[];
+    subtotal: number;
+    deliveryCharges: number;
+    appliedCoupon: Coupon | null;
+    discountAmount: number;
+  }) => {
+    const navigate = useNavigate();
+
+    // Find the highest free delivery threshold from all products
+    const maxFreeDeliveryThreshold = Math.max(
+      ...cartItems.map(item => item.products.free_delivery_above)
+    );
+
+    // Calculate amount needed for free delivery
+    const amountForFreeDelivery = maxFreeDeliveryThreshold - subtotal;
+
+    // Calculate total savings
+    const calculateTotalSavings = () => {
+      let savings = 0;
+      
+      // Savings from sale prices
+      cartItems.forEach(item => {
+        if (item.products.sale_percentage) {
+          const originalPrice = item.products.price;
+          const salePrice = originalPrice * (1 - item.products.sale_percentage / 100);
+          savings += (originalPrice - salePrice) * item.quantity;
+        }
+      });
+
+      // Savings from coupon
+      if (appliedCoupon) {
+        savings += discountAmount;
+      }
+
+      // Savings from free delivery
+      if (deliveryCharges === 0 && subtotal >= maxFreeDeliveryThreshold) {
+        savings += Math.max(...cartItems.map(item => item.products.delivery_charges));
+      }
+
+      return savings;
+    };
+
+    const totalSavings = calculateTotalSavings();
+    const finalTotal = subtotal + deliveryCharges - discountAmount;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="lg:col-span-1"
+      >
+        <Card className="p-8 sticky top-4 bg-white/90 backdrop-blur-md rounded-2xl border-0 shadow-lg">
+          <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            Order Summary
+          </h2>
+
+          <div className="space-y-6">
+            {/* Price Breakdown */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">
+                  Price ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)
+                </span>
+                <span className="font-medium">{formatIndianPrice(subtotal)}</span>
+              </div>
+
+              {/* Show sale discounts if any */}
+              {cartItems.some(item => item.products.sale_percentage) && (
+                <div className="flex justify-between text-green-600 text-sm">
+                  <span>Sale Discount</span>
+                  <span>
+                    -{formatIndianPrice(cartItems.reduce((sum, item) => {
+                      if (item.products.sale_percentage) {
+                        const originalPrice = item.products.price * item.quantity;
+                        const salePrice = originalPrice * (1 - item.products.sale_percentage / 100);
+                        return sum + (originalPrice - salePrice);
+                      }
+                      return sum;
+                    }, 0))}
+                  </span>
+                </div>
+              )}
+
+              {/* Coupon Discount */}
+              {appliedCoupon && (
+                <div className="flex justify-between text-green-600">
+                  <span className="flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Coupon: {appliedCoupon.code}
+                  </span>
+                  <span>-{formatIndianPrice(discountAmount)}</span>
+                </div>
+              )}
+
+              {/* Delivery Charges */}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Delivery</span>
+                <span className={deliveryCharges === 0 ? "text-green-600 font-medium" : ""}>
+                  {deliveryCharges > 0 
+                    ? formatIndianPrice(deliveryCharges)
+                    : (
+                      <span className="flex items-center gap-1">
+                        <Truck className="h-4 w-4" />
+                        FREE
+                      </span>
+                    )}
+                </span>
+              </div>
+            </div>
+
+            {/* Free Delivery Progress */}
+            {deliveryCharges > 0 && amountForFreeDelivery > 0 && (
+              <div className="bg-blue-50 p-4 rounded-xl">
+                <p className="text-sm text-blue-700 flex items-center gap-2">
+                  <Truck className="h-5 w-5 flex-shrink-0" />
+                  <span>
+                    Add items worth {formatIndianPrice(amountForFreeDelivery)} more for 
+                    <span className="font-semibold"> FREE delivery</span>
+                  </span>
+                </p>
+                {/* Progress bar */}
+                <div className="mt-2 h-2 bg-blue-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-600 transition-all duration-500"
+                    style={{ 
+                      width: `${Math.min(100, (subtotal / maxFreeDeliveryThreshold) * 100)}%` 
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Total Savings */}
+            {totalSavings > 0 && (
+              <div className="bg-green-50 p-4 rounded-xl">
+                <p className="text-sm text-green-700 flex items-center gap-2">
+                  <span className="font-semibold">Total Savings:</span>
+                  {formatIndianPrice(totalSavings)}
+                </p>
+              </div>
+            )}
+
+            {/* Final Total */}
+            <div className="border-t pt-6 mt-6">
+              <div className="flex justify-between items-center mb-8">
+                <span className="text-lg font-medium">Total Amount</span>
+                <div className="text-right">
+                  <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    {formatIndianPrice(finalTotal)}
+                  </span>
+                  {totalSavings > 0 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      You save {formatIndianPrice(totalSavings)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                className="w-full bg-black hover:bg-black/90 text-lg h-14 rounded-xl"
+                onClick={() => navigate("/checkout")}
+                disabled={cartItems.length === 0}
+              >
+                Proceed to Checkout
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+
+              {/* Additional Information */}
+              <div className="mt-6 space-y-3">
+                <p className="text-xs text-gray-500 text-center">
+                  Prices are inclusive of all taxes
+                </p>
+                <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+                  {deliveryCharges === 0 && (
+                    <span className="flex items-center gap-1">
+                      <Truck className="h-4 w-4" /> Free Delivery
+                    </span>
+                  )}
+                  {appliedCoupon && (
+                    <span className="flex items-center gap-1">
+                      <Tag className="h-4 w-4" /> Coupon Applied
+                    </span>
+                  )}
+                  {cartItems.some(item => item.products.sale_percentage) && (
+                    <span className="flex items-center gap-1">
+                      <Percent className="h-4 w-4" /> Sale Price
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  };
+
+  // Add useEffect to recalculate totals when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      calculateTotals(cartItems);
+    } else {
+      setSubtotal(0);
+      setDeliveryCharges(0);
+      setDiscountAmount(0);
+      setAppliedCoupon(null);
+    }
+  }, [cartItems]);
 
   if (loading) {
     return (
@@ -242,13 +553,13 @@ export default function Cart() {
                       {/* Product Image with Hover Effect */}
                       <div className="relative aspect-square w-40 rounded-xl overflow-hidden bg-gray-50">
                         <img
-                          src={item.product.images[0]}
-                          alt={item.product.title}
+                          src={item.products.images[0]}
+                          alt={item.products.title}
                           className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
                         />
-                        {item.product.sale_percentage && (
+                        {item.products.sale_percentage && (
                           <div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
-                            {item.product.sale_percentage}% OFF
+                            {item.products.sale_percentage}% OFF
                           </div>
                         )}
                       </div>
@@ -258,10 +569,10 @@ export default function Cart() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                              {item.product.title}
+                              {item.products.title}
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">
-                              Category: {item.product.category}
+                              Category: {item.products.category}
                             </p>
                           </div>
                           <Button
@@ -303,19 +614,19 @@ export default function Cart() {
                           <div className="text-right">
                             <div className="flex items-baseline gap-2">
                               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                                {formatIndianPrice(item.product.price * item.quantity)}
+                                {formatIndianPrice(item.products.price * item.quantity)}
                               </span>
-                              {item.product.sale_percentage && (
+                              {item.products.sale_percentage && (
                                 <span className="text-sm text-gray-400 line-through">
                                   {formatIndianPrice(
-                                    (item.product.price * item.quantity) /
-                                      (1 - item.product.sale_percentage / 100)
+                                    (item.products.price * item.quantity) /
+                                      (1 - item.products.sale_percentage / 100)
                                   )}
                                 </span>
                               )}
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
-                              {formatIndianPrice(item.product.price)} per item
+                              {formatIndianPrice(item.products.price)} per item
                             </p>
                           </div>
                         </div>
@@ -324,78 +635,24 @@ export default function Cart() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+
+              {/* Coupon Selector */}
+              <CouponSelector
+                productIds={cartItems.map(item => item.product_id)}
+                subtotal={subtotal}
+                onApplyCoupon={handleApplyCoupon}
+                appliedCoupon={appliedCoupon}
+              />
             </div>
 
             {/* Enhanced Order Summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="lg:col-span-1"
-            >
-              <Card className="p-8 sticky top-4 bg-white/90 backdrop-blur-md rounded-2xl border-0 shadow-lg">
-                <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  Order Summary
-                </h2>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">{formatIndianPrice(subtotal)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Delivery</span>
-                    <span className={deliveryCharges === 0 ? "text-green-600 font-medium" : ""}>
-                      {deliveryCharges > 0 
-                        ? formatIndianPrice(deliveryCharges)
-                        : 'FREE'}
-                    </span>
-                  </div>
-                  
-                  {deliveryCharges > 0 && (
-                    <div className="bg-blue-50 p-4 rounded-xl">
-                      <p className="text-sm text-blue-700 flex items-center gap-2">
-                        <Truck className="h-5 w-5 flex-shrink-0" />
-                        <span>
-                          Add items worth {formatIndianPrice(499 - subtotal)} more for 
-                          <span className="font-semibold"> FREE delivery</span>
-                        </span>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-6 mt-6">
-                    <div className="flex justify-between items-center mb-8">
-                      <span className="text-lg font-medium">Total Amount</span>
-                      <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                        {formatIndianPrice(total)}
-                      </span>
-                    </div>
-
-                    <Button
-                      className="w-full bg-black hover:bg-black/90 text-lg h-14 rounded-xl"
-                      onClick={() => navigate("/checkout")}
-                    >
-                      Proceed to Checkout
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-
-                    <div className="mt-6 space-y-3">
-                      <p className="text-xs text-gray-500 text-center">
-                        Prices are inclusive of all taxes
-                      </p>
-                      <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Truck className="h-4 w-4" /> Free Delivery
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Tag className="h-4 w-4" /> Best Price
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
+            <OrderSummary
+              cartItems={cartItems}
+              subtotal={subtotal}
+              deliveryCharges={deliveryCharges}
+              appliedCoupon={appliedCoupon}
+              discountAmount={discountAmount}
+            />
           </div>
         )}
       </div>

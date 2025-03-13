@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   BarChart3,
+  Tag,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -50,6 +51,11 @@ export function AdminSidebar() {
       label: "Reviews",
       href: "/admin/reviews",
       icon: <Star className="h-5 w-5 flex-shrink-0" />,
+    },
+    {
+      label: "Coupons",
+      href: "/admin/coupons",
+      icon: <Tag className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Settings",
