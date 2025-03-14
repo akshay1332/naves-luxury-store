@@ -24,6 +24,7 @@ interface Coupon {
   valid_until: string;
   is_active: boolean;
   category: string;
+  one_time_per_user: boolean;
 }
 
 interface CouponSelectorProps {
@@ -42,6 +43,10 @@ export const CouponSelector = ({ productIds, subtotal, onApplyCoupon, appliedCou
     try {
       setLoading(true);
       
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       // Get coupons through coupon_products table with proper joins
       const { data: couponProducts, error } = await supabase
         .from('coupon_products')
@@ -60,15 +65,23 @@ export const CouponSelector = ({ productIds, subtotal, onApplyCoupon, appliedCou
             valid_until,
             is_active,
             usage_limit,
-            times_used
+            times_used,
+            one_time_per_user
           )
         `)
         .in('product_id', productIds)
         .not('coupons', 'is', null);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
+
+      // Get user's previously used coupons
+      const { data: usedCoupons } = await supabase
+        .from('orders')
+        .select('applied_coupon_id')
+        .eq('user_id', user.id)
+        .not('applied_coupon_id', 'is', null);
+
+      const usedCouponIds = new Set(usedCoupons?.map(order => order.applied_coupon_id));
 
       // Filter valid coupons
       const now = new Date();
@@ -76,6 +89,11 @@ export const CouponSelector = ({ productIds, subtotal, onApplyCoupon, appliedCou
         ?.map(cp => cp.coupons)
         .filter((coupon): coupon is Coupon => {
           if (!coupon) return false;
+
+          // Check if one-time-per-user coupon has been used
+          if (coupon.one_time_per_user && usedCouponIds.has(coupon.id)) {
+            return false;
+          }
 
           const isValid = 
             coupon.is_active && 

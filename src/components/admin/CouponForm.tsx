@@ -22,6 +22,7 @@ interface CouponFormData {
   is_active: boolean;
   usage_limit: number;
   times_used: number;
+  one_time_per_user: boolean;
 }
 
 export const CouponForm = ({ initialData }: { initialData?: any }) => {
@@ -43,6 +44,7 @@ export const CouponForm = ({ initialData }: { initialData?: any }) => {
       is_active: initialData?.is_active ?? true,
       usage_limit: initialData?.usage_limit || 0,
       times_used: initialData?.times_used || 0,
+      one_time_per_user: initialData?.one_time_per_user || false,
     },
   });
 
@@ -176,6 +178,20 @@ export const CouponForm = ({ initialData }: { initialData?: any }) => {
               />
               <span>{form.watch("is_active") ? "Active" : "Inactive"}</span>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Usage Restrictions</Label>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={form.watch("one_time_per_user")}
+                onCheckedChange={(checked) => form.setValue("one_time_per_user", checked)}
+              />
+              <span>One-time use per user</span>
+            </div>
+            <p className="text-sm text-gray-500">
+              If enabled, each user can only use this coupon once
+            </p>
           </div>
         </div>
 

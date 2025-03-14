@@ -39,6 +39,7 @@ interface Coupon {
   is_active: boolean;
   usage_limit: number;
   times_used: number;
+  one_time_per_user: boolean;
 }
 
 export const CouponsPage = () => {
@@ -145,7 +146,16 @@ export const CouponsPage = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {coupon.times_used} / {coupon.usage_limit}
+                    <div className="space-y-1">
+                      <div>
+                        {coupon.times_used} / {coupon.usage_limit || '∞'}
+                      </div>
+                      {coupon.one_time_per_user && (
+                        <Badge variant="secondary" className="text-xs">
+                          One-time per user
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span className="text-xs">

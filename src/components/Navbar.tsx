@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.jpg';
 import { cn, formatIndianPrice } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -186,35 +186,51 @@ const Navbar = () => {
         ? "bg-gray-900/80 border-gray-800 backdrop-blur-md" 
         : "bg-white/80 border-gray-100 backdrop-blur-md"
     )}>
-      <div className="mx-auto max-w-7xl px-2 sm:px-3 lg:px-4">
-        <div className="flex items-center justify-between h-14">
-          {/* Logo and Brand */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo and Brand Name */}
+          <Link to="/" className="flex items-center space-x-3 group">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="relative"
+            >
+              <img 
+                src={logo} 
+                alt="Custom Print Logo" 
+                className="h-12 w-auto transform group-hover:scale-105 transition-transform duration-300"
+              />
               <motion.div
-                className="flex items-center gap-0.5 cursor-pointer p-0.5 rounded-2xl"
-                initial="initial"
-                whileHover="hover"
-                animate="initial"
+                className="absolute inset-0 bg-primary/10 rounded-full"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1.2, opacity: 0 }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 2,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.div>
+            <div className="flex flex-col">
+              <motion.span
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
               >
-                <motion.img
-                  src={logo}
-                  alt="Brand Logo"
-                  className="w-10 h-10 md:w-9 md:h-9 object-contain rounded-xl filter drop-shadow-lg"
-                  variants={logoVariants}
-                  draggable={false}
-                />
-                <motion.div
-                  className={cn(
-                    "font-montserrat font-black text-xl md:text-lg tracking-wide uppercase flex items-center gap-0.5",
-                    currentTheme === 'dark' ? "text-luxury-pearl" : "text-luxury-gold"
-                  )}
-                >
-                  CUSTOM<span className="text-primary-light">PRINT</span>
-                </motion.div>
-              </motion.div>
-            </Link>
-          </div>
+                CUSTOM PRINT
+              </motion.span>
+              <motion.span
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-sm text-gray-500"
+              >
+                Premium Custom Apparel
+              </motion.span>
+            </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
