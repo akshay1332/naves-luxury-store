@@ -84,6 +84,12 @@ const About = () => {
       src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
     },
     {
+      quote: "Custom Print transformed our brand identity with their exceptional printing quality and attention to detail. Their team went above and beyond our expectations.",
+      name: "Rajesh Kumar",
+      designation: "CEO at TechStart India",
+      src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
       quote: "Their innovative approach to custom designs and professional execution made our company merchandise stand out. Highly recommended for quality printing.",
       name: "Priya Sharma",
       designation: "Marketing Director at CreativeHub",
