@@ -1,12 +1,10 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { X, Upload } from "lucide-react";
+import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ImageUploadProps {
   form: any;
@@ -18,8 +16,6 @@ interface ImageUploadProps {
 export const ImageUpload = ({ form, initialData }: ImageUploadProps) => {
   const { toast } = useToast();
   const [imageLink, setImageLink] = React.useState("");
-  const [uploading, setUploading] = React.useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const MAX_IMAGES = 10;
 
   // Safely get current images array
@@ -64,76 +60,9 @@ export const ImageUpload = ({ form, initialData }: ImageUploadProps) => {
     img.src = imageLink;
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    if (currentImages.length + files.length > MAX_IMAGES) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Maximum ${MAX_IMAGES} images allowed. You can upload ${MAX_IMAGES - currentImages.length} more.`,
-      });
-      return;
-    }
-
-    setUploading(true);
-    
-    try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        // Generate a unique file name to prevent overwriting
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-        const filePath = fileName;
-
-        const { error: uploadError, data } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file);
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        // Get the public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-
-        return publicUrl;
-      });
-
-      const uploadedImageUrls = await Promise.all(uploadPromises);
-      form.setValue('images', [...currentImages, ...uploadedImageUrls]);
-
-      toast({
-        title: "Success",
-        description: `${uploadPromises.length} image(s) uploaded successfully`,
-      });
-
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      
-    } catch (error: any) {
-      console.error('Error uploading image:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: error.message || "Failed to upload image(s)",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleRemoveImage = (index: number) => {
     const updatedImages = currentImages.filter((_, i) => i !== index);
     form.setValue('images', updatedImages);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
   };
 
   return (
@@ -161,40 +90,8 @@ export const ImageUpload = ({ form, initialData }: ImageUploadProps) => {
           ))}
         </div>
 
-        {/* File upload section */}
         <div className="space-y-2">
-          <Label htmlFor="imageUpload" className="text-black">Upload Images</Label>
-          <input
-            type="file"
-            id="imageUpload"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            multiple
-            onChange={handleFileUpload}
-            disabled={uploading}
-          />
-          
-          <div className="flex gap-2">
-            <Button
-              onClick={triggerFileInput}
-              disabled={uploading || currentImages.length >= MAX_IMAGES}
-              type="button"
-              variant="outline"
-              className="w-full border-dashed border-2 py-6 flex flex-col items-center justify-center"
-            >
-              <Upload className="h-5 w-5 mb-2" />
-              {uploading ? 'Uploading...' : 'Click to upload images'}
-              <p className="text-xs text-gray-500 mt-1">
-                (PNG, JPG, WEBP up to 5MB)
-              </p>
-            </Button>
-          </div>
-        </div>
-
-        {/* Image URL section */}
-        <div className="space-y-2">
-          <Label htmlFor="imageLink" className="text-black">Or Add Image URL</Label>
+          <Label htmlFor="imageLink" className="text-black">Add Image URL</Label>
           <div className="flex gap-2">
             <Input
               id="imageLink"
