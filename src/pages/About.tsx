@@ -90,7 +90,7 @@ const About = () => {
       src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
     },
     {
-      quote: "Leading with expertise, Kartikeya oversees CustomPrint’s operations, ensuring seamless execution and delivering premium custom printing solutions.  ",
+      quote: "Leading with expertise, Kartikeya oversees CustomPrint's operations, ensuring seamless execution and delivering premium custom printing solutions.  ",
       name: "Kartikeya Rai",
       designation: "CEO of Custom Print",
       src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
