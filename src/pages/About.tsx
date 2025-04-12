@@ -78,28 +78,34 @@ const About = () => {
 
   const testimonials = [
     {
-      quote: "Custom Print transformed our brand identity with their exceptional printing quality and attention to detail. Their team went above and beyond our expectations.",
-      name: "Rajesh Kumar",
-      designation: "CEO at TechStart India",
+      quote: "The visionary behind CustomPrint, Aditya laid the foundation with a passion for quality and customization, driving innovation in the printing industry.",
+      name: "Aditya Kumar Singh",
+      designation: "Founder of Custom Print",
       src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
     },
     {
-      quote: "Custom Print transformed our brand identity with their exceptional printing quality and attention to detail. Their team went above and beyond our expectations.",
-      name: "Rajesh Kumar",
-      designation: "CEO at TechStart India",
+      quote: "A strategic thinker and co-creator of CustomPrint, Keshav plays a key role in shaping the company’s growth and ensuring top-notch customer satisfaction.",
+      name: "Keshav Yadav",
+      designation: "Co-Founder of Custom Print",
       src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
     },
     {
-      quote: "Their innovative approach to custom designs and professional execution made our company merchandise stand out. Highly recommended for quality printing.",
-      name: "Priya Sharma",
-      designation: "Marketing Director at CreativeHub",
+      quote: "Leading with expertise, Kartikeya oversees CustomPrint’s operations, ensuring seamless execution and delivering premium custom printing solutions.  ",
+      name: "Kartikeya Rai",
+      designation: "CEO of Custom Print",
       src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
     },
     {
-      quote: "The team's expertise in handling bulk orders while maintaining consistent quality is impressive. Their customer service is exceptional.",
-      name: "Amit Patel",
-      designation: "Event Manager at EventPro",
+      quote: "Ankit drives business growth with strategic pricing and customer value while ensuring data security and compliance to protect customer information.",
+      name: "Ankit Raj",
+      designation: "CCO of Custom Print",
       src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      quote: "A marketing expert, Haben drives brand visibility and customer engagement, crafting impactful campaigns that connect CustomPrint with its audience.",
+      name: "Haben B",
+      designation: "CMO of Custom Print",
+      src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
     }
   ];
 
@@ -134,17 +140,17 @@ const About = () => {
   const services = [
     {
       title: "Custom T-Shirt Printing",
-      description: "High-quality custom t-shirt printing with vibrant colors and durable designs.",
+      description: "Premium custom T-shirt printing with vibrant colors and long-lasting designs!",
       image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=2127&auto=format&fit=crop"
     },
     {
-      title: "Business Cards & Stationery",
-      description: "Professional business cards and stationery that make a lasting impression.",
+      title: "Custom Printed Caps and Mugs",
+      description: "Stylish custom caps and personalized mugs with bold, vibrant prints that last!",
       image: "https://images.unsplash.com/photo-1634084462412-b54873c0a56d?q=80&w=2070&auto=format&fit=crop"
     },
     {
-      title: "Large Format Printing",
-      description: "Stunning banners, posters, and signage that capture attention.",
+      title: "Custom designed pens",
+      description: "Custom-designed pens that let you express your style with every stroke!",
       image: "https://images.unsplash.com/photo-1561997968-aa846c2bf255?q=80&w=2070&auto=format&fit=crop"
     }
   ];
@@ -208,7 +214,7 @@ const About = () => {
                 Custom Print
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto px-4 font-light leading-relaxed">
-                Transforming Ideas into Stunning Reality with Premium Quality Printing Solutions
+                specializes in high-quality custom merchandise, including T-shirts, cups, pens, caps, and keychains, tailored to your unique designs. Bring your ideas to life with our affordable and personalized printing solutions!
               </p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -317,7 +323,7 @@ const About = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-white mb-4">Our Services</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Discover our comprehensive range of printing solutions tailored to meet your needs</p>
+            <p className="text-gray-400 max-w-2xl mx-auto">Explore our premium custom printing solutions, designed to bring your ideas to life!</p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service, index) => (
