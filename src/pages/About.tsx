@@ -3,7 +3,7 @@ import { Printer, Palette, Users, Sparkles, Zap, Target, Clock, Shield } from "l
 import { Timeline } from "@/components/ui/Timeline";
 import { AnimatedTestimonials } from "@/components/ui/AnimatedTestimonials";
 import { SEO } from "@/components/SEO";
-import { Aditya Kumar Singh } from "@/components/Aditya Kumar Singh.jpg";
+import { AdityaKumarSingh } from "@/components/AdityaKumarSingh.jpg";
 
 const About = () => {
   const timelineData = [
