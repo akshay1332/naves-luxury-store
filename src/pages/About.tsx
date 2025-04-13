@@ -81,19 +81,19 @@ const About = () => {
       quote: "The visionary behind CustomPrint, Aditya laid the foundation with a passion for quality and customization, driving innovation in the printing industry.",
       name: "Aditya Kumar Singh",
       designation: "Founder of Custom Print",
-      src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
+      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\CP_Members\Aditya Kumar Singh.jpg"
     },
     {
       quote: "A strategic thinker and co-creator of CustomPrint, Keshav plays a key role in shaping the company’s growth and ensuring top-notch customer satisfaction.",
       name: "Keshav Yadav",
       designation: "Co-Founder of Custom Print",
-      src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop"
+      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\CP_Members\Keshav Yadav.jpg"
     },
     {
       quote: "Leading with expertise, Kartikeya oversees CustomPrint's operations, ensuring seamless execution and delivering premium custom printing solutions.  ",
       name: "Kartikeya Rai",
       designation: "CEO of Custom Print",
-      src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
+      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\CP_Members\Kartikeya Rai.jpg"
     },
     {
       quote: "Ankit drives business growth with strategic pricing and customer value while ensuring data security and compliance to protect customer information.",
