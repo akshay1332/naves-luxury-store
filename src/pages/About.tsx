@@ -3,6 +3,7 @@ import { Printer, Palette, Users, Sparkles, Zap, Target, Clock, Shield } from "l
 import { Timeline } from "@/components/ui/Timeline";
 import { AnimatedTestimonials } from "@/components/ui/AnimatedTestimonials";
 import { SEO } from "@/components/SEO";
+import { Aditya Kumar Singh } from "@/components/Aditya Kumar Singh.jpg";
 
 const About = () => {
   const timelineData = [
@@ -81,7 +82,7 @@ const About = () => {
       quote: "The visionary behind CustomPrint, Aditya laid the foundation with a passion for quality and customization, driving innovation in the printing industry.",
       name: "Aditya Kumar Singh",
       designation: "Founder of Custom Print",
-      src: "https://drive.google.com/file/d/12mj02O9PUhDUUvFDVaciSjmphiBzzGCc/view?usp=sharing"
+      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\src\components\Aditya Kumar Singh.jpg"
     },
     {
       quote: "A strategic thinker and co-creator of CustomPrint, Keshav plays a key role in shaping the company’s growth and ensuring top-notch customer satisfaction.",
