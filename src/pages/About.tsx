@@ -87,13 +87,13 @@ const About = () => {
       quote: "A strategic thinker and co-creator of CustomPrint, Keshav plays a key role in shaping the company’s growth and ensuring top-notch customer satisfaction.",
       name: "Keshav Yadav",
       designation: "Co-Founder of Custom Print",
-      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\CP_Members\Keshav Yadav.jpg"
+      src: "/assets/team/Keshav-Yadav.jpg"
     },
     {
       quote: "Leading with expertise, Kartikeya oversees CustomPrint's operations, ensuring seamless execution and delivering premium custom printing solutions.  ",
       name: "Kartikeya Rai",
       designation: "CEO of Custom Print",
-      src: "C:\Users\adity\OneDrive\Desktop\CP_WebSite\naves-luxury-store\CP_Members\Kartikeya Rai.jpg"
+      src: "/assets/team/Kartikeya-Rai.jpg"
     },
     {
       quote: "Ankit drives business growth with strategic pricing and customer value while ensuring data security and compliance to protect customer information.",
