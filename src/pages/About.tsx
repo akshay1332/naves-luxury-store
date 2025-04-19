@@ -11,7 +11,7 @@ const About = () => {
       content: (
         <div>
           <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base font-normal mb-8">
-            Revolutionizing the printing industry with cutting-edge digital solutions and expanding our custom design services to serve a global clientele.
+          Conceived in 2024, we started our journey step by step, and today, we proudly offer premium printing services with customized designs, top-quality prints, and unmatched craftsmanship.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <motion.div
@@ -45,7 +45,7 @@ const About = () => {
       content: (
         <div>
           <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base font-normal mb-8">
-            Established our state-of-the-art printing facility with advanced machinery and expanded our expert design team to provide comprehensive printing solutions.
+          Conceived in 2023, we built our vision step by step—establishing a cutting-edge printing facility and assembling an expert design team to deliver top-tier custom printing solutions.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <motion.div
