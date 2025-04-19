@@ -78,7 +78,7 @@ const ShippingInfo = () => {
             </span>
             <div>
               <h3 className="font-semibold mb-2">Order Processing</h3>
-              <p>Orders are processed within 24 hours of placement. You'll receive a confirmation email once your order is confirmed.</p>
+              <p>Orders are processed within 24 hours of placement. You'll receive a confirmation message once your order is confirmed.</p>
             </div>
           </li>
           <li className="flex gap-4">
@@ -90,7 +90,7 @@ const ShippingInfo = () => {
             </span>
             <div>
               <h3 className="font-semibold mb-2">Order Dispatch</h3>
-              <p>Once your order is ready, it will be carefully packed and handed over to our shipping partner. You'll receive a tracking number via email.</p>
+              <p>Once your order is ready, it will be carefully packed and handed over to our shipping partner. You'll receive a tracking number via message.</p>
             </div>
           </li>
           <li className="flex gap-4">
@@ -121,7 +121,7 @@ const ShippingInfo = () => {
               <li>Delivery times may vary during peak seasons and holidays</li>
               <li>We currently ship to all major cities in India</li>
               <li>International shipping is available for select countries</li>
-              <li>Orders placed after 2 PM will be processed the next business day</li>
+              <li>Orders placed after 11:59 PM will be processed the next business day</li>
               <li>Shipping charges are calculated based on delivery location and order weight</li>
             </ul>
           </div>
