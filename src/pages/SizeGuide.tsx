@@ -109,9 +109,9 @@ const SizeGuide = () => {
                   currentTheme === 'dark' ? "border-gray-800" : "border-gray-200"
                 )}>
                   <th className="py-3 px-4 text-left font-semibold">Size</th>
-                  <th className="py-3 px-4 text-left font-semibold">Chest (inches)</th>
-                  <th className="py-3 px-4 text-left font-semibold">Length (inches)</th>
-                  <th className="py-3 px-4 text-left font-semibold">Shoulder (inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Chest (Inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Length (Inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Shoulder (Inches)</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,9 +148,9 @@ const SizeGuide = () => {
                   currentTheme === 'dark' ? "border-gray-800" : "border-gray-200"
                 )}>
                   <th className="py-3 px-4 text-left font-semibold">Size</th>
-                  <th className="py-3 px-4 text-left font-semibold">Chest (inches)</th>
-                  <th className="py-3 px-4 text-left font-semibold">Length (inches)</th>
-                  <th className="py-3 px-4 text-left font-semibold">Shoulder (inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Chest (Inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Length (Inches)</th>
+                  <th className="py-3 px-4 text-left font-semibold">Shoulder (Inches)</th>
                 </tr>
               </thead>
               <tbody>
