@@ -19,7 +19,7 @@ const FAQ = () => {
     },
     {
       question: "How do I find my perfect size?",
-      answer: "We provide detailed size guides for each product. You can find measurements and fitting recommendations on individual products by clicking the Size Chart. For more assistance, contact our customer support at <a href="mailto:support@customprint.co.in">support@customprint.co.in</a>."
+      answer: "We provide detailed size guides for each product. You can find measurements and fitting recommendations on individual products by clicking the Size Chart. For more assistance, contact our customer support at <a href='mailto:support@customprint.co.in'>support@customprint.co.in</a>."
     },
     {
       question: "What payment methods do you accept?",
