@@ -14,7 +14,7 @@ const Returns = () => {
         "Unworn clothing with original tags attached",
         "Unwashed and undamaged items",
         "Items in original packaging",
-        "Items returned within 30 days of delivery"
+        "Items returned within 7 days of delivery"
       ]
     },
     {
@@ -33,11 +33,11 @@ const Returns = () => {
   const returnSteps = [
     {
       title: "Initiate Return",
-      description: "Log in to your account and go to order history. Select the item you wish to return and fill out the return form."
+      description: "Contact us at [support@customprint.co.in] or WhatsApp at [+91 6284 249 565] with ORderID/Invoice No."
     },
     {
       title: "Package Your Item",
-      description: "Pack the item securely in its original packaging with all tags attached. Include the return form in the package."
+      description: "Pack the item securely in its original packaging with all tags attached. Include the Invoice form in the package."
     },
     {
       title: "Ship the Item",
@@ -45,7 +45,7 @@ const Returns = () => {
     },
     {
       title: "Refund Processing",
-      description: "Once we receive and inspect your return, we'll process your refund within 5-7 business days to your original payment method."
+      description: "Once we receive and inspect your return, we'll process your refund within 2-3 business days to your original payment method."
     }
   ];
 
@@ -58,8 +58,11 @@ const Returns = () => {
       <div className="mb-12">
         <p className="text-lg mb-6">
           At Custom Print, we want you to be completely satisfied with your purchase. 
-          If you're not happy with your order, we accept returns within 30 days of delivery 
+          If you're not happy with your order, we accept returns within 7 days of delivery 
           for a full refund or exchange.
+        </p>
+        <p className="text-lg mb-6">
+        To be eligible for a return, your item must be in the same condition that you received it, unworn or unused, with tags, and in its original packaging.
         </p>
       </div>
 
