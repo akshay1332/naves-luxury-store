@@ -99,7 +99,7 @@ const About = () => {
       quote: "Ankit drives business growth with strategic pricing and customer value while ensuring data security and compliance to protect customer information.",
       name: "Ankit Raj",
       designation: "CCO of Custom Print",
-      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2070&auto=format&fit=crop"
+      src: "/assets/team/Ankit-Raj.jpg"
     },
     {
       quote: "A marketing expert, Haben drives brand visibility and customer engagement, crafting impactful campaigns that connect CustomPrint with its audience.",
