@@ -52,7 +52,7 @@ const Returns = () => {
   return (
     <PolicyLayout
       title="Returns & Exchanges"
-      subtitle="Easy returns within 30 days of delivery"
+      subtitle="Easy returns within 7 days of delivery"
     >
       {/* Return Policy Overview */}
       <div className="mb-12">
