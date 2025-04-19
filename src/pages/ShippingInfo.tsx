@@ -11,13 +11,13 @@ const ShippingInfo = () => {
       icon: Truck,
       title: "Standard Shipping",
       delivery: "5-7 business days",
-      cost: "₹99 or FREE on orders above ₹999"
+      cost: "FREE" // "₹39 or FREE on orders above ₹999"
     },
     {
       icon: Clock,
       title: "Express Delivery",
       delivery: "2-3 business days",
-      cost: "₹199"
+      cost: "₹59"
     },
     {
       icon: Globe2,

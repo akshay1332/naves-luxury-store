@@ -19,11 +19,11 @@ const FAQ = () => {
     },
     {
       question: "How do I find my perfect size?",
-      answer: "We provide detailed size guides for each product. You can find measurements and fitting recommendations on individual product pages. For more assistance, check our Size Guide section or contact our customer support."
+      answer: "We provide detailed size guides for each product. You can find measurements and fitting recommendations on individual products by clicking the Size Chart. For more assistance, contact our customer support at <a href="mailto:support@customprint.co.in">support@customprint.co.in</a>."
     },
     {
       question: "What payment methods do you accept?",
-      answer: "We accept all major credit/debit cards, UPI, net banking, and popular digital wallets. All payments are processed securely through our trusted payment partners."
+      answer: "We accept all major COD, Credit/Debit Cards, UPI, net banking, and popular digital wallets. All payments are processed securely through our trusted payment partners."
     },
     {
       question: "How long does shipping take?",
@@ -31,7 +31,7 @@ const FAQ = () => {
     },
     {
       question: "What is your return policy?",
-      answer: "We offer a hassle-free 30-day return policy for unworn items in original condition with tags attached. Visit our Returns page for detailed information and instructions."
+      answer: "We offer a 7-day return policy for unused items in original condition, excluding custom-designed products, with exchanges available for damaged or incorrect orders."
     },
     {
       question: "How do I care for my Custom Print clothing?",
