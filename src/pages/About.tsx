@@ -20,7 +20,7 @@ const About = () => {
               className="overflow-hidden rounded-lg shadow-lg"
             >
               <img
-                src="https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop"
+                src="/assets/img/Printing-IMG_1.jpg"
                 alt="Modern Printing"
                 className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
               />
@@ -31,7 +31,7 @@ const About = () => {
               className="overflow-hidden rounded-lg shadow-lg"
             >
               <img
-                src="https://images.unsplash.com/photo-1635405074683-96d6521e8a33?q=80&w=1969&auto=format&fit=crop"
+                src="/assets/img/Printing-IMG_2.jpg"
                 alt="Digital Printing"
                 className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
               />
@@ -54,7 +54,7 @@ const About = () => {
               className="overflow-hidden rounded-lg shadow-lg"
             >
               <img
-                src="https://images.unsplash.com/photo-1598301257982-0cf014dabbcd?q=80&w=2070&auto=format&fit=crop"
+                src="/assets/img/Heat-Press_Machine.jpg"
                 alt="Our Team"
                 className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
               />
@@ -65,7 +65,7 @@ const About = () => {
               className="overflow-hidden rounded-lg shadow-lg"
             >
               <img
-                src="https://images.unsplash.com/photo-1574614671393-d92c9e359dba?q=80&w=2070&auto=format&fit=crop"
+                src="/assets/img/DTF-Printer.jpg"
                 alt="Our Facility"
                 className="object-cover h-20 md:h-44 lg:h-60 w-full transform hover:scale-110 transition-transform duration-500"
               />
@@ -141,17 +141,17 @@ const About = () => {
     {
       title: "Custom T-Shirt Printing",
       description: "Premium custom T-shirt printing with vibrant colors and long-lasting designs!",
-      image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=2127&auto=format&fit=crop"
+      image: "/assets/img/T-shirts.jpg"
     },
     {
-      title: "Custom Printed Caps and Mugs",
-      description: "Stylish custom caps and personalized mugs with bold, vibrant prints that last!",
-      image: "https://images.unsplash.com/photo-1634084462412-b54873c0a56d?q=80&w=2070&auto=format&fit=crop"
+      title: "Custom Printed Bottles and Mugs",
+      description: "Stylish custom Bottles and personalized Mugs with bold, vibrant prints that last!",
+      image: "/assets/img/Mugs.jpg"
     },
     {
       title: "Custom designed pens",
       description: "Custom-designed pens that let you express your style with every stroke!",
-      image: "https://images.unsplash.com/photo-1561997968-aa846c2bf255?q=80&w=2070&auto=format&fit=crop"
+      image: "/assets/img/Pens.jpg"
     }
   ];
 
@@ -214,7 +214,7 @@ const About = () => {
                 Custom Print
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto px-4 font-light leading-relaxed">
-                specializes in high-quality custom merchandise, including T-shirts, cups, pens, caps, and keychains, tailored to your unique designs. Bring your ideas to life with our affordable and personalized printing solutions!
+                Specializes in high-quality custom merchandise, including T-shirts, cups, pens, caps, and keychains, tailored to your unique designs. Bring your ideas to life with our affordable and personalized printing solutions!
               </p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
