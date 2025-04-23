@@ -34,7 +34,8 @@ const PRODUCT_CATEGORIES = [
   "Sweatshirts",
   "Oversized",
   "Limited Edition",
-  "New Arrivals"
+  "New Arrivals",
+  "Polo T-Shirts"
 ];
 
 const GENDERS = ["men", "women", "unisex"] as const;
@@ -57,7 +58,7 @@ const STYLE_CATEGORIES = [
   "Streetwear",
   "Athletic",
   "Formal",
-  "Vintage",
+  //"Vintage",
   "Modern",
   "Classic",
 ];
