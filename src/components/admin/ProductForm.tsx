@@ -41,7 +41,7 @@ const PRODUCT_CATEGORIES = [
 const GENDERS = ["men", "women", "unisex"] as const;
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const DEFAULT_COLORS = [
-  { name: "Black", value: "#000000" },
+  // { name: "Black", value: "#000000" },
   { name: "White", value: "#FFFFFF" },
   { name: "Gray", value: "#808080" },
   { name: "Red", value: "#FF0000" },
