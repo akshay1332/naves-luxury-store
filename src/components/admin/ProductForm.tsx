@@ -42,7 +42,6 @@ const GENDERS = ["men", "women", "unisex"] as const;
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const DEFAULT_COLORS = [
   { name: "Black", value: "#000000" },
-  { name: "Black", value: "#000000" },
   { name: "White", value: "#FFFFFF" },
   { name: "Gray", value: "#808080" },
   { name: "Red", value: "#FF0000" },
@@ -52,6 +51,9 @@ const DEFAULT_COLORS = [
   { name: "Purple", value: "#800080" },
   { name: "Pink", value: "#FFC0CB" },
   { name: "Orange", value: "#FFA500" },
+  { name: "Beige", value: "#D8C3A5" },
+  { name: "Teal", value: "#3D8B84" },
+  { name: "Maroon", value: "#4B2C34" },
 ];
 
 const STYLE_CATEGORIES = [
