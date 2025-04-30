@@ -61,7 +61,7 @@ const STYLE_CATEGORIES = [
   "Streetwear",
   "Athletic",
   "Formal",
-  //"Vintage",
+  "Vintage",
   "Modern",
   "Classic",
 ];
