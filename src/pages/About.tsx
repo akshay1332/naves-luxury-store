@@ -105,7 +105,7 @@ const About = () => {
       quote: "A marketing expert, Haben drives brand visibility and customer engagement, crafting impactful campaigns that connect CustomPrint with its audience.",
       name: "Haben B",
       designation: "CMO of Custom Print",
-      src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=2070&auto=format&fit=crop"
+      src: "/assets/team/Haben-B.jpeg"
     }
   ];
 
