@@ -402,7 +402,7 @@ const testimonials = [
             whileTap={{ scale: 0.95 }}
             className="bg-white text-blue-600 px-12 py-5 rounded-full font-bold text-xl hover:bg-gray-100 transition-colors shadow-xl hover:shadow-2xl"
           >
-            Start Your Project
+            {/* Start Your Project */}
           </motion.button>
         </motion.div>
       </section>
