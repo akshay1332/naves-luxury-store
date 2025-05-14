@@ -62,7 +62,7 @@ const Contact = () => {
               <div className="space-y-8">
                 <div>
                   <h3 className="text-xl font-montserrat font-semibold mb-2 text-rose-500">Visit Our Store</h3>
-                  <p className="text-gray-300">Custom Print Studio</p>
+                  <p className="text-gray-300">Custom Print</p>
                   <p className="text-gray-300">Jalandhar, Punjab, 144411</p>
                 </div>
                 
