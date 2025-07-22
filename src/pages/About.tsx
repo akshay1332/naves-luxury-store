@@ -80,7 +80,7 @@ const About = () => {
   const testimonials = [
     {
       quote: "The visionary behind CustomPrint, Aditya laid the foundation with a passion for quality and customization, driving innovation in the printing industry.",
-      name: "Aditya Singh",
+      name: "Aditya Kumar Singh",
       designation: "Founder of Custom Print",
       src: "/assets/team/Aditya-Kumar-Singh.jpg"
     },
