@@ -110,21 +110,6 @@ const About = () => {
     }
   ];
 
-// Mentor Testimonials
-const testimonials = [
-  {
-    quote: "The visionary behind CustomPrint, Aditya laid the foundation with a passion for quality and customization, driving innovation in the printing industry.",
-    name: "Aditya Kumar Singh",
-    designation: "Founder of Custom Print",
-    src: "/assets/team/Aditya-Kumar-Singh.jpg"
-  },
-  {
-    quote: "A strategic thinker and co-creator of CustomPrint, Keshav plays a key role in shaping the company’s growth and ensuring top-notch customer satisfaction.",
-    name: "Keshav Yadav",
-    designation: "Co-Founder of Custom Print",
-    src: "/assets/team/Keshav-Yadav.jpg"
-  }
-];
 
   const containerVariants = {
     hidden: { opacity: 0 },
